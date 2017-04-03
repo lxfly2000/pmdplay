@@ -3,7 +3,6 @@
 #include<string>
 #include "PMDPlayer.h"
 #include "pmdmini.h"
-
 XAPlayer::XAPlayer(int nChannel, int sampleRate, int bytesPerVar)
 {
 	Init(nChannel, sampleRate, bytesPerVar);
@@ -75,9 +74,7 @@ bool PMDPlayer::subthread_on = false;
 int PMDPlayer::LoadFromFile(const char *filepath)
 {
 	if (!pmd_is_pmd(filepath))return -1;
-	int length_in_ms, loop_in_ms;
-	getlength((char*)filepath, &length_in_ms, &loop_in_ms);
-	length_in_sec = length_in_ms / 1000;
+	getlength((char*)filepath, (int*)&length_in_ms, (int*)&loop_in_ms);
 	//http://blog.csdn.net/tulip527/article/details/7976471
 	std::fstream f(filepath, std::ios::binary | std::ios::in);
 	std::string sf((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
@@ -96,7 +93,6 @@ int PMDPlayer::LoadFromMemory(uchar *pdata, int length)
 	int r = music_load2(pdata, length);
 	music_start();
 	pSourceData = getopenwork()->mmlbuf - 1;
-	played_buffers = position_in_sec = 0;
 	return r;
 }
 
@@ -118,14 +114,14 @@ int PMDPlayer::Pause()
 void PMDPlayer::Unload()
 {
 	playerstatus = nofile;
+	while (subthread_on);
 	pmd_stop();
-	played_buffers = position_in_sec = 0;
 }
 
 int PMDPlayer::FadeoutAndStop(int time_ms)
 {
 	if (playerstatus != playing)return -1;
-	fadingout_end_time_sec = position_in_sec + time_ms / 1000;
+	fadingout_end_time_sec = (GetPositionInMs() + time_ms) / 1000;
 	fadeout2(time_ms);
 	playerstatus = fadingout;
 	return 0;
@@ -143,19 +139,39 @@ int PMDPlayer::GetNotes(char *outstr, int al)
 	return 0;
 }
 
-unsigned PMDPlayer::GetLengthInSec()
+unsigned PMDPlayer::GetLengthInMs()
 {
-	return length_in_sec;
+	return length_in_ms;
 }
 
-unsigned PMDPlayer::GetPositionInSec()
+unsigned PMDPlayer::GetPositionInMs()
 {
-	return position_in_sec;
+	return getpos();
+}
+
+unsigned PMDPlayer::GetLoopLengthInMs()
+{
+	return loop_in_ms;
 }
 
 int PMDPlayer::GetLoopedTimes()
 {
 	return getloopcount();
+}
+
+int PMDPlayer::GetTempo()
+{
+	return getopenwork()->tempo_48 * 2;
+}
+
+int PMDPlayer::GetPositionInCount()
+{
+	return getpos2();
+}
+
+int PMDPlayer::GetXiaojieLength()
+{
+	return getopenwork()->syousetu_lng;
 }
 
 PMDPlayer::PlayerStatus PMDPlayer::GetPlayerStatus()
@@ -167,9 +183,7 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 {
 	m_channels = nChannel;
 	m_bytesPerVar = bytesPerVar;
-	m_bytesPerSample = m_channels*m_bytesPerVar;
-	m_byteRate = sampleRate*m_bytesPerVar*m_channels;
-	bytesof_soundbuffer = m_byteRate*buffer_time_ms / 1000;
+	bytesof_soundbuffer = sampleRate*bytesPerVar*nChannel*buffer_time_ms / 1000;
 	soundbuffer = reinterpret_cast<decltype(soundbuffer)>(new BYTE[bytesof_soundbuffer]);
 	playerstatus = nofile;
 	pmd_init();
@@ -206,21 +220,59 @@ void PMDPlayer::_LoopPlayback()
 		}
 	}
 }
-
+//#define NOTE_PITCH_NOT_CORRECT
+#ifdef NOTE_PITCH_NOT_CORRECT
+#include<DxLib.h>
+int look = 0;
+TCHAR *des[24] = {
+	L"FM1",L"FM2",L"FM3",L"FM4",L"FM5",L"FM6",
+	L"SSG1",L"SSG2",L"SSG3",
+	L"ADPCM",
+	L"OPNAR",
+	L"Ext1",L"Ext2",L"Ext3",
+	L"Rhy",
+	L"Eff",
+	L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ"
+};
+#endif
 void PMDPlayer::OnPlay()
 {
 	pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
 	x.Play((BYTE*)soundbuffer, bytesof_soundbuffer);
 	while (x.GetQueuedBuffersNum());
 	for (int i = 0; i < ARRAYSIZE(keyState); i++)
-		keyState[i] = getopenwork()->MusPart[i]->onkai;
-	played_buffers++;
-	position_in_sec = played_buffers * bytesof_soundbuffer / m_byteRate;
+		//虽然是整型的，但该变量只用了一个字节，低四位表示一个八度内的半音（Semitone，https://zh.wikipedia.org/wiki/半音 ），
+		//高四位表示在哪个八度（Octave，https://zh.wikipedia.org/wiki/純八度 ），因此实际的音高是低四位＋高四位×12.
+		//这个问题害得我折腾了一下午……原作者也不在注释上写明白，妈的法克！！(╯‵□′)╯︵┻━┻
+		keyState[i] = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
+	keyState[9] = getopenwork()->kshot_dat % 128;//SSG鼓声
+#ifdef NOTE_PITCH_NOT_CORRECT
+	if (GetAsyncKeyState(VK_UP)&1)look++;
+	if (GetAsyncKeyState(VK_DOWN)&1)look--;
+	clsDx();
+	if (look == -1)
+	{
+		for (int i = 0; i < 524; i++)
+		{
+			if (i % 16 == 0)printfDx(TEXT("\n"));
+			printfDx(TEXT("%02x "), ((char*)getopenwork())[i] & 0xFF);
+		}
+	}
+	else
+	{
+		printfDx(TEXT("%d %s"), look, des[look]);
+		for (int i = 0; i < sizeof QQ; i++)
+		{
+			if (i % 16 == 0)printfDx(TEXT("\n"));
+			printfDx(TEXT("%02x "), ((char*)getpartwork(look))[i] & 0xFF);
+		}
+	}
+#endif
 }
 
 void PMDPlayer::OnFadingOut()
 {
 	OnPlay();
-	if (position_in_sec > fadingout_end_time_sec)
+	if (GetPositionInMs() / 1000 > fadingout_end_time_sec)
 		Unload();
 }

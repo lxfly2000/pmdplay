@@ -61,11 +61,19 @@ public:
 	//……	……
 	int GetNotes(char* outstr, int al);
 	//获取总时长
-	unsigned GetLengthInSec();
+	unsigned GetLengthInMs();
 	//获取当前位置
-	unsigned GetPositionInSec();
+	unsigned GetPositionInMs();
+	//获取循环长度
+	unsigned GetLoopLengthInMs();
 	//获取循环次数
 	int GetLoopedTimes();
+	//获取速度
+	int GetTempo();
+	//获取当前Tick
+	int GetPositionInCount();
+	//获取小节长度
+	int GetXiaojieLength();
 	enum PlayerStatus { nofile, paused, playing, fadingout };
 	//获取播放状态
 	PlayerStatus GetPlayerStatus();
@@ -78,18 +86,14 @@ protected:
 	void OnPlay();
 	void OnFadingOut();
 private:
-	unsigned played_buffers;
-	unsigned position_in_sec;
-	unsigned length_in_sec;
+	unsigned length_in_ms, loop_in_ms;
 	PlayerStatus playerstatus;
 	unsigned fadingout_end_time_sec;
 	short* soundbuffer;//PMD_Renderer那个函数用的类型是short我表示难以理解……
 	int bytesof_soundbuffer;//字节长度
 
 	int m_channels;
-	int m_bytesPerSample;
 	int m_bytesPerVar;
-	int m_byteRate;
 	int keyState[NumOfAllPart];
 	uchar* pSourceData;
 	int lengthSourceData;

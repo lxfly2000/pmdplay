@@ -9,8 +9,8 @@
 #pragma comment(lib,"XAudio2.lib")
 
 #define APP_NAME	"Professional Music Driver (P.M.D.) Player"
-#define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用鼓声，请将下列文件"\
-					"\n\t2608_bd.wav\n\t2608_hh.wav\n\t2608_rim.wav\n\t2608_sd.wav\n\t2608_tom.wav\n\t2608_top.wav\n"\
+#define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
+					"\n\t2608_bd.wav\n\t2608_sd.wav\n\t2608_top.wav\n\t2608_hh.wav\n\t2608_tom.wav\n\t2608_rim.wav\n"\
 					"  放至此程序目录下。（可由 -yr 命令获得）\n\n"\
 					"本程序参考了以下来源：\n"\
 					" Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n"\
@@ -23,6 +23,7 @@
 #define CHANNELS	2//通道数
 #define BYTE_RATE	(SAMPLE_RATE*BYTES_PER_VAR*CHANNELS)//每秒有多少字节通过
 #define FADEOUT_TIME_SEC	5
+#define STEPS_PER_BAR	4
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() == PMDPlayer::playing, filepath)
@@ -62,12 +63,13 @@ private:
 	int windowed;
 	int screenWidth, screenHeight;
 	int posYLowerText;
-	int minute = 0, second = 0;
+	int minute = 0, second = 0, millisecond = 0;
+	int xiaojie = 0, step = 0, tick = 0, ticksPerStep = 4;
 	bool running = true;
 	TCHAR filepath[MAX_PATH] = TEXT("");
 	TCHAR szStr[200] = TEXT("");
 	TCHAR szTimeInfo[80] = TEXT("");
-	TCHAR szLastTime[8] = TEXT(" 0:00");
+	TCHAR szLastTime[10] = TEXT("0:00.000");
 };
 
 PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20)
@@ -109,7 +111,7 @@ int PMDPlay::Init(TCHAR* param)
 
 	posYLowerText = screenHeight - (GetFontSize() + 4) * 2;
 
-	pmdscreen.SetKeyNotesSrc(player.GetKeysState(), 16);
+	pmdscreen.SetKeyNotesSrc(player.GetKeysState(), 10);
 	pmdscreen.SetRectangle(4, 18, w - 8, posYLowerText - 18);
 	USTR;
 
@@ -193,18 +195,29 @@ bool PMDPlay::LoadFromString(TCHAR* str)
 
 void PMDPlay::UpdateTextLastTime()
 {
-	second = player.GetLengthInSec();
+	millisecond = player.GetLengthInMs();
+	second = millisecond / 1000;
+	millisecond %= 1000;
 	minute = second / 60;
 	second %= 60;
-	sprintfDx(szLastTime, TEXT("%2d:%02d"), minute, second);
+	sprintfDx(szLastTime, TEXT("%d:%02d.%03d"), minute, second, millisecond);
+	ticksPerStep = player.GetXiaojieLength() / STEPS_PER_BAR;
 }
 
 void PMDPlay::DrawTime()
 {
-	second = player.GetPositionInSec();
+	millisecond = player.GetPositionInMs();
+	second = millisecond / 1000;
+	millisecond %= 1000;
 	minute = second / 60;
 	second %= 60;
-	sprintfDx(szTimeInfo, TEXT("循环：%2d 时间：%d:%02d/%s"), player.GetLoopedTimes(), minute, second, szLastTime);
+	tick = player.GetPositionInCount();
+	step = tick / ticksPerStep;
+	tick %= ticksPerStep;
+	xiaojie = step / STEPS_PER_BAR;
+	step %= STEPS_PER_BAR;
+	sprintfDx(szTimeInfo, TEXT("BPM:%3d 循环：%2d 时间：%d:%02d.%03d/%s Tick:%3d:%d:%02d"), player.GetTempo(),
+		player.GetLoopedTimes(), minute, second, millisecond, szLastTime, xiaojie, step, tick);
 	DrawString(0, 0, szTimeInfo, 0x00FFFFFF);
 }
 
@@ -230,7 +243,7 @@ void PMDPlay::OnLoop()
 	//S
 	if (KeyReleased(KEY_INPUT_S)) { player.Unload(); USTR; }
 	//F
-	if (KeyReleased(KEY_INPUT_F)) { player.FadeoutAndStop(5000); USTR; }
+	if (KeyReleased(KEY_INPUT_F)) { player.FadeoutAndStop(FADEOUT_TIME_SEC * 1000); USTR; }
 	//O
 	if (KeyReleased(KEY_INPUT_O))
 	{
@@ -264,6 +277,7 @@ void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR 
 
 int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	SetThreadUILanguage(GetUserDefaultUILanguage());
 	if (lstrcmpi(TEXT("-yr"), lpCmdLine) == 0)
 	{
 		std::ofstream f;
