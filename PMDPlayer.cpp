@@ -69,7 +69,7 @@ PMDPlayer::~PMDPlayer()
 	Release();
 }
 
-bool PMDPlayer::subthread_on = false;
+HANDLE PMDPlayer::hSubPlayback = NULL;
 
 int PMDPlayer::LoadFromFile(const char *filepath)
 {
@@ -100,7 +100,7 @@ int PMDPlayer::Play()
 {
 	if (playerstatus != paused)return -1;
 	playerstatus = playing;
-	_beginthread(PMDPlayer::_Subthread_Playback, 0, this);
+	hSubPlayback = (HANDLE)_beginthreadex(NULL, 0, PMDPlayer::_Subthread_Playback, this, NULL, NULL);
 	return 0;
 }
 
@@ -114,7 +114,12 @@ int PMDPlayer::Pause()
 void PMDPlayer::Unload()
 {
 	playerstatus = nofile;
-	while (subthread_on);
+	WaitForSingleObject(hSubPlayback, INFINITE);
+	if (hSubPlayback)
+	{
+		CloseHandle(hSubPlayback);
+		hSubPlayback = NULL;
+	}
 	pmd_stop();
 }
 
@@ -197,16 +202,13 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 void PMDPlayer::Release()
 {
 	Unload();
-	while (subthread_on);
 	delete[]soundbuffer;
 }
 
-void PMDPlayer::_Subthread_Playback(void *param)
+unsigned WINAPI PMDPlayer::_Subthread_Playback(void *param)
 {
-	subthread_on = true;
 	((PMDPlayer*)param)->_LoopPlayback();
-	subthread_on = false;
-	_endthread();
+	return 0;
 }
 
 void PMDPlayer::_LoopPlayback()

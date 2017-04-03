@@ -79,7 +79,7 @@ public:
 	PlayerStatus GetPlayerStatus();
 
 	//多线程调用
-	static void _Subthread_Playback(void* param);
+	static unsigned WINAPI _Subthread_Playback(void* param);
 	//多线程播放函数
 	void _LoopPlayback();
 protected:
@@ -98,6 +98,6 @@ private:
 	uchar* pSourceData;
 	int lengthSourceData;
 	XAPlayer x;
-	static bool subthread_on;
+	static HANDLE hSubPlayback;
 };
 
