@@ -276,5 +276,5 @@ void PMDPlayer::OnFadingOut()
 {
 	OnPlay();
 	if (GetPositionInMs() / 1000 > fadingout_end_time_sec)
-		Unload();
+		playerstatus = fadedout;
 }

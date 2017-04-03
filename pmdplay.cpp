@@ -26,7 +26,7 @@
 #define STEPS_PER_BAR	4
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
-#define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() == PMDPlayer::playing, filepath)
+#define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() >= PMDPlayer::playing, filepath)
 
 char strANSIbuf[MAX_PATH] = "";
 char* A(const TCHAR* str)
@@ -135,7 +135,6 @@ int PMDPlay::Init(TCHAR* param)
 
 int PMDPlay::End()
 {
-	player.Unload();
 	return DxLib_End();
 }
 
@@ -241,7 +240,7 @@ void PMDPlay::OnLoop()
 	//Space
 	if (KeyReleased(KEY_INPUT_SPACE))OnCommandPlay();
 	//S
-	if (KeyReleased(KEY_INPUT_S)) { player.Unload(); USTR; }
+	if (KeyReleased(KEY_INPUT_S) || player.GetPlayerStatus() == PMDPlayer::fadedout) { player.Unload(); USTR; }
 	//F
 	if (KeyReleased(KEY_INPUT_F)) { player.FadeoutAndStop(FADEOUT_TIME_SEC * 1000); USTR; }
 	//O
@@ -249,7 +248,6 @@ void PMDPlay::OnLoop()
 	{
 		if (ChooseFile(hWindowDx, filepath, NULL, pcszPMDType, NULL))
 		{
-			player.Unload();
 			OnLoadFile(filepath);
 		}
 	}

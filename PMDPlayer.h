@@ -74,7 +74,7 @@ public:
 	int GetPositionInCount();
 	//获取小节长度
 	int GetXiaojieLength();
-	enum PlayerStatus { nofile, paused, playing, fadingout };
+	enum PlayerStatus { nofile, paused, playing, fadingout, fadedout };
 	//获取播放状态
 	PlayerStatus GetPlayerStatus();
 
