@@ -77,6 +77,8 @@ public:
 	enum PlayerStatus { nofile, paused, playing, fadingout, fadedout };
 	//获取播放状态
 	PlayerStatus GetPlayerStatus();
+	const int *GetKeyVoice();
+	const int *GetKeyVolume();
 
 	//多线程调用
 	static unsigned WINAPI _Subthread_Playback(void* param);
@@ -94,7 +96,9 @@ private:
 
 	int m_channels;
 	int m_bytesPerVar;
-	int keyState[NumOfAllPart];
+	int keyState[NumOfAllPart];//音高
+	int voiceState[NumOfAllPart];//音色
+	int volumeState[NumOfAllPart];//音量
 	uchar* pSourceData;
 	int lengthSourceData;
 	XAPlayer x;

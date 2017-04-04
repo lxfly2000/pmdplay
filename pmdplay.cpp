@@ -24,6 +24,7 @@
 #define BYTE_RATE	(SAMPLE_RATE*BYTES_PER_VAR*CHANNELS)//每秒有多少字节通过
 #define FADEOUT_TIME_SEC	5
 #define STEPS_PER_BAR	4
+#define NUM_SHOW_CHANNELS 10
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() >= PMDPlayer::playing, filepath)
@@ -70,10 +71,16 @@ private:
 	TCHAR szStr[200] = TEXT("");
 	TCHAR szTimeInfo[80] = TEXT("");
 	TCHAR szLastTime[10] = TEXT("0:00.000");
+	bool channelOn[NumOfAllPart];
+	bool showVoiceAndVolume = false;
+	bool showVoiceOnKey = false;
+	bool showVolumeOnKey = false;
+	int keydisp_x, keydisp_y, keydisp_w, keydisp_h, keydisp_onechannel_h;
 };
 
 PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20)
 {
+	for (int i = 0; i < ARRAYSIZE(channelOn); i++)channelOn[i] = true;
 }
 
 PMDPlay* PMDPlay::_pObj = nullptr;
@@ -111,8 +118,13 @@ int PMDPlay::Init(TCHAR* param)
 
 	posYLowerText = screenHeight - (GetFontSize() + 4) * 2;
 
-	pmdscreen.SetKeyNotesSrc(player.GetKeysState(), 10);
-	pmdscreen.SetRectangle(4, 18, w - 8, posYLowerText - 18);
+	pmdscreen.SetKeyNotesSrc(&player, NUM_SHOW_CHANNELS);
+	keydisp_x = 4;
+	keydisp_y = 18;
+	keydisp_w = w - 8;
+	keydisp_h = posYLowerText - 18;
+	keydisp_onechannel_h = keydisp_h / NUM_SHOW_CHANNELS;
+	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
 	USTR;
 
 	if (param[0])
@@ -226,6 +238,10 @@ void PMDPlay::OnDraw()
 	pmdscreen.Draw();
 	DrawTime();
 	DrawString(0, posYLowerText, szStr, 0x00FFFFFF);
+	if (showVoiceAndVolume)
+		for (int i = 0; i < NUM_SHOW_CHANNELS; i++)
+			DrawFormatString(keydisp_x, keydisp_y + keydisp_onechannel_h*i, 0x00FFFFFF, TEXT("%3d %3d"),
+			player.GetKeyVoice()[i], player.GetKeyVolume()[i]);
 	ScreenFlip();
 }
 
@@ -251,6 +267,12 @@ void PMDPlay::OnLoop()
 			OnLoadFile(filepath);
 		}
 	}
+	//D
+	if (KeyReleased(KEY_INPUT_D)) { showVoiceAndVolume = !showVoiceAndVolume; USTR; }
+	//P
+	if (KeyPressed(KEY_INPUT_P)) { pmdscreen.showVoice = !pmdscreen.showVoice; USTR; }
+	//V
+	if (KeyPressed(KEY_INPUT_V)) { pmdscreen.showVolume = !pmdscreen.showVolume; USTR; }
 	//I
 	if (KeyReleased(KEY_INPUT_I))
 	{
@@ -271,13 +293,26 @@ void PMDPlay::OnLoop()
 			else break;
 		}
 	}
+	for (int i = 0; i < 10; i++)
+		if (KeyReleased(KEY_INPUT_1 + i))
+		{
+			channelOn[i] = !channelOn[i];
+			if (i == 9)
+				getopenwork()->effflag = !channelOn[i];
+			else
+				channelOn[i] ? maskoff(i) : maskon(i);
+		}
+	if (KeyReleased(KEY_INPUT_R))
+		setrhythmwithssgeffect(channelOn[10] = !channelOn[10]);
 }
 
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
 {
 	if (strlenDx(path) > 80)
 		path = strrchrDx(path, TEXT('\\')) + 1;
-	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开文件 Esc:退出 F:淡出 I:文件信息\n%s：%s"),
+	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开文件 Esc:退出 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:音量[%s]\n%s：%s"),
+		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
+		pmdscreen.showVolume ? TEXT("开") : TEXT("关"),
 		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
 }
 

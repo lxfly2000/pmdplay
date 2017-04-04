@@ -137,6 +137,16 @@ const int *PMDPlayer::GetKeysState()
 	return keyState;
 }
 
+const int *PMDPlayer::GetKeyVoice()
+{
+	return voiceState;
+}
+
+const int *PMDPlayer::GetKeyVolume()
+{
+	return volumeState;
+}
+
 int PMDPlayer::GetNotes(char *outstr, int al)
 {
 	if (playerstatus == nofile)return -1;
@@ -243,10 +253,17 @@ void PMDPlayer::OnPlay()
 	x.Play((BYTE*)soundbuffer, bytesof_soundbuffer);
 	while (x.GetQueuedBuffersNum());
 	for (int i = 0; i < ARRAYSIZE(keyState); i++)
+	{
+		//*(unsigned short*)(keyState + i) = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
+		//((unsigned char*)(keyState + i))[3] = getpartwork(i)->voicenum;
+		//((unsigned char*)(keyState + i))[4] = getpartwork(i)->volume;
 		//虽然是整型的，但该变量只用了一个字节，低四位表示一个八度内的半音（Semitone，https://zh.wikipedia.org/wiki/半音 ），
 		//高四位表示在哪个八度（Octave，https://zh.wikipedia.org/wiki/純八度 ），因此实际的音高是低四位＋高四位×12.
 		//这个问题害得我折腾了一下午……原作者也不在注释上写明白，妈的法克！！(╯‵□′)╯︵┻━┻
 		keyState[i] = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
+		voiceState[i] = getpartwork(i)->voicenum;
+		volumeState[i] = getpartwork(i)->volume;
+	}
 	keyState[9] = getopenwork()->kshot_dat % 128;//SSG鼓声
 #ifdef NOTE_PITCH_NOT_CORRECT
 	if (GetAsyncKeyState(VK_UP)&1)look++;

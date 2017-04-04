@@ -1,4 +1,5 @@
 #pragma once
+#include"PMDPlayer.h"
 class PMDScreen
 {
 public:
@@ -6,7 +7,7 @@ public:
 	//绘制键盘图
 	void Draw();
 	//pKeys: 设置表示按键的数组，num: 设置要绘制前多少个通道
-	void SetKeyNotesSrc(const int *pkeys, int num);
+	void SetKeyNotesSrc(PMDPlayer *pp, int num);
 	//设置绘图区域，如果不指定高度的话则会自动按标准比例计算高度
 	void SetRectangle(int _x, int _y, int _w, int _h = 0);
 	//设置绘图区域，如果不指定高度的话则会自动按标准比例计算高度
@@ -19,6 +20,8 @@ public:
 	void SetWhiteKeyPressedColor(int color);
 	//设置黑键按下时的颜色，不支持透明 (0x00RRGGBB)
 	void SetBlackKeyPressedColor(int color);
+	bool showVoice;//设置是否显示音色
+	bool showVolume;//设置是否显示音量
 private:
 	//绘制白键
 	void DrawWhiteKey();
@@ -33,8 +36,9 @@ private:
 	int colorWhiteKey, colorBlackKey, colorWhiteKeyPressed, colorBlackKeyPressed;
 	static int tableWhiteKey[];
 	static int tableBlackKey[];
+	static int keyColors[];
 
-	const int *channel_key_notes;//各通道按下的键
+	PMDPlayer* pplayer;
 	int num_channel;//要绘制前多少个通道
 };
 
