@@ -261,7 +261,15 @@ void PMDPlay::OnLoop()
 			strcat(info, singleinfo);
 			if (singleinfo[0])strcat(info, "\n");
 		}
-		MessageBoxA(hWindowDx, info, "文件信息", MB_ICONINFORMATION);
+		TCHAR unicode_str[1024];
+		int codepage = CP_ACP;
+		while (1)
+		{
+			MultiByteToWideChar(codepage, 0, info, ARRAYSIZE(info), unicode_str, ARRAYSIZE(unicode_str));
+			if (MessageBox(hWindowDx, unicode_str, TEXT("文件信息（按取消切换 Shift-JIS 编码）"), MB_ICONINFORMATION | MB_OKCANCEL) == IDCANCEL)
+				codepage ^= 932;
+			else break;
+		}
 	}
 }
 
