@@ -269,6 +269,10 @@ void PMDPlay::OnLoop()
 	}
 	//D
 	if (KeyReleased(KEY_INPUT_D)) { showVoiceAndVolume = !showVoiceAndVolume; USTR; }
+	//Left
+	if (KeyReleased(KEY_INPUT_LEFT)&&player.GetPlayerStatus()!=PMDPlayer::nofile)setpos(max(getpos() - 5000, 0));
+	//Right
+	if (KeyReleased(KEY_INPUT_RIGHT)&&player.GetPlayerStatus()!=PMDPlayer::nofile)setpos(getpos() + 5000);
 	//P
 	if (KeyPressed(KEY_INPUT_P)) { pmdscreen.showVoice = !pmdscreen.showVoice; USTR; }
 	//V
