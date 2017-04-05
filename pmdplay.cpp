@@ -24,7 +24,7 @@
 #define BYTE_RATE	(SAMPLE_RATE*BYTES_PER_VAR*CHANNELS)//每秒有多少字节通过
 #define FADEOUT_TIME_SEC	5
 #define STEPS_PER_BAR	4
-#define NUM_SHOW_CHANNELS 10
+#define NUM_SHOW_CHANNELS 9
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() >= PMDPlayer::playing, filepath)

@@ -264,7 +264,7 @@ void PMDPlayer::OnPlay()
 		voiceState[i] = getpartwork(i)->voicenum;
 		volumeState[i] = getpartwork(i)->volume;
 	}
-	keyState[9] = getopenwork()->kshot_dat % 128;//SSG¹ÄÉù
+	if (!getopenwork()->effflag)keyState[8] = getopenwork()->kshot_dat % 128;//SSG¹ÄÉù
 #ifdef NOTE_PITCH_NOT_CORRECT
 	if (GetAsyncKeyState(VK_UP)&1)look++;
 	if (GetAsyncKeyState(VK_DOWN)&1)look--;
