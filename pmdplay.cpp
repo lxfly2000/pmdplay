@@ -240,8 +240,8 @@ void PMDPlay::OnDraw()
 	DrawString(0, posYLowerText, szStr, 0x00FFFFFF);
 	if (showVoiceAndVolume)
 		for (int i = 0; i < NUM_SHOW_CHANNELS; i++)
-			DrawFormatString(keydisp_x, keydisp_y + keydisp_onechannel_h*i, 0x00FFFFFF, TEXT("%3d %3d"),
-			player.GetKeyVoice()[i], player.GetKeyVolume()[i]);
+			DrawFormatString(keydisp_x, keydisp_y + keydisp_onechannel_h*i, 0x00FFFFFF, TEXT("%3d %3d %3d"),
+			player.GetKeysState()[i], player.GetKeyVoice()[i], player.GetKeyVolume()[i]);
 	ScreenFlip();
 }
 
