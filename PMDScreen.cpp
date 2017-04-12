@@ -12,7 +12,7 @@
 
 
 PMDScreen::PMDScreen():colorWhiteKey(0x00001A80), colorBlackKey(0x00001A80),
-colorWhiteKeyPressed(0x00FFFF00), colorBlackKeyPressed(0x00FFFF00)
+colorWhiteKeyPressed(keyColors[0]), colorBlackKeyPressed(keyColors[0]), showVoice(false), showVolume(false)
 {
 	SetRectangle(0, 0, 640);
 }
@@ -20,7 +20,7 @@ colorWhiteKeyPressed(0x00FFFF00), colorBlackKeyPressed(0x00FFFF00)
 
 void PMDScreen::Draw()
 {
-	if (!channel_key_notes)return;
+	if (!pplayer)return;
 	DrawWhiteKey();
 	DrawBlackKey();
 }
@@ -36,8 +36,13 @@ void PMDScreen::DrawWhiteKey()
 				tempX = drawWidth_keyWhite*GetNumWhiteKey(i) + x;
 				tempY = drawLength_keyWhite*j + y;
 				DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, colorWhiteKey, FALSE);
-				if (channel_key_notes[j] == i)
-					DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, colorWhiteKeyPressed, TRUE);
+				if ((pplayer->GetKeysState()[j] & 0xFFFF) == i)
+				{
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
+					DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorWhiteKeyPressed, TRUE);
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+					//DrawFormatString(tempX, tempY, 0x00FFFFFF, TEXT("%d %d"), pplayer->GetKeyVoice()[j], pplayer->GetKeyVolume()[j]);
+				}
 			}
 }
 
@@ -50,8 +55,13 @@ void PMDScreen::DrawBlackKey()
 				tempX = drawWidth_keyWhite*GetNumBlackKey(i) + start_keyBlackX;
 				tempY = drawLength_keyWhite*j + y;
 				DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, colorBlackKey, TRUE);
-				if (channel_key_notes[j] == i)
-					DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, colorBlackKeyPressed, TRUE);
+				if (pplayer->GetKeysState()[j] == i)
+				{
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
+					DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorBlackKeyPressed, TRUE);
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+					//DrawFormatString(tempX, tempY, 0x00FFFFFF, TEXT("%d %d"), pplayer->GetKeyVoice()[j], pplayer->GetKeyVolume()[j]);
+				}
 			}
 }
 
@@ -90,14 +100,19 @@ int PMDScreen::tableBlackKey[] = {
 	-1,70,-1,71,-1,-1,73,-1
 };
 
+int PMDScreen::keyColors[8] = {
+	0x00FFFF00,0x0000FF00,0x0000FFFF,0x000000FF,
+	0x00FF00FF,0x00FF0000,0x00FF7F3F,0x00FF007F
+};
+
 int PMDScreen::GetNumBlackKey(int n)
 {
 	return tableBlackKey[n];
 }
 
-void PMDScreen::SetKeyNotesSrc(const int *pkeys, int num)
+void PMDScreen::SetKeyNotesSrc(PMDPlayer *pp, int num)
 {
-	channel_key_notes = pkeys;
+	pplayer = pp;
 	num_channel = num;
 }
 
