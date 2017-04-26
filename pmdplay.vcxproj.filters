@@ -93,9 +93,6 @@
     <ClInclude Include="fmgen\fmgenx86.h">
       <Filter>fmgen</Filter>
     </ClInclude>
-    <ClInclude Include="YM2608_RhythmFiles.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="PMDScreen.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -158,13 +155,13 @@
     <ClCompile Include="PMDPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\MyCodes\ChooseFileDialog.cpp">
+    <ClCompile Include="ChooseFileDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\MyCodes\DxKeyTrigger.cpp">
+    <ClCompile Include="DxKeyTrigger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\MyCodes\TextEncodeConvert.cpp">
+    <ClCompile Include="TextEncodeConvert.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -172,5 +169,25 @@
     <ResourceCompile Include="pmdplay.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="2608_bd.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="2608_hh.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="2608_rim.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="2608_sd.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="2608_tom.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="2608_top.wav">
+      <Filter>资源文件</Filter>
+    </Media>
   </ItemGroup>
 </Project>

@@ -2,10 +2,10 @@
 #include <DxLib.h>
 #include "PMDPlayer.h"
 #include "PMDScreen.h"
-#include "..\MyCodes\TextEncodeConvert.h"
-#include "..\MyCodes\DxKeyTrigger.h"
-#include "..\MyCodes\ChooseFileDialog.h"
-#include "YM2608_RhythmFiles.h"
+#include "TextEncodeConvert.h"
+#include "DxKeyTrigger.h"
+#include "ChooseFileDialog.h"
+#include "resource.h"
 #pragma comment(lib,"XAudio2.lib")
 
 #define APP_NAME	"Professional Music Driver (P.M.D.) Player"
@@ -326,10 +326,26 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 	if (lstrcmpi(TEXT("-yr"), lpCmdLine) == 0)
 	{
 		std::ofstream f;
-		for (int i = 0; i < ARRAYSIZE(ym2608_files) / 2; i++)
+		int files_id[] = {
+			IDR_WAVE_2608_BD,IDR_WAVE_2608_HH,IDR_WAVE_2608_RIM,
+			IDR_WAVE_2608_SD,IDR_WAVE_2608_TOM,IDR_WAVE_2608_TOP
+		};
+		char *files_name[] = {
+			"2608_bd.wav","2608_hh.wav","2608_rim.wav",
+			"2608_sd.wav","2608_tom.wav","2608_top.wav"
+		};
+		for (int i = 0; i < ARRAYSIZE(files_id); i++)
 		{
-			f.open(ym2608_files[i * 2], std::ios::binary | std::ios::out);
-			if (f)f.write(ym2608_files[i * 2 + 1], ym2608_files_size[i]);
+			f.open(files_name[i], std::ios::binary | std::ios::out);
+			if (f)
+			{
+				HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
+				DWORD bytesize = SizeofResource(NULL, hRes);
+				HGLOBAL hData = LoadResource(NULL, hRes);
+				LPVOID ptr = LockResource(hData);
+				f.write((char*)ptr, bytesize);
+				FreeResource(hData);
+			}
 			f.close();
 		}
 		return 0;
