@@ -213,7 +213,7 @@ void PMDPlay::Convert()
 		aoutfile++;
 	}
 	if (!player.Convert(asrcfile, aoutfile, loopcount, fadetime))
-		AppLogAdd(TEXT("无法转换文件：%s\n"), asrcfile);
+		AppLogAdd(TEXT("无法转换文件：%s\n"), __wargv[2]);
 }
 
 LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
