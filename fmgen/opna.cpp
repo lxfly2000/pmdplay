@@ -1486,6 +1486,67 @@ bool OPNA::LoadRhythmSample(const char* path)
 	return true;
 }
 
+bool OPNA::LoadRhythmSampleMem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim)
+{
+	char* mems[6] = { bd,sd,top,hh,tom,rim };
+	int i;
+	for (i = 0; i < 6; i++)
+		rhythm[i].pos = ~0;
+	for (i = 0; i < 6; i++)
+	{
+		struct
+		{
+			uint32 chunksize;
+			uint16 tag;
+			uint16 nch;
+			uint32 rate;
+			uint32 avgbytes;
+			uint16 align;
+			uint16 bps;
+			uint16 size;
+		} whdr;
+		uint8 subchunkname[4];
+		int memcursor = 0x10;
+		memcpy(&whdr, &mems[i][memcursor], sizeof(whdr));
+		memcursor += sizeof(whdr);
+		uint32 fsize = 4 + whdr.chunksize - sizeof(whdr);
+		do {
+			memcursor += fsize;
+			memcpy(subchunkname, &mems[i][memcursor], 4);
+			memcursor += 4;
+			memcpy(&fsize, &mems[i][memcursor], 4);
+			memcursor += 4;
+		} while (memcmp("data", subchunkname, 4));
+
+		fsize /= 2;
+		if (fsize >= 0x100000 || whdr.tag != 1 || whdr.nch != 1)
+			break;
+		fsize = Max(fsize, (1<<31)/1024);
+
+		delete rhythm[i].sample;
+		rhythm[i].sample = new int16[fsize];
+		if (!rhythm[i].sample)
+			break;
+
+		memcpy(rhythm[i].sample, &mems[i][memcursor], fsize * 2);
+		memcursor += fsize * 2;
+
+		rhythm[i].rate = whdr.rate;
+		rhythm[i].step = rhythm[i].rate * 1024 / rate;
+		rhythm[i].pos = rhythm[i].size = fsize * 1024;
+	}
+	if (i != 6)
+	{
+		for (i = 0; i < 6; i++)
+		{
+			delete[]rhythm[i].sample;
+			rhythm[i].sample = 0;
+		}
+		return false;
+	}
+	return true;
+}
+
 
 
 // ---------------------------------------------------------------------------

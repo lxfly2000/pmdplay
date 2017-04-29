@@ -7448,6 +7448,16 @@ bool WINAPI PMDWIN::loadrhythmsample(char *path)
 
 
 //=============================================================================
+//	リズム音の再読み込み
+//=============================================================================
+bool WINAPI PMDWIN::loadrhythmsample_mem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim)
+{
+	mstop_f();
+	return opna.LoadRhythmSampleMem(bd, sd, top, hh, tom, rim);
+}
+
+
+//=============================================================================
 //	PCM 検索ディレクトリの設定
 //=============================================================================
 bool WINAPI PMDWIN::setpcmdir(char **path)
@@ -8820,6 +8830,15 @@ __declspec(dllexport) bool WINAPI pmdwininit(char *path)
 __declspec(dllexport) bool WINAPI loadrhythmsample(char *path)
 {
 	return pmdwin->loadrhythmsample(path);
+}
+
+
+//=============================================================================
+//	（补充）从内存加载节奏声音
+//=============================================================================
+__declspec(dllexport) bool WINAPI loadrhythmsample_mem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim)
+{
+	return pmdwin->loadrhythmsample_mem(bd, sd, top, hh, tom, rim);
 }
 
 

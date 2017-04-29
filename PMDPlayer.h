@@ -38,6 +38,10 @@ public:
 	int LoadFromFile(const char* filepath);
 	//从内存加载，成功返回0
 	int LoadFromMemory(uchar* pdata, int length);
+	//从文件加载节奏声音
+	bool LoadRhythmFromDirectory(char* dir);
+	//从内存加载节奏声音
+	bool LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 	//播放，没有加载时返回-1，否则为0
 	int Play();
 	//暂停，淡出和已处于暂停状态时返回-1，否则为0

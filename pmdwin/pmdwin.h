@@ -455,6 +455,7 @@ public:
 	
 	// IFMPMD
 	bool WINAPI loadrhythmsample(char *path);
+	bool WINAPI loadrhythmsample_mem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 	bool WINAPI setpcmdir(char **path);
 	void WINAPI setpcmrate(int rate);
 	void WINAPI setppzrate(int rate);

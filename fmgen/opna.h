@@ -269,6 +269,7 @@ namespace FM
 		
 		bool	Init(uint c, uint r, bool ipflag = false, const char* rhythmpath=0);
 		bool	LoadRhythmSample(const char*);
+		bool	LoadRhythmSampleMem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 	
 		bool	SetRate(uint c, uint r, bool ipflag = false);
 		void 	Mix(Sample* buffer, int nsamples);

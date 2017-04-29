@@ -6,7 +6,7 @@
 ## 编译
 请用 Visual Studio 2017 编译，需要下载 [DxLib](http://dxlib.o.oo7.jp).
 
-# 参考的代码
+## 参考的代码
 * Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - [M.Kajihara](http://www5.airnet.ne.jp/kajapon/)
 * OPNA FM Generator - cisc
 * PPZ8 PCM Driver - UKKY
