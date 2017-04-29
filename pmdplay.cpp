@@ -8,9 +8,11 @@
 #pragma comment(lib,"XAudio2.lib")
 
 #define APP_NAME	"Professional Music Driver (P.M.D.) Player"
+#define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)]"
 #define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
-					"\n\t2608_bd.wav\n\t2608_sd.wav\n\t2608_top.wav\n\t2608_hh.wav\n\t2608_tom.wav\n\t2608_rim.wav\n"\
-					"  放至此程序目录下。（可由 -yr 命令获得）\n\n"\
+					"\n  2608_bd.wav\t2608_sd.wav\t2608_top.wav\n  2608_hh.wav\t2608_tom.wav\t2608_rim.wav\n"\
+					"  放至此程序目录下。（可由 -yr 命令获得）\n"\
+					"* Wave 转换命令：\n  " HELP_PARAM "\n\n"\
 					"本程序参考了以下来源：\n"\
 					" Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n"\
 					" OPNA FM Generator - cisc\n"\
@@ -41,6 +43,7 @@ public:
 	PMDPlay();
 	int Init(TCHAR* param);
 	void Run();
+	void Convert();
 	int End();
 private:
 	static LRESULT CALLBACK ExtraProcess(HWND, UINT, WPARAM, LPARAM);
@@ -87,8 +90,26 @@ WNDPROC PMDPlay::dxProcess = nullptr;
 
 int PMDPlay::Init(TCHAR* param)
 {
-	//程序设定
 	_pObj = this;
+
+	//加载节奏声音
+	const int files_id[] = {
+		IDR_WAVE_2608_BD,IDR_WAVE_2608_SD,IDR_WAVE_2608_TOP,
+		IDR_WAVE_2608_HH,IDR_WAVE_2608_TOM,IDR_WAVE_2608_RIM
+	};
+	char *file_mem[6] = { NULL };
+	HGLOBAL hData[6] = { NULL };
+	for (int i = 0; i < ARRAYSIZE(files_id); i++)
+	{
+		HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
+		hData[i] = LoadResource(NULL, hRes);
+		file_mem[i] = (char*)LockResource(hData[i]);
+	}
+	player.LoadRhythmFromMemory(file_mem[0], file_mem[1], file_mem[2], file_mem[3], file_mem[4], file_mem[5]);
+	for (int i = 0; i < ARRAYSIZE(files_id); i++)
+		FreeResource(hData[i]);
+
+	//程序设定
 	int w = 800, h = 600;
 	if (__argc > 1)
 	{
@@ -104,6 +125,8 @@ int PMDPlay::Init(TCHAR* param)
 			h = 720;
 			param[0] = 0;
 		}
+		else if (stricmpDx(__wargv[1], TEXT("-e")) == 0)
+			return 1;
 	}
 	SetOutApplicationLogValidFlag(FALSE);
 	ChangeWindowMode(windowed = TRUE);
@@ -130,23 +153,6 @@ int PMDPlay::Init(TCHAR* param)
 	keydisp_onechannel_h = keydisp_h / NUM_SHOW_CHANNELS;
 	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
 	USTR;
-
-	//加载节奏声音
-	const int files_id[] = {
-		IDR_WAVE_2608_BD,IDR_WAVE_2608_SD,IDR_WAVE_2608_TOP,
-		IDR_WAVE_2608_HH,IDR_WAVE_2608_TOM,IDR_WAVE_2608_RIM
-	};
-	char *file_mem[6] = { NULL };
-	HGLOBAL hData[6] = { NULL };
-	for (int i = 0; i < ARRAYSIZE(files_id); i++)
-	{
-		HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
-		hData[i] = LoadResource(NULL, hRes);
-		file_mem[i] = (char*)LockResource(hData[i]);
-	}
-	player.LoadRhythmFromMemory(file_mem[0], file_mem[1], file_mem[2], file_mem[3], file_mem[4], file_mem[5]);
-	for (int i = 0; i < ARRAYSIZE(files_id); i++)
-		FreeResource(hData[i]);
 
 	//参数播放
 	if (param[0])
@@ -175,6 +181,39 @@ void PMDPlay::Run()
 		OnLoop();
 		OnDraw();
 	}
+}
+
+void PMDPlay::Convert()
+{
+	char srcfile[MAX_PATH] = "", outfile[MAX_PATH] = "";
+	int loopcount = 1;
+	int fadetime = 5000;
+	switch (__argc)
+	{
+	case 6:fadetime = atoiDx(__wargv[5]);
+	case 5:loopcount = atoiDx(__wargv[4]);
+	case 4:strcpy(outfile, A(__wargv[3]));
+	case 3:strcpy(srcfile, A(__wargv[2])); break;
+	default:
+		AppLogAdd(TEXT("参数错误。\n"));
+		AppLogAdd(TEXT("参数格式为：" HELP_PARAM "\n"));
+		return;
+	}
+	if (strcmp(outfile, "") == 0)
+		sprintf(outfile, "%s.wav", srcfile);
+	char *asrcfile = srcfile, *aoutfile = outfile;
+	if (asrcfile[0] == '\"')
+	{
+		asrcfile[strlen(asrcfile) - 1] = 0;
+		asrcfile++;
+	}
+	if (aoutfile[0] == '\"')
+	{
+		aoutfile[strlen(aoutfile) - 1] = 0;
+		aoutfile++;
+	}
+	if (!player.Convert(asrcfile, aoutfile, loopcount, fadetime))
+		AppLogAdd(TEXT("无法转换文件：%s\n"), asrcfile);
 }
 
 LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -347,7 +386,10 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 	}
 
 	PMDPlay p;
-	if (p.Init(lpCmdLine) == 0)
-		p.Run();
+	switch (p.Init(lpCmdLine))
+	{
+	case 0:p.Run(); break;
+	case 1:p.Convert(); break;
+	}
 	return p.End();
 }

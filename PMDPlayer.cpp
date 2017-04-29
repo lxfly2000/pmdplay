@@ -106,6 +106,64 @@ bool PMDPlayer::LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, ch
 	return loadrhythmsample_mem(bd, sd, top, hh, tom, rim);
 }
 
+bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
+{
+	struct WaveStructure
+	{
+		char strRIFF[4];
+		int chunkSize;
+		char strFormat[4];
+		char strFmt[4];
+		int subchunk1Size;
+		short audioFormat;
+		short numChannels;
+		int sampleRate;
+		int byteRate;
+		short blockAlign;
+		short bpsample;//Bits per sample
+		char strData[4];
+		int subchunk2Size;//Data size£¨×Ö½ÚÊý£©
+	};
+	WaveStructure wavfileheader=
+	{
+		'R','I','F','F',//strRIFF
+		0,//chunkSize
+		'W','A','V','E',//strFormat
+		'f','m','t',' ',//strFmt
+		16,//subchunk1Size
+		WAVE_FORMAT_PCM,//audioFormat
+		(short)m_channels,//numChannels
+		m_sampleRate,//sampleRate
+		m_sampleRate*m_channels*m_bytesPerVar,//byteRate
+		(short)(m_channels*m_bytesPerVar),//blockAlign
+		(short)(m_bytesPerVar*8),//bpsample
+		'd','a','t','a',//strData
+		0//subchunk2Size
+	};
+	if (LoadFromFile(srcfile))return false;
+	std::fstream f(outfile, std::ios::out | std::ios::binary);
+	f.seekp(sizeof wavfileheader);
+	while (GetLoopedTimes() < loops)
+	{
+		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+		f.write((char*)soundbuffer, bytesof_soundbuffer);
+		wavfileheader.subchunk2Size += bytesof_soundbuffer;
+	}
+	fadingout_end_time_sec = (GetPositionInMs() + fadetime) / 1000;
+	fadeout2(fadetime);
+	while (GetPositionInMs() / 1000 < fadingout_end_time_sec)
+	{
+		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+		f.write((char*)soundbuffer, bytesof_soundbuffer);
+		wavfileheader.subchunk2Size += bytesof_soundbuffer;
+	}
+	wavfileheader.chunkSize = 36 + wavfileheader.subchunk2Size;
+	f.seekp(0);
+	f.write((char*)&wavfileheader, sizeof wavfileheader);
+	Unload();
+	return true;
+}
+
 int PMDPlayer::Play()
 {
 	if (playerstatus != paused)return -1;
@@ -208,6 +266,7 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 {
 	m_channels = nChannel;
 	m_bytesPerVar = bytesPerVar;
+	m_sampleRate = sampleRate;
 	bytesof_soundbuffer = sampleRate*bytesPerVar*nChannel*buffer_time_ms / 1000;
 	soundbuffer = reinterpret_cast<decltype(soundbuffer)>(new BYTE[bytesof_soundbuffer]);
 	playerstatus = nofile;

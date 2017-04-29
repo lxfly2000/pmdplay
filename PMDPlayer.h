@@ -42,6 +42,8 @@ public:
 	bool LoadRhythmFromDirectory(char* dir);
 	//从内存加载节奏声音
 	bool LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
+	//转换PMD格式文件到WAV
+	bool Convert(char *srcfile, char *outfile, int loops, int fadetime);
 	//播放，没有加载时返回-1，否则为0
 	int Play();
 	//暂停，淡出和已处于暂停状态时返回-1，否则为0
@@ -100,6 +102,7 @@ private:
 
 	int m_channels;
 	int m_bytesPerVar;
+	int m_sampleRate;
 	int keyState[NumOfAllPart];//音高
 	int voiceState[NumOfAllPart];//音色
 	int volumeState[NumOfAllPart];//音量
