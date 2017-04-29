@@ -9,6 +9,19 @@
 #define IDR_WAVE_2608_TOM               105
 #define IDR_WAVE_2608_TOP               106
 
+#define APP_VERSION_MAJOR				1
+#define APP_VERSION_MINOR				2
+#define APP_VERSION_REVISION			0
+#define APP_VERSION_BUILD				2
+
+#define RC_STR(x)						#x
+#define _RC_STR(x)						RC_STR(x)
+#define APP_VERSION_NUMBER				APP_VERSION_MAJOR,APP_VERSION_MINOR,APP_VERSION_REVISION,APP_VERSION_BUILD
+#define APP_VERSION_STRING				_RC_STR(APP_VERSION_MAJOR) "."\
+										_RC_STR(APP_VERSION_MINOR) "."\
+										_RC_STR(APP_VERSION_REVISION) "."\
+										_RC_STR(APP_VERSION_BUILD)
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

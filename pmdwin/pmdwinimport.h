@@ -353,6 +353,7 @@ __declspec(dllimport) int WINAPI getversion(void);
 __declspec(dllimport) int WINAPI getinterfaceversion(void);
 __declspec(dllimport) bool WINAPI pmdwininit(char *path);
 __declspec(dllimport) bool WINAPI loadrhythmsample(char *path);
+__declspec(dllimport) bool WINAPI loadrhythmsample_mem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 __declspec(dllimport) bool WINAPI setpcmdir(char **path);
 __declspec(dllimport) void WINAPI setpcmrate(int rate);
 __declspec(dllimport) void WINAPI setppzrate(int rate);

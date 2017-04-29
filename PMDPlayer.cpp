@@ -96,6 +96,16 @@ int PMDPlayer::LoadFromMemory(uchar *pdata, int length)
 	return r;
 }
 
+bool PMDPlayer::LoadRhythmFromDirectory(char* dir)
+{
+	return loadrhythmsample(dir);
+}
+
+bool PMDPlayer::LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, char* tom, char* rim)
+{
+	return loadrhythmsample_mem(bd, sd, top, hh, tom, rim);
+}
+
 int PMDPlayer::Play()
 {
 	if (playerstatus != paused)return -1;

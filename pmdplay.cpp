@@ -1,5 +1,4 @@
-﻿#include <fstream>
-#include <DxLib.h>
+﻿#include <DxLib.h>
 #include "PMDPlayer.h"
 #include "PMDScreen.h"
 #include "TextEncodeConvert.h"
@@ -88,6 +87,7 @@ WNDPROC PMDPlay::dxProcess = nullptr;
 
 int PMDPlay::Init(TCHAR* param)
 {
+	//程序设定
 	_pObj = this;
 	int w = 800, h = 600;
 	if (__argc > 1)
@@ -115,9 +115,13 @@ int PMDPlay::Init(TCHAR* param)
 	GetDrawScreenSize(&screenWidth, &screenHeight);
 	if (DxLib_Init())return -1;
 	SetDrawScreen(DX_SCREEN_BACK);
+	hWindowDx = GetMainWindowHandle();
+	dxProcess = (WNDPROC)GetWindowLongPtr(hWindowDx, GWLP_WNDPROC);
+	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
+	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
 
+	//界面显示设定
 	posYLowerText = screenHeight - (GetFontSize() + 4) * 2;
-
 	pmdscreen.SetKeyNotesSrc(&player, NUM_SHOW_CHANNELS);
 	keydisp_x = 4;
 	keydisp_y = 18;
@@ -127,6 +131,24 @@ int PMDPlay::Init(TCHAR* param)
 	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
 	USTR;
 
+	//加载节奏声音
+	const int files_id[] = {
+		IDR_WAVE_2608_BD,IDR_WAVE_2608_SD,IDR_WAVE_2608_TOP,
+		IDR_WAVE_2608_HH,IDR_WAVE_2608_TOM,IDR_WAVE_2608_RIM
+	};
+	char *file_mem[6] = { NULL };
+	HGLOBAL hData[6] = { NULL };
+	for (int i = 0; i < ARRAYSIZE(files_id); i++)
+	{
+		HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
+		hData[i] = LoadResource(NULL, hRes);
+		file_mem[i] = (char*)LockResource(hData[i]);
+	}
+	player.LoadRhythmFromMemory(file_mem[0], file_mem[1], file_mem[2], file_mem[3], file_mem[4], file_mem[5]);
+	for (int i = 0; i < ARRAYSIZE(files_id); i++)
+		FreeResource(hData[i]);
+
+	//参数播放
 	if (param[0])
 	{
 		if (param[0] == '\"')
@@ -137,11 +159,6 @@ int PMDPlay::Init(TCHAR* param)
 		else strcpyDx(filepath, param);
 		if (OnLoadFile(filepath))OnCommandPlay();
 	}
-
-	hWindowDx = GetMainWindowHandle();
-	dxProcess = (WNDPROC)GetWindowLongPtr(hWindowDx, GWLP_WNDPROC);
-	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
-	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
 	return 0;
 }
 
@@ -325,29 +342,7 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 	SetThreadUILanguage(GetUserDefaultUILanguage());
 	if (lstrcmpi(TEXT("-yr"), lpCmdLine) == 0)
 	{
-		std::ofstream f;
-		int files_id[] = {
-			IDR_WAVE_2608_BD,IDR_WAVE_2608_HH,IDR_WAVE_2608_RIM,
-			IDR_WAVE_2608_SD,IDR_WAVE_2608_TOM,IDR_WAVE_2608_TOP
-		};
-		char *files_name[] = {
-			"2608_bd.wav","2608_hh.wav","2608_rim.wav",
-			"2608_sd.wav","2608_tom.wav","2608_top.wav"
-		};
-		for (int i = 0; i < ARRAYSIZE(files_id); i++)
-		{
-			f.open(files_name[i], std::ios::binary | std::ios::out);
-			if (f)
-			{
-				HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
-				DWORD bytesize = SizeofResource(NULL, hRes);
-				HGLOBAL hData = LoadResource(NULL, hRes);
-				LPVOID ptr = LockResource(hData);
-				f.write((char*)ptr, bytesize);
-				FreeResource(hData);
-			}
-			f.close();
-		}
+		MessageBox(NULL, TEXT("本程序已经可以自动加载节奏声音了，无须释放文件。"), lpCmdLine, MB_ICONINFORMATION);
 		return 0;
 	}
 
