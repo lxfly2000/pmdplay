@@ -1,5 +1,5 @@
 # pmdplay
-用于 [Yamaha YM2203](https://en.wikipedia.org/wiki/Yamaha_YM2203) 和 [YM2608](https://en.wikipedia.org/wiki/Yamaha_YM2608) 的 FM 音源播放器。
+用于 [Yamaha YM2203](https://en.wikipedia.org/wiki/Yamaha_YM2203) 和 [YM2608](https://en.wikipedia.org/wiki/Yamaha_YM2608) 的 [FM](https://en.wikipedia.org/wiki/Frequency_modulation_synthesis) 音源播放器。
 
 支持的文件格式：.M, .M2 以及其他 PMD 支持的格式。
 
