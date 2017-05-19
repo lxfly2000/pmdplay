@@ -136,7 +136,7 @@ void PMDScreen::SetRectangle(int _x, int _y, int _w, int _h)
 			GetNumWhiteKey(KEY_START, true) + 1));
 	x -= drawWidth_keyWhite*GetNumWhiteKey(KEY_START, true);
 	drawLength_keyWhite = h / MAX_CHANNEL;
-	y += (_h - drawLength_keyWhite*MAX_CHANNEL) / 2;
+	y += (h - drawLength_keyWhite*MAX_CHANNEL) / 2;
 	drawWidth_keyBlack = (drawWidth_keyWhite*BLACKKEY_WIDTH / WHITEKEY_WIDTH) | 1;
 	start_keyBlackX = x + drawWidth_keyWhite - drawWidth_keyBlack / 2;
 	drawLength_keyBlack = drawLength_keyWhite*BLACKKEY_LENGTH / WHITEKEY_LENGTH;
