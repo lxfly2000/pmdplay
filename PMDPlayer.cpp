@@ -3,11 +3,11 @@
 #include<string>
 #include "PMDPlayer.h"
 #include "pmdmini.h"
+#pragma comment(lib,"XAudio2.lib")
 XAPlayer::XAPlayer(int nChannel, int sampleRate, int bytesPerVar)
 {
 	Init(nChannel, sampleRate, bytesPerVar);
 }
-
 void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
 {
 	xAudio2Engine = NULL;
@@ -56,6 +56,11 @@ int XAPlayer::GetQueuedBuffersNum()
 {
 	sourceVoice->GetState(&state);
 	return state.BuffersQueued;
+}
+
+int XAPlayer::SetPlaybackSpeed(float speed)
+{
+	return sourceVoice->SetFrequencyRatio(speed);
 }
 
 
@@ -179,6 +184,16 @@ int PMDPlayer::Pause()
 	return 0;
 }
 
+int PMDPlayer::SetPlaybackSpeed(float speed)
+{
+	return x.SetPlaybackSpeed(playbackspeed = speed);
+}
+
+float PMDPlayer::GetPlaybackSpeed()
+{
+	return playbackspeed;
+}
+
 void PMDPlayer::Unload()
 {
 	playerstatus = nofile;
@@ -276,6 +291,7 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 	getopenwork()->effflag = 0;
 	setfmcalc55k(true);
 	pmd_setrate(sampleRate);
+	playbackspeed = 1.0f;
 }
 
 void PMDPlayer::Release()

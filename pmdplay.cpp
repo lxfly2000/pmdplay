@@ -5,7 +5,8 @@
 #include "DxKeyTrigger.h"
 #include "ChooseFileDialog.h"
 #include "resource.h"
-#pragma comment(lib,"XAudio2.lib")
+
+#define IDM_APP_HELP	0x101
 
 #define APP_NAME	"Professional Music Driver (P.M.D.) Player"
 #define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)]"
@@ -52,6 +53,7 @@ private:
 	void OnDraw();
 	void OnLoop();
 	void OnDrop(HDROP hdrop);
+	void OnAbout();
 	void OnCommandPlay();
 	bool OnLoadFile(TCHAR* path);//加载文件
 
@@ -145,6 +147,8 @@ int PMDPlay::Init(TCHAR* param)
 	dxProcess = (WNDPROC)GetWindowLongPtr(hWindowDx, GWLP_WNDPROC);
 	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
 	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
+	AppendMenu(GetSystemMenu(hWindowDx, FALSE), MF_STRING, IDM_APP_HELP, TEXT("关于本程序(&A)……\tF1"));
+	SetWindowText(TEXT(APP_NAME));
 
 	//界面显示设定
 	posYLowerText = screenHeight - (GetFontSize() + 4) * 2;
@@ -224,6 +228,8 @@ LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 	switch (msg)
 	{
 	case WM_DROPFILES:PMDPlay::_pObj->OnDrop((HDROP)wp); break;
+	case WM_SYSCOMMAND:if(LOWORD(wp)==IDM_APP_HELP)SendMessage(hwnd,WM_HELP,0,0);break;
+	case WM_HELP:PMDPlay::_pObj->OnAbout(); break;
 	}
 	return CallWindowProc(dxProcess, hwnd, msg, wp, lp);
 }
@@ -247,12 +253,18 @@ void PMDPlay::OnDrop(HDROP hdrop)
 	if (OnLoadFile(filepath))OnCommandPlay();
 }
 
+void PMDPlay::OnAbout()
+{
+	MessageBox(hWindowDx, TEXT(HELP_INFO), TEXT(APP_NAME), MB_ICONINFORMATION);
+}
+
 bool PMDPlay::OnLoadFile(TCHAR *path)
 {
 	bool ok = true;
 	if (!LoadFromString(path))ok = false;
 	if (!ok)strcatDx(path, TEXT("（无效文件）"));
 	USTR;
+	player.SetPlaybackSpeed(1.0f);
 	return ok;
 }
 
@@ -310,8 +322,6 @@ void PMDPlay::OnLoop()
 	if (KeyReleased(KEY_INPUT_ESCAPE))running = false;
 	//F11
 	if (KeyReleased(KEY_INPUT_F11))ChangeWindowMode(windowed ^= TRUE);
-	//F1
-	if (KeyReleased(KEY_INPUT_F1))MessageBox(hWindowDx, TEXT(HELP_INFO), TEXT(APP_NAME), MB_ICONINFORMATION);
 	//Space
 	if (KeyReleased(KEY_INPUT_SPACE))OnCommandPlay();
 	//S
@@ -367,6 +377,9 @@ void PMDPlay::OnLoop()
 		}
 	if (KeyReleased(KEY_INPUT_R))
 		setrhythmwithssgeffect(channelOn[10] = !channelOn[10]);
+	if (KeyReleased(KEY_INPUT_Z))player.SetPlaybackSpeed(player.GetPlaybackSpeed()*2.0f);
+	if (KeyReleased(KEY_INPUT_X))player.SetPlaybackSpeed(1.0f);
+	if (KeyReleased(KEY_INPUT_C))player.SetPlaybackSpeed(player.GetPlaybackSpeed()/2.0f);
 }
 
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)

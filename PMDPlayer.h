@@ -12,6 +12,7 @@ public:
 	void Init(int nChannel, int sampleRate, int bytesPerVar);
 	void Release();
 	void Play(BYTE* buf, int length);
+	int SetPlaybackSpeed(float);
 	int GetQueuedBuffersNum();
 private:
 	IXAudio2*xAudio2Engine;
@@ -48,6 +49,10 @@ public:
 	int Play();
 	//暂停，淡出和已处于暂停状态时返回-1，否则为0
 	int Pause();
+	//设置变频的播放速度控制，1为原速，成功返回0，否则为XAudio2错误码
+	int SetPlaybackSpeed(float);
+	//获取当前的播放速度倍率
+	float GetPlaybackSpeed();
 	//停止并释放
 	void Unload();
 	//淡出停止，未播放时返回-1
@@ -106,6 +111,7 @@ private:
 	int keyState[NumOfAllPart];//音高
 	int voiceState[NumOfAllPart];//音色
 	int volumeState[NumOfAllPart];//音量
+	float playbackspeed;
 	uchar* pSourceData;
 	int lengthSourceData;
 	XAPlayer x;
