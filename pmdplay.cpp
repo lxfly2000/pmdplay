@@ -14,7 +14,7 @@
 					"\n  2608_bd.wav\t2608_sd.wav\t2608_top.wav\n  2608_hh.wav\t2608_tom.wav\t2608_rim.wav\n"\
 					"  放至此程序目录下。（可由 -yr 命令获得）\n"\
 					"* Wave 转换命令：\n  " HELP_PARAM "\n\n"\
-					"本程序参考了以下来源：\n"\
+					"本程序参考了以下代码：\n"\
 					" Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n"\
 					" OPNA FM Generator - cisc\n"\
 					" PPZ8 PCM Driver - UKKY\n"\
