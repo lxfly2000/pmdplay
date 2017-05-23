@@ -8,7 +8,7 @@
 
 #define IDM_APP_HELP	0x101
 
-#define APP_NAME	"Professional Music Driver (P.M.D.) Player"
+#define APP_NAME	"Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) Player"
 #define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)]"
 #define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
 					"\n  2608_bd.wav\t2608_sd.wav\t2608_top.wav\n  2608_hh.wav\t2608_tom.wav\t2608_rim.wav\n"\
@@ -27,6 +27,7 @@
 #define FADEOUT_TIME_SEC	5
 #define STEPS_PER_BAR	4
 #define NUM_SHOW_CHANNELS 9
+#define DOUBLECLICK_BETWEEN_MS 500
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() >= PMDPlayer::playing, filepath)
@@ -37,6 +38,22 @@ char* A(const TCHAR* str)
 	UnicodeToANSI(strANSIbuf, ARRAYSIZE(strANSIbuf), str);
 	return strANSIbuf;
 }
+
+class ClickTrigger
+{
+public:
+	ClickTrigger(int button):key(button),log(false){}
+	bool KeyReleased()
+	{
+		clicking = GetMouseInput()&key;
+		cv = log && !clicking;
+		log = clicking;
+		return cv;
+	}
+private:
+	bool clicking, log, cv;
+	int key;
+};
 
 class PMDPlay
 {
@@ -80,9 +97,11 @@ private:
 	bool showVoiceOnKey = false;
 	bool showVolumeOnKey = false;
 	int keydisp_x, keydisp_y, keydisp_w, keydisp_h, keydisp_onechannel_h;
+	ClickTrigger leftclick;
+	int lastclicktime = 0, thisclicktime = 0;
 };
 
-PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20)
+PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20), leftclick(MOUSE_INPUT_LEFT)
 {
 	for (int i = 0; i < ARRAYSIZE(channelOn); i++)channelOn[i] = true;
 }
@@ -135,6 +154,7 @@ int PMDPlay::Init(TCHAR* param)
 	}
 	SetOutApplicationLogValidFlag(FALSE);
 	ChangeWindowMode(windowed = TRUE);
+	SetWindowSizeChangeEnableFlag(TRUE);
 	SetAlwaysRunFlag(TRUE);
 	SetGraphMode(w, h, 32);
 	ChangeFont(TEXT("SimSun"));
@@ -380,6 +400,13 @@ void PMDPlay::OnLoop()
 	if (KeyReleased(KEY_INPUT_Z))player.SetPlaybackSpeed(player.GetPlaybackSpeed()*2.0f);
 	if (KeyReleased(KEY_INPUT_X))player.SetPlaybackSpeed(1.0f);
 	if (KeyReleased(KEY_INPUT_C))player.SetPlaybackSpeed(player.GetPlaybackSpeed()/2.0f);
+	if (leftclick.KeyReleased())
+	{
+		thisclicktime = GetNowCount();
+		if (thisclicktime - lastclicktime < DOUBLECLICK_BETWEEN_MS)
+			SetWindowSize(screenWidth, screenHeight);
+		lastclicktime = thisclicktime;
+	}
 }
 
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
