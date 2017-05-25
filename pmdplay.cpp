@@ -4,6 +4,7 @@
 #include "TextEncodeConvert.h"
 #include "DxKeyTrigger.h"
 #include "ChooseFileDialog.h"
+#include "DxShell.h"
 #include "resource.h"
 
 #define IDM_APP_HELP	0x101
@@ -11,7 +12,7 @@
 #define APP_NAME	"Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) Player"
 #define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)]"
 #define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
-					"\n  2608_bd.wav\t2608_sd.wav\t2608_top.wav\n  2608_hh.wav\t2608_tom.wav\t2608_rim.wav\n"\
+					"\n  2608_bd.wav  2608_sd.wav  2608_top.wav\n  2608_hh.wav  2608_tom.wav 2608_rim.wav\n"\
 					"  放至此程序目录下。（可由 -yr 命令获得）\n"\
 					"* Wave 转换命令：\n  " HELP_PARAM "\n\n"\
 					"本程序参考了以下代码：\n"\
@@ -275,7 +276,15 @@ void PMDPlay::OnDrop(HDROP hdrop)
 
 void PMDPlay::OnAbout()
 {
-	MessageBox(hWindowDx, TEXT(HELP_INFO), TEXT(APP_NAME), MB_ICONINFORMATION);
+	if (windowed)
+	{
+		MessageBox(hWindowDx, TEXT(HELP_INFO), TEXT(APP_NAME), MB_ICONINFORMATION);
+	}
+	else
+	{
+		DxMessageBox(TEXT(HELP_INFO)TEXT("\n\n[Enter]继续"));
+		while (CheckHitKey(KEY_INPUT_ESCAPE));
+	}
 }
 
 bool PMDPlay::OnLoadFile(TCHAR *path)
@@ -351,10 +360,11 @@ void PMDPlay::OnLoop()
 	//O
 	if (KeyReleased(KEY_INPUT_O))
 	{
-		if (ChooseFile(hWindowDx, filepath, NULL, pcszPMDType, NULL))
+		if (windowed ? ChooseFile(hWindowDx, filepath, NULL, pcszPMDType, NULL) : DxChooseFilePath(filepath, filepath))
 		{
 			OnLoadFile(filepath);
 		}
+		else while (CheckHitKey(KEY_INPUT_ESCAPE));
 	}
 	//D
 	if (KeyReleased(KEY_INPUT_D)) { showVoiceAndVolume = !showVoiceAndVolume; USTR; }
@@ -381,7 +391,9 @@ void PMDPlay::OnLoop()
 		while (1)
 		{
 			MultiByteToWideChar(codepage, 0, info, ARRAYSIZE(info), unicode_str, ARRAYSIZE(unicode_str));
-			if (MessageBox(hWindowDx, unicode_str, TEXT("文件信息（按取消切换 Shift-JIS 编码）"), MB_ICONINFORMATION | MB_OKCANCEL) == IDCANCEL)
+			if (!windowed)strcatDx(unicode_str, TEXT("\n[Enter]继续 [Space]切换Shift-JIS编码"));
+			if (windowed ? MessageBox(hWindowDx, unicode_str, TEXT("文件信息（按取消切换 Shift-JIS 编码）"),
+				MB_ICONINFORMATION | MB_OKCANCEL) == IDCANCEL : DxMessageBox(unicode_str, KEY_INPUT_SPACE, KEY_INPUT_RETURN))
 				codepage ^= 932;
 			else break;
 		}

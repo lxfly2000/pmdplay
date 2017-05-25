@@ -198,6 +198,7 @@
   <ItemGroup>
     <ClCompile Include="ChooseFileDialog.cpp" />
     <ClCompile Include="DxKeyTrigger.cpp" />
+    <ClCompile Include="DxShell.cpp" />
     <ClCompile Include="fmgen\file.cpp" />
     <ClCompile Include="fmgen\fmgen.cpp" />
     <ClCompile Include="fmgen\fmtimer.cpp" />
