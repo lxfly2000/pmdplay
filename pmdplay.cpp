@@ -372,6 +372,10 @@ void PMDPlay::OnLoop()
 	if (KeyReleased(KEY_INPUT_LEFT)&&player.GetPlayerStatus()!=PMDPlayer::nofile)setpos(max(getpos() - 5000, 0));
 	//Right
 	if (KeyReleased(KEY_INPUT_RIGHT)&&player.GetPlayerStatus()!=PMDPlayer::nofile)setpos(getpos() + 5000);
+	//Up
+	if (KeyReleased(KEY_INPUT_UP)) { player.SetVolume(player.GetVolume() + 5.0f); USTR; }
+	//Down
+	if (KeyReleased(KEY_INPUT_DOWN)) { player.SetVolume(player.GetVolume() - 5.0f); USTR; }
 	//P
 	if (KeyPressed(KEY_INPUT_P)) { pmdscreen.showVoice = !pmdscreen.showVoice; USTR; }
 	//V
@@ -425,9 +429,9 @@ void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR 
 {
 	if (strlenDx(path) > 80)
 		path = strrchrDx(path, TEXT('\\')) + 1;
-	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开文件 Esc:退出 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:音量[%s]\n%s：%s"),
+	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s：%s"),
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
-		pmdscreen.showVolume ? TEXT("开") : TEXT("关"),
+		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), (int)player.GetVolume(),
 		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
 }
 

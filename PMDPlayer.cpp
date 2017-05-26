@@ -52,6 +52,18 @@ void XAPlayer::Play(BYTE*buf, int length)
 		sourceVoice->Start();
 }
 
+void XAPlayer::SetVolume(float v)
+{
+	masterVoice->SetVolume(v);
+}
+
+float XAPlayer::GetVolume()
+{
+	float v;
+	masterVoice->GetVolume(&v);
+	return v;
+}
+
 int XAPlayer::GetQueuedBuffersNum()
 {
 	sourceVoice->GetState(&state);
@@ -192,6 +204,18 @@ int PMDPlayer::SetPlaybackSpeed(float speed)
 float PMDPlayer::GetPlaybackSpeed()
 {
 	return playbackspeed;
+}
+
+void PMDPlayer::SetVolume(float v)
+{
+	v = min(PMDPLAYER_MAX_VOLUME, v);
+	v = max(0, v);
+	x.SetVolume(v / PMDPLAYER_MAX_VOLUME);
+}
+
+float PMDPlayer::GetVolume()
+{
+	return x.GetVolume()*PMDPLAYER_MAX_VOLUME;
 }
 
 void PMDPlayer::Unload()

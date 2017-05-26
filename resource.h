@@ -10,9 +10,9 @@
 #define IDR_WAVE_2608_TOP               106
 
 #define APP_VERSION_MAJOR				1
-#define APP_VERSION_MINOR				5
-#define APP_VERSION_REVISION			5
-#define APP_VERSION_BUILD				0
+#define APP_VERSION_MINOR				6
+#define APP_VERSION_REVISION			0
+#define APP_VERSION_BUILD				1
 
 #define RC_STR(x)						#x
 #define _RC_STR(x)						RC_STR(x)

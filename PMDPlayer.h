@@ -3,6 +3,8 @@
 #include <xaudio2.h>
 #include "pmdwin\pmdwinimport.h"
 
+#define PMDPLAYER_MAX_VOLUME	100.0f
+
 //https://github.com/lxfly2000/XAPlayer
 class XAPlayer
 {
@@ -12,6 +14,8 @@ public:
 	void Init(int nChannel, int sampleRate, int bytesPerVar);
 	void Release();
 	void Play(BYTE* buf, int length);
+	void SetVolume(float v);
+	float GetVolume();
 	int SetPlaybackSpeed(float);
 	int GetQueuedBuffersNum();
 private:
@@ -53,6 +57,10 @@ public:
 	int SetPlaybackSpeed(float);
 	//获取当前的播放速度倍率
 	float GetPlaybackSpeed();
+	//设置音量（0～100.0f(PMDPLAYER_MAX_VOLUME)）
+	void SetVolume(float);
+	//获取音量（0～100.0f(PMDPLAYER_MAX_VOLUME)）
+	float GetVolume();
 	//停止并释放
 	void Unload();
 	//淡出停止，未播放时返回-1
