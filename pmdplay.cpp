@@ -122,16 +122,10 @@ int PMDPlay::Init(TCHAR* param)
 			IDR_WAVE_2608_HH,IDR_WAVE_2608_TOM,IDR_WAVE_2608_RIM
 		};
 		char *file_mem[6] = { NULL };
-		HGLOBAL hData[6] = { NULL };
 		for (int i = 0; i < ARRAYSIZE(files_id); i++)
-		{
-			HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"));
-			hData[i] = LoadResource(NULL, hRes);
-			file_mem[i] = (char*)LockResource(hData[i]);
-		}
+			file_mem[i] = (char*)LockResource(LoadResource(NULL,
+				FindResource(NULL, MAKEINTRESOURCE(files_id[i]), TEXT("Wave"))));
 		player.LoadRhythmFromMemory(file_mem[0], file_mem[1], file_mem[2], file_mem[3], file_mem[4], file_mem[5]);
-		for (int i = 0; i < ARRAYSIZE(files_id); i++)
-			FreeResource(hData[i]);
 	}
 
 	//程序设定
