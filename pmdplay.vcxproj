@@ -216,7 +216,6 @@
     <ClCompile Include="pmdwin\table.cpp" />
     <ClCompile Include="pmdwin\util.cpp" />
     <ClCompile Include="pmdplay.cpp" />
-    <ClCompile Include="TextEncodeConvert.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pmdplay.rc" />

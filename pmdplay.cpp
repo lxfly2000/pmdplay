@@ -1,7 +1,7 @@
 ﻿#include <DxLib.h>
+#include <locale>
 #include "PMDPlayer.h"
 #include "PMDScreen.h"
-#include "TextEncodeConvert.h"
 #include "DxKeyTrigger.h"
 #include "ChooseFileDialog.h"
 #include "DxShell.h"
@@ -36,7 +36,7 @@ const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2\0所有文件\0*\0\0");
 char strANSIbuf[MAX_PATH] = "";
 char* A(const TCHAR* str)
 {
-	UnicodeToANSI(strANSIbuf, ARRAYSIZE(strANSIbuf), str);
+	wcstombs(strANSIbuf, str, ARRAYSIZE(strANSIbuf));
 	return strANSIbuf;
 }
 
@@ -113,7 +113,7 @@ WNDPROC PMDPlay::dxProcess = nullptr;
 int PMDPlay::Init(TCHAR* param)
 {
 	_pObj = this;
-
+	setlocale(LC_ALL, "");
 	//加载节奏声音
 	if (!player.LoadRhythmFromDirectory("."))
 	{

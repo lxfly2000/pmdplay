@@ -1,10 +1,25 @@
 #pragma once
 //https://github.com/mistydemeo/pmdmini
 #include <xaudio2.h>
+#include <thread>
 #include "pmdwin\pmdwinimport.h"
 
 #define PMDPLAYER_MAX_VOLUME	100.0f
 
+class XASCallback :public IXAudio2VoiceCallback
+{
+public:
+	HANDLE hBufferEndEvent;
+	XASCallback();
+	~XASCallback();
+	void OnBufferEnd(void *)override;
+	void OnBufferStart(void*)override {}
+	void OnLoopEnd(void*)override {}
+	void OnStreamEnd()override {}
+	void OnVoiceError(void*,HRESULT)override {}
+	void OnVoiceProcessingPassEnd()override {}
+	void OnVoiceProcessingPassStart(UINT32)override {}
+};
 //https://github.com/lxfly2000/XAPlayer
 class XAPlayer
 {
@@ -18,12 +33,14 @@ public:
 	float GetVolume();
 	int SetPlaybackSpeed(float);
 	int GetQueuedBuffersNum();
+	void WaitForBufferEndEvent();
 private:
 	IXAudio2*xAudio2Engine;
 	IXAudio2MasteringVoice* masterVoice;
 	IXAudio2SourceVoice* sourceVoice;
 	XAUDIO2_BUFFER xbuffer;
 	XAUDIO2_VOICE_STATE state;
+	XASCallback xcallback;
 };
 
 class PMDPlayer
@@ -100,7 +117,7 @@ public:
 	const int *GetKeyVolume();
 
 	//多线程调用
-	static unsigned WINAPI _Subthread_Playback(void* param);
+	static void _Subthread_Playback(PMDPlayer* param);
 	//多线程播放函数
 	void _LoopPlayback();
 protected:
@@ -123,6 +140,6 @@ private:
 	uchar* pSourceData;
 	int lengthSourceData;
 	XAPlayer x;
-	static HANDLE hSubPlayback;
+	std::thread tSubPlayback;
 };
 
