@@ -177,14 +177,16 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
 	if (LoadFromFile(srcfile))return false;
 	std::fstream f(outfile, std::ios::out | std::ios::binary);
 	f.seekp(sizeof wavfileheader);
-	while (GetLoopedTimes() < loops)
+	int currentLoops = GetLoopedTimes();
+	while (currentLoops < loops && currentLoops >= 0)
 	{
 		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
 		f.write((char*)soundbuffer, bytesof_soundbuffer);
 		wavfileheader.subchunk2Size += bytesof_soundbuffer;
+		currentLoops = GetLoopedTimes();
 	}
 	fadingout_end_time_sec = (GetPositionInMs() + fadetime) / 1000;
-	fadeout2(fadetime);
+	if (currentLoops >= 0)fadeout2(fadetime);
 	while (GetPositionInMs() / 1000 < fadingout_end_time_sec)
 	{
 		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
