@@ -9,7 +9,7 @@
 #define ROW_SPACING 1
 #define KEY_START 0
 #define KEY_END 127
-#define GetKshotBit(x,n) (((x)>>(n))&1)
+#define GetKshotBit(x,n) ((n)<16?((x)>>(n))&1:0)
 #define KSHOT_CHANNEL 8
 
 
