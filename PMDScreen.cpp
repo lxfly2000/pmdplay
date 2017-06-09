@@ -9,6 +9,8 @@
 #define ROW_SPACING 1
 #define KEY_START 0
 #define KEY_END 127
+#define GetKshotBit(x,n) ((n)<16?((x)>>(n))&1:0)
+#define KSHOT_CHANNEL 8
 
 
 PMDScreen::PMDScreen():colorWhiteKey(0x00001A80), colorBlackKey(0x00001A80),
@@ -36,7 +38,8 @@ void PMDScreen::DrawWhiteKey()
 				tempX = drawWidth_keyWhite*GetNumWhiteKey(i) + x;
 				tempY = drawLength_keyWhite*j + y;
 				DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, colorWhiteKey, FALSE);
-				if ((pplayer->GetKeysState()[j] & 0xFFFF) == i)
+				if ((j == KSHOT_CHANNEL&&!getopenwork()->effflag) ? GetKshotBit(pplayer->GetKeysState()[KSHOT_CHANNEL], i) :
+					(pplayer->GetKeysState()[j] == i))
 				{
 					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
 					DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorWhiteKeyPressed, TRUE);
@@ -55,7 +58,8 @@ void PMDScreen::DrawBlackKey()
 				tempX = drawWidth_keyWhite*GetNumBlackKey(i) + start_keyBlackX;
 				tempY = drawLength_keyWhite*j + y;
 				DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, colorBlackKey, TRUE);
-				if (pplayer->GetKeysState()[j] == i)
+				if ((j == KSHOT_CHANNEL&&!getopenwork()->effflag) ? GetKshotBit(pplayer->GetKeysState()[KSHOT_CHANNEL], i) :
+					(pplayer->GetKeysState()[j] == i))
 				{
 					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
 					DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorBlackKeyPressed, TRUE);
