@@ -311,8 +311,7 @@ void PMDPlay::ConvertDialog()
 	se.cbSize = sizeof se;
 	se.hwnd = hWindowDx;
 	se.lpVerb = TEXT("open");
-	GetFullPathName(__wargv[0], ARRAYSIZE(pmdppath), pmdppath, NULL);
-	se.lpFile = pmdppath;
+	se.lpFile = _wpgmptr;
 	se.lpParameters = cmd;
 	se.fMask = SEE_MASK_NOCLOSEPROCESS;
 	SetWindowText(TEXT("转换中……"));
