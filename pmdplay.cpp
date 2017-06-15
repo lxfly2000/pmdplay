@@ -198,7 +198,7 @@ int PMDPlay::Init(TCHAR* param)
 	pmdscreen.SetKeyNotesSrc(&player, NUM_SHOW_CHANNELS);
 	keydisp_x = 4;
 	keydisp_y = 18;
-	keydisp_w = w - 8;
+	keydisp_w = screenWidth - 8;
 	keydisp_h = posYLowerText - 18;
 	keydisp_onechannel_h = keydisp_h / NUM_SHOW_CHANNELS;
 	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
