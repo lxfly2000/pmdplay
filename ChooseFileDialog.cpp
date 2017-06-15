@@ -4,7 +4,7 @@
 
 BOOL ChooseFile(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pcszFiletype, PCTSTR pcszTitle)
 {
-	OPENFILENAME ofn = { sizeof OPENFILENAME };
+	OPENFILENAME ofn = { 0 };
 	ofn.lStructSize = sizeof OPENFILENAME;
 	ofn.hwndOwner = hWndParent;
 	ofn.hInstance = nullptr;
@@ -16,6 +16,22 @@ BOOL ChooseFile(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pcszFi
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.Flags = OFN_HIDEREADONLY;
 	return GetOpenFileName(&ofn);
+}
+
+BOOL ChooseSaveFile(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pcszFiletype, PCTSTR pcszTitle)
+{
+	OPENFILENAME ofn = { 0 };
+	ofn.lStructSize = sizeof OPENFILENAME;
+	ofn.hwndOwner = hWndParent;
+	ofn.hInstance = nullptr;
+	ofn.lpstrFilter = pcszFiletype;
+	ofn.lpstrFile = filepath;
+	ofn.lpstrTitle = pcszTitle;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFileTitle = filename;
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	return GetSaveFileName(&ofn);
 }
 
 //http://blog.csdn.net/xhhjin/article/details/6550467

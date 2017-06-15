@@ -194,6 +194,7 @@
     <ClInclude Include="pmdwin\table.h" />
     <ClInclude Include="pmdwin\util.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChooseFileDialog.cpp" />
@@ -216,6 +217,7 @@
     <ClCompile Include="pmdwin\table.cpp" />
     <ClCompile Include="pmdwin\util.cpp" />
     <ClCompile Include="pmdplay.cpp" />
+    <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pmdplay.rc" />
