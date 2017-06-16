@@ -178,7 +178,8 @@ int PMDPlay::Init(TCHAR* param)
 	DPIInfo hdpi;
 	SetGraphMode(hdpi.X(w), hdpi.Y(h), 32);
 	ChangeFont(TEXT("SimSun"));
-	SetFontSize(14);
+	SetFontSize(hdpi.X(14));
+	if (hdpi.X(14) > 14)ChangeFontType(DX_FONTTYPE_ANTIALIASING);
 	SetFontThickness(3);
 	GetDrawScreenSize(&screenWidth, &screenHeight);
 	if (DxLib_Init())return retcode = -1;
@@ -197,9 +198,9 @@ int PMDPlay::Init(TCHAR* param)
 	posYLowerText = screenHeight - (GetFontSize() + 4) * 2;
 	pmdscreen.SetKeyNotesSrc(&player, NUM_SHOW_CHANNELS);
 	keydisp_x = 4;
-	keydisp_y = 18;
+	keydisp_y = GetFontSize() + 4;
 	keydisp_w = screenWidth - 8;
-	keydisp_h = posYLowerText - 18;
+	keydisp_h = posYLowerText - keydisp_y;
 	keydisp_onechannel_h = keydisp_h / NUM_SHOW_CHANNELS;
 	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
 	USTR;
