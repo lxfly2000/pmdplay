@@ -11,11 +11,13 @@
 #define KEY_END 127
 #define GetKshotBit(x,n) ((n)<16?((x)>>(n))&1:0)
 #define KSHOT_CHANNEL 8
-
+int maxPressure[NumOfAllPart];
 
 PMDScreen::PMDScreen():colorWhiteKey(0x00001A80), colorBlackKey(0x00001A80),
 colorWhiteKeyPressed(keyColors[0]), colorBlackKeyPressed(keyColors[0]), showVoice(false), showVolume(false)
 {
+	for (auto &ev : maxPressure)ev = 128;//后面的通道不确定最大是不是128
+	for (int i = 6; i < 9; i++)maxPressure[i] = 16;
 	SetRectangle(0, 0, 640);
 }
 
@@ -41,7 +43,7 @@ void PMDScreen::DrawWhiteKey()
 				if ((j == KSHOT_CHANNEL&&!getopenwork()->effflag) ? GetKshotBit(pplayer->GetKeysState()[KSHOT_CHANNEL], i) :
 					(pplayer->GetKeysState()[j] == i))
 				{
-					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 256 / maxPressure[j]);
 					DrawBox(tempX, tempY, tempX + drawWidth_keyWhite + 1, tempY + drawLength_keyWhite - ROW_SPACING, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorWhiteKeyPressed, TRUE);
 					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 					//DrawFormatString(tempX, tempY, 0x00FFFFFF, TEXT("%d %d"), pplayer->GetKeyVoice()[j], pplayer->GetKeyVolume()[j]);
@@ -61,7 +63,7 @@ void PMDScreen::DrawBlackKey()
 				if ((j == KSHOT_CHANNEL&&!getopenwork()->effflag) ? GetKshotBit(pplayer->GetKeysState()[KSHOT_CHANNEL], i) :
 					(pplayer->GetKeysState()[j] == i))
 				{
-					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 2);
+					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, pplayer->GetKeyVolume()[j] * 256 / maxPressure[j]);
 					DrawBox(tempX, tempY, tempX + drawWidth_keyBlack, tempY + drawLength_keyBlack, showVoice ? keyColors[pplayer->GetKeyVoice()[j] & 7] : colorBlackKeyPressed, TRUE);
 					if (showVolume)SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 					//DrawFormatString(tempX, tempY, 0x00FFFFFF, TEXT("%d %d"), pplayer->GetKeyVoice()[j], pplayer->GetKeyVolume()[j]);
