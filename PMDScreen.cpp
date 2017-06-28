@@ -13,7 +13,7 @@
 #define KSHOT_CHANNEL 8
 int maxPressure[NumOfAllPart];
 
-PMDScreen::PMDScreen():colorWhiteKey(0x00001A80), colorBlackKey(0x00001A80),
+PMDScreen::PMDScreen():colorWhiteKey(0x00001A80), colorBlackKey(0x00001A80), num_channel(NumOfAllPart),
 colorWhiteKeyPressed(keyColors[0]), colorBlackKeyPressed(keyColors[0]), showVoice(false), showVolume(false)
 {
 	for (auto &ev : maxPressure)ev = 128;//后面的通道不确定最大是不是128
