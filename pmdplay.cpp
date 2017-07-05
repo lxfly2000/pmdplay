@@ -139,7 +139,7 @@ int PMDPlay::Init(TCHAR* param)
 	_pObj = this;
 	setlocale(LC_ALL, "");
 	player.Init(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR,
-		GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 40, profilename));
+		GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 50, profilename));
 	//加载节奏声音
 	if (!player.LoadRhythmFromDirectory("."))
 	{
