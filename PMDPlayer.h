@@ -5,7 +5,7 @@
 #include "pmdwin\pmdwinimport.h"
 
 #define PMDPLAYER_MAX_VOLUME	100
-const TCHAR sectionname[] = TEXT("PMDPlayer"), profilename[] = TEXT("pmdplay.ini"),
+const TCHAR sectionname[] = TEXT("PMDPlayer"), profilename[] = TEXT(".\\pmdplay.ini"),
 varstring_notifycount[] = TEXT("NotifyCount"), varstring_bufferblocktime[] = TEXT("BufferBlockTimeMS");
 
 class XAPlayer
