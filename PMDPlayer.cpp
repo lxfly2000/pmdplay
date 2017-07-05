@@ -2,32 +2,19 @@
 #include<string>
 #include "PMDPlayer.h"
 #include "pmdmini.h"
-#pragma comment(lib,"XAudio2.lib")
-XASCallback::XASCallback()
-{
-	hBufferEndEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-}
+#pragma comment(lib,"dsound.lib")
+#pragma comment(lib,"dxguid.lib")
 
-XASCallback::~XASCallback()
-{
-	CloseHandle(hBufferEndEvent);
-}
+#ifdef _DEBUG
+#define C(e) if(e)\
+if(MessageBox(NULL,__FILE__ L":" _STRINGIZE(__LINE__) "\n" __FUNCTION__ "\n" _STRINGIZE(e),NULL,MB_OKCANCEL)==IDOK)\
+DebugBreak()
+#else
+#define C(e) e
+#endif
 
-void XASCallback::OnBufferEnd(void *p)
+void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int onebufbytes)
 {
-	SetEvent(hBufferEndEvent);
-}
-
-XAPlayer::XAPlayer(int nChannel, int sampleRate, int bytesPerVar)
-{
-	Init(nChannel, sampleRate, bytesPerVar);
-}
-void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
-{
-	xAudio2Engine = NULL;
-	masterVoice = NULL;
-	sourceVoice = NULL;
-	WAVEFORMATEX w;
 	w.wFormatTag = WAVE_FORMAT_PCM;
 	w.nChannels = nChannel;
 	w.nSamplesPerSec = sampleRate;
@@ -35,75 +22,78 @@ void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
 	w.nBlockAlign = 4;
 	w.wBitsPerSample = bytesPerVar * 8;
 	w.cbSize = 0;
-	xbuffer = { 0 };
-	xbuffer.Flags = XAUDIO2_END_OF_STREAM;
-	if (FAILED(CoInitializeEx(0, COINIT_MULTITHREADED)))return;
-	if (FAILED(XAudio2Create(&xAudio2Engine)))return;
-	if (FAILED(xAudio2Engine->CreateMasteringVoice(&masterVoice)))return;
-	xAudio2Engine->CreateSourceVoice(&sourceVoice, &w, 0, XAUDIO2_DEFAULT_FREQ_RATIO, &xcallback);
-	sourceVoice->Start();
-}
 
-XAPlayer::~XAPlayer()
-{
-	Release();
+	int notify_count = GetPrivateProfileInt(sectionname, varstring_notifycount, 4, profilename);
+	m_bufbytes = onebufbytes*notify_count;
+
+	C(DirectSoundCreate8(NULL, &pDirectSound, NULL));
+	C(pDirectSound->SetCooperativeLevel(GetDesktopWindow(), DSSCL_NORMAL));
+	DSBUFFERDESC desc = { sizeof desc,DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPOSITIONNOTIFY |
+		DSBCAPS_GLOBALFOCUS,m_bufbytes,0,&w,DS3DALG_DEFAULT };
+	C(pDirectSound->CreateSoundBuffer(&desc, &pBuffer, NULL));
+	C(pBuffer->QueryInterface(IID_IDirectSoundNotify, (void**)&pNotify));
+	DSBPOSITIONNOTIFY *dpn = new DSBPOSITIONNOTIFY[notify_count];
+	hBufferEndEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	for (int i = 0; i < notify_count; i++)
+	{
+		dpn[i].dwOffset = m_bufbytes*i / notify_count;
+		dpn[i].hEventNotify = hBufferEndEvent;
+	}
+	C(pNotify->SetNotificationPositions(notify_count, dpn));
+	delete[]dpn;
 }
 
 void XAPlayer::Release()
 {
-	sourceVoice->Stop();
-	sourceVoice->FlushSourceBuffers();
-	if (sourceVoice)sourceVoice->DestroyVoice();
-	masterVoice->DestroyVoice();
-	xAudio2Engine->Release();
-	CoUninitialize();
+	CloseHandle(hBufferEndEvent);
+	pBuffer->Release();
+	pDirectSound->Release();
 }
 
-void XAPlayer::Play(BYTE*buf, int length)
+void *XAPlayer::LockBuffer(DWORD length)
 {
-	xbuffer.pAudioData = buf;
-	xbuffer.AudioBytes = length;
-	sourceVoice->SubmitSourceBuffer(&xbuffer);
+	C(pBuffer->Lock(writecursor, length, &pLockedBuffer, &lockedBufferBytes, NULL, NULL, NULL));
+	return pLockedBuffer;
 }
 
-void XAPlayer::SetVolume(float v)
+void XAPlayer::UnlockBuffer()
 {
-	masterVoice->SetVolume(v);
+	C(pBuffer->Unlock(pLockedBuffer, lockedBufferBytes, NULL, NULL));
+	writecursor = (writecursor + lockedBufferBytes) % m_bufbytes;
 }
 
-float XAPlayer::GetVolume()
+void XAPlayer::Play()
 {
-	float v;
-	masterVoice->GetVolume(&v);
+	C(pBuffer->Play(0, 0, DSBPLAY_LOOPING));
+}
+
+void XAPlayer::Stop()
+{
+	C(pBuffer->Stop());
+}
+
+void XAPlayer::SetVolume(long v)
+{
+	C(pBuffer->SetVolume(v));
+}
+
+long XAPlayer::GetVolume()
+{
+	long v;
+	C(pBuffer->GetVolume(&v));
 	return v;
-}
-
-int XAPlayer::GetQueuedBuffersNum()
-{
-	sourceVoice->GetState(&state);
-	return state.BuffersQueued;
 }
 
 void XAPlayer::WaitForBufferEndEvent()
 {
-	WaitForSingleObject(xcallback.hBufferEndEvent, INFINITE);
+	WaitForSingleObject(hBufferEndEvent, INFINITE);
 }
 
-int XAPlayer::SetPlaybackSpeed(float speed)
+HRESULT XAPlayer::SetPlaybackSpeed(float speed)
 {
-	return sourceVoice->SetFrequencyRatio(speed);
+	return pBuffer->SetFrequency((DWORD)(w.nSamplesPerSec*speed));
 }
 
-
-PMDPlayer::PMDPlayer(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms) :x(nChannel, sampleRate, bytesPerVar)
-{
-	Init(nChannel, sampleRate, bytesPerVar, buffer_time_ms);
-}
-
-PMDPlayer::~PMDPlayer()
-{
-	Release();
-}
 
 int PMDPlayer::LoadFromFile(const char *filepath)
 {
@@ -178,6 +168,7 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
 	std::fstream f(outfile, std::ios::out | std::ios::binary);
 	f.seekp(sizeof wavfileheader);
 	int currentLoops = GetLoopedTimes();
+	short *soundbuffer = (short*)new char[bytesof_soundbuffer];
 	while (currentLoops < loops && currentLoops >= 0)
 	{
 		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
@@ -193,6 +184,7 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
 		f.write((char*)soundbuffer, bytesof_soundbuffer);
 		wavfileheader.subchunk2Size += bytesof_soundbuffer;
 	}
+	delete[]soundbuffer;
 	wavfileheader.chunkSize = 36 + wavfileheader.subchunk2Size;
 	f.seekp(0);
 	f.write((char*)&wavfileheader, sizeof wavfileheader);
@@ -204,6 +196,7 @@ int PMDPlayer::Play()
 {
 	if (playerstatus != paused)return -1;
 	playerstatus = playing;
+	x.Play();
 	tSubPlayback = std::thread(PMDPlayer::_Subthread_Playback, this);
 	return 0;
 }
@@ -213,10 +206,11 @@ int PMDPlayer::Pause()
 	if (playerstatus != nofile && playerstatus != playing)return -1;
 	playerstatus = paused;
 	tSubPlayback.join();
+	x.Stop();
 	return 0;
 }
 
-int PMDPlayer::SetPlaybackSpeed(float speed)
+HRESULT PMDPlayer::SetPlaybackSpeed(float speed)
 {
 	return x.SetPlaybackSpeed(playbackspeed = speed);
 }
@@ -226,22 +220,23 @@ float PMDPlayer::GetPlaybackSpeed()
 	return playbackspeed;
 }
 
-void PMDPlayer::SetVolume(float v)
+void PMDPlayer::SetVolume(int v)
 {
 	v = min(PMDPLAYER_MAX_VOLUME, v);
 	v = max(0, v);
-	x.SetVolume(v / PMDPLAYER_MAX_VOLUME);
+	x.SetVolume(v*(DSBVOLUME_MAX - DSBVOLUME_MIN) / PMDPLAYER_MAX_VOLUME - (DSBVOLUME_MAX - DSBVOLUME_MIN));
 }
 
-float PMDPlayer::GetVolume()
+int PMDPlayer::GetVolume()
 {
-	return x.GetVolume()*PMDPLAYER_MAX_VOLUME;
+	return (x.GetVolume() - DSBVOLUME_MIN) / ((DSBVOLUME_MAX - DSBVOLUME_MIN) / PMDPLAYER_MAX_VOLUME);
 }
 
 void PMDPlayer::Unload()
 {
 	playerstatus = nofile;
 	if (tSubPlayback.joinable())tSubPlayback.join();
+	x.Stop();
 	pmd_stop();
 }
 
@@ -322,7 +317,7 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 	m_bytesPerVar = bytesPerVar;
 	m_sampleRate = sampleRate;
 	bytesof_soundbuffer = sampleRate*bytesPerVar*nChannel*buffer_time_ms / 1000;
-	soundbuffer = reinterpret_cast<decltype(soundbuffer)>(new BYTE[bytesof_soundbuffer]);
+	x.Init(nChannel, sampleRate, bytesPerVar, bytesof_soundbuffer);
 	playerstatus = nofile;
 	pmd_init();
 	setppsuse(false);
@@ -336,7 +331,7 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 void PMDPlayer::Release()
 {
 	Unload();
-	delete[]soundbuffer;
+	x.Release();
 }
 
 void PMDPlayer::_Subthread_Playback(PMDPlayer *param)
@@ -372,8 +367,8 @@ TCHAR *des[24] = {
 #endif
 void PMDPlayer::OnPlay()
 {
-	pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
-	x.Play((BYTE*)soundbuffer, bytesof_soundbuffer);
+	pmd_renderer((short*)x.LockBuffer(bytesof_soundbuffer), bytesof_soundbuffer / m_channels / m_bytesPerVar);
+	x.UnlockBuffer();
 	x.WaitForBufferEndEvent();
 	for (int i = 0; i < ARRAYSIZE(keyState); i++)
 	{

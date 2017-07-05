@@ -1,46 +1,35 @@
 #pragma once
 //https://github.com/mistydemeo/pmdmini
-#include <xaudio2.h>
+#include <dsound.h>
 #include <thread>
 #include "pmdwin\pmdwinimport.h"
 
-#define PMDPLAYER_MAX_VOLUME	100.0f
+#define PMDPLAYER_MAX_VOLUME	100
+const TCHAR sectionname[] = TEXT("PMDPlayer"), profilename[] = TEXT("pmdplay.ini"),
+varstring_notifycount[] = TEXT("NotifyCount"), varstring_bufferblocktime[] = TEXT("BufferBlockTimeMS");
 
-class XASCallback :public IXAudio2VoiceCallback
-{
-public:
-	HANDLE hBufferEndEvent;
-	XASCallback();
-	~XASCallback();
-	void OnBufferEnd(void *)override;
-	void OnBufferStart(void*)override {}
-	void OnLoopEnd(void*)override {}
-	void OnStreamEnd()override {}
-	void OnVoiceError(void*,HRESULT)override {}
-	void OnVoiceProcessingPassEnd()override {}
-	void OnVoiceProcessingPassStart(UINT32)override {}
-};
-//https://github.com/lxfly2000/XAPlayer
 class XAPlayer
 {
 public:
-	XAPlayer(int nChannel, int sampleRate, int bytesPerVar);
-	~XAPlayer();
-	void Init(int nChannel, int sampleRate, int bytesPerVar);
+	void Init(int nChannel, int sampleRate, int bytesPerVar, int onebufbytes);
 	void Release();
-	void Play(BYTE* buf, int length);
-	void SetVolume(float v);
-	float GetVolume();
-	int SetPlaybackSpeed(float);
-	int GetQueuedBuffersNum();
+	void *LockBuffer(DWORD length);
+	void UnlockBuffer();
+	void Play();
+	void Stop();
+	void SetVolume(long v);
+	long GetVolume();
+	HRESULT SetPlaybackSpeed(float);
 	void WaitForBufferEndEvent();
 private:
-	IXAudio2*xAudio2Engine;
-	IXAudio2MasteringVoice* masterVoice;
-	IXAudio2SourceVoice* sourceVoice;
-	XAUDIO2_BUFFER xbuffer;
-	XAUDIO2_VOICE_STATE state;
-	XASCallback xcallback;
+	DWORD m_bufbytes, writecursor = 0;
+	DWORD lockedBufferBytes;
+	void *pLockedBuffer;
+	HANDLE hBufferEndEvent;
+	IDirectSound8 *pDirectSound;
+	IDirectSoundBuffer *pBuffer;
+	IDirectSoundNotify *pNotify;
+	WAVEFORMATEX w;
 };
 
 class PMDPlayer
@@ -50,8 +39,6 @@ public:
 	//sampleRate: 采样率（每秒多少采样）
 	//bytesPerVar: 一个采样点的一个通道占多少字节
 	//buffer_time_ms: 毫秒，表示buffer表示多长时间的数据
-	PMDPlayer(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms);
-	~PMDPlayer();
 	//构造调用
 	void Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms);
 	//析构调用
@@ -70,14 +57,14 @@ public:
 	int Play();
 	//暂停，淡出和已处于暂停状态时返回-1，否则为0
 	int Pause();
-	//设置变频的播放速度控制，1为原速，成功返回0，否则为XAudio2错误码
-	int SetPlaybackSpeed(float);
+	//设置变频的播放速度控制，1为原速，成功返回0，否则为DSound错误码
+	HRESULT SetPlaybackSpeed(float);
 	//获取当前的播放速度倍率
 	float GetPlaybackSpeed();
-	//设置音量（0～100.0f(PMDPLAYER_MAX_VOLUME)）
-	void SetVolume(float);
-	//获取音量（0～100.0f(PMDPLAYER_MAX_VOLUME)）
-	float GetVolume();
+	//设置音量（0～100(PMDPLAYER_MAX_VOLUME)）
+	void SetVolume(int);
+	//获取音量（0～100(PMDPLAYER_MAX_VOLUME)）
+	int GetVolume();
 	//停止并释放
 	void Unload();
 	//淡出停止，未播放时返回-1
@@ -127,7 +114,6 @@ private:
 	unsigned length_in_ms, loop_in_ms;
 	PlayerStatus playerstatus;
 	unsigned fadingout_end_time_sec;
-	short* soundbuffer;//PMD_Renderer那个函数用的类型是short我表示难以理解……
 	int bytesof_soundbuffer;//字节长度
 
 	int m_channels;

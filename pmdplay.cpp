@@ -126,7 +126,7 @@ private:
 	int retcode = 0;
 };
 
-PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20), leftclick(MOUSE_INPUT_LEFT)
+PMDPlay::PMDPlay() :leftclick(MOUSE_INPUT_LEFT)
 {
 	for (int i = 0; i < ARRAYSIZE(channelOn); i++)channelOn[i] = true;
 }
@@ -138,6 +138,8 @@ int PMDPlay::Init(TCHAR* param)
 {
 	_pObj = this;
 	setlocale(LC_ALL, "");
+	player.Init(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR,
+		GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 40, profilename));
 	//加载节奏声音
 	if (!player.LoadRhythmFromDirectory("."))
 	{
@@ -248,6 +250,7 @@ void PMDPlay::CheckUpdate(bool showError)
 int PMDPlay::End()
 {
 	retcode |= DxLib_End();
+	player.Release();
 	return retcode;
 }
 
@@ -465,9 +468,9 @@ void PMDPlay::OnLoop()
 	//Right
 	if (KeyReleased(KEY_INPUT_RIGHT)&&player.GetPlayerStatus()!=PMDPlayer::nofile)setpos(getpos() + 5000);
 	//Up
-	if (KeyReleased(KEY_INPUT_UP)) { player.SetVolume(player.GetVolume() + 5.0f); USTR; }
+	if (KeyReleased(KEY_INPUT_UP)) { player.SetVolume(player.GetVolume() + 5); USTR; }
 	//Down
-	if (KeyReleased(KEY_INPUT_DOWN)) { player.SetVolume(player.GetVolume() - 5.0f); USTR; }
+	if (KeyReleased(KEY_INPUT_DOWN)) { player.SetVolume(player.GetVolume() - 5); USTR; }
 	//P
 	if (KeyPressed(KEY_INPUT_P)) { pmdscreen.showVoice = !pmdscreen.showVoice; USTR; }
 	//V
@@ -523,7 +526,7 @@ void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR 
 		path = strrchrDx(path, TEXT('\\')) + 1;
 	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s：%s"),
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
-		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), (int)player.GetVolume(),
+		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), player.GetVolume(),
 		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
 }
 
