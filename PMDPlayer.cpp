@@ -130,7 +130,7 @@ bool PMDPlayer::LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, ch
 	return loadrhythmsample_mem(bd, sd, top, hh, tom, rim);
 }
 
-bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
+bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime, bool splittracks)
 {
 	struct WaveStructure
 	{
@@ -164,31 +164,74 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime)
 		'd','a','t','a',//strData
 		0//subchunk2Size
 	};
-	if (LoadFromFile(srcfile))return false;
-	std::fstream f(outfile, std::ios::out | std::ios::binary);
-	f.seekp(sizeof wavfileheader);
-	int currentLoops = GetLoopedTimes();
 	short *soundbuffer = (short*)new char[bytesof_soundbuffer];
-	while (currentLoops < loops && currentLoops >= 0)
+	if (LoadFromFile(srcfile))return false;
+	if (splittracks)
 	{
-		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
-		f.write((char*)soundbuffer, bytesof_soundbuffer);
-		wavfileheader.subchunk2Size += bytesof_soundbuffer;
-		currentLoops = GetLoopedTimes();
+		char mtname[MAX_PATH];
+		for(int i=0;i<10;i++)
+		{
+			wavfileheader.subchunk2Size = 0;
+			sprintf(mtname, "%s-%c.wav", outfile, i == 9 ? 'R' : 'A' + i);
+			for (int j = 0; j < 10; j++)
+			{
+				if (j == 9)
+					setrhythmwithssgeffect(i == 9);
+				else if (j == 8)
+					getopenwork()->effflag = (i != 8);
+				else
+					j == i ? maskoff(j) : maskon(j);
+			}
+			setpos2(0);
+			std::fstream f(mtname, std::ios::out | std::ios::binary);
+			f.seekp(sizeof wavfileheader);
+			int currentLoops = GetLoopedTimes();
+			while (currentLoops < loops && currentLoops >= 0)
+			{
+				pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+				f.write((char*)soundbuffer, bytesof_soundbuffer);
+				wavfileheader.subchunk2Size += bytesof_soundbuffer;
+				currentLoops = GetLoopedTimes();
+			}
+			fadingout_end_time_sec = (GetPositionInMs() + fadetime) / 1000;
+			if (currentLoops >= 0)fadeout2(fadetime);
+			while (GetPositionInMs() / 1000 < fadingout_end_time_sec)
+			{
+				pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+				f.write((char*)soundbuffer, bytesof_soundbuffer);
+				wavfileheader.subchunk2Size += bytesof_soundbuffer;
+			}
+			wavfileheader.chunkSize = 36 + wavfileheader.subchunk2Size;
+			f.seekp(0);
+			f.write((char*)&wavfileheader, sizeof wavfileheader);
+		}
 	}
-	fadingout_end_time_sec = (GetPositionInMs() + fadetime) / 1000;
-	if (currentLoops >= 0)fadeout2(fadetime);
-	while (GetPositionInMs() / 1000 < fadingout_end_time_sec)
+	else
 	{
-		pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
-		f.write((char*)soundbuffer, bytesof_soundbuffer);
-		wavfileheader.subchunk2Size += bytesof_soundbuffer;
+		std::fstream f(outfile, std::ios::out | std::ios::binary);
+		f.seekp(sizeof wavfileheader);
+		int currentLoops = GetLoopedTimes();
+		while (currentLoops < loops && currentLoops >= 0)
+		{
+			pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+			f.write((char*)soundbuffer, bytesof_soundbuffer);
+			wavfileheader.subchunk2Size += bytesof_soundbuffer;
+			currentLoops = GetLoopedTimes();
+		}
+		fadingout_end_time_sec = (GetPositionInMs() + fadetime) / 1000;
+		if (currentLoops >= 0)fadeout2(fadetime);
+		while (GetPositionInMs() / 1000 < fadingout_end_time_sec)
+		{
+			pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
+			f.write((char*)soundbuffer, bytesof_soundbuffer);
+			wavfileheader.subchunk2Size += bytesof_soundbuffer;
+		}
+		wavfileheader.chunkSize = 36 + wavfileheader.subchunk2Size;
+		f.seekp(0);
+		f.write((char*)&wavfileheader, sizeof wavfileheader);
 	}
-	delete[]soundbuffer;
-	wavfileheader.chunkSize = 36 + wavfileheader.subchunk2Size;
-	f.seekp(0);
-	f.write((char*)&wavfileheader, sizeof wavfileheader);
 	Unload();
+	delete[]soundbuffer;
 	return true;
 }
 

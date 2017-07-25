@@ -13,7 +13,7 @@
 #define IDM_APP_UPDATE	0x103
 
 #define APP_NAME	"Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) Player"
-#define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)]"
+#define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)] [-st]"
 #define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
 					"\n  2608_bd.wav  2608_sd.wav  2608_top.wav\n  2608_hh.wav  2608_tom.wav 2608_rim.wav\n"\
 					"  放至此程序目录下。（可由 -yr 命令获得）\n"\
@@ -269,8 +269,10 @@ void PMDPlay::Convert()
 	char srcfile[MAX_PATH] = "", outfile[MAX_PATH] = "";
 	int loopcount = 1;
 	int fadetime = 5000;
+	bool split = false;
 	switch (__argc)
 	{
+	case 7:if (lstrcmpi(__wargv[6], TEXT("-st")) == 0)split = true;
 	case 6:fadetime = atoiDx(__wargv[5]);
 	case 5:loopcount = atoiDx(__wargv[4]);
 	case 4:strcpy(outfile, A(__wargv[3]));
@@ -293,7 +295,7 @@ void PMDPlay::Convert()
 		aoutfile[strlen(aoutfile) - 1] = 0;
 		aoutfile++;
 	}
-	if (!player.Convert(asrcfile, aoutfile, loopcount, fadetime))
+	if (!player.Convert(asrcfile, aoutfile, loopcount, fadetime, split))
 	{
 		retcode = -1;
 		AppLogAdd(TEXT("无法转换文件：%s\n"), __wargv[2]);
@@ -377,7 +379,10 @@ void PMDPlay::OnAbout()
 	}
 	else
 	{
-		DxMessageBox(TEXT(HELP_INFO)TEXT("\n\n[Enter]继续"));
+		TCHAR unicode_str[1024];
+		strcpyDx(unicode_str, TEXT(HELP_INFO));
+		strcatDx(unicode_str, TEXT("\n\n[Enter]继续"));
+		DxMessageBox(unicode_str);
 		while (CheckHitKey(KEY_INPUT_ESCAPE));
 	}
 }
