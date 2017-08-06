@@ -105,6 +105,9 @@
     <ClInclude Include="Update.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="InputBoxResource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fmgen\file.cpp">
@@ -170,9 +173,15 @@
     <ClCompile Include="Update.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="InputBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pmdplay.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="InputBox.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

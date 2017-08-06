@@ -23,7 +23,7 @@
     <ProjectGuid>{86249B2D-85F0-4BF5-89B1-6D908F38F55D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>pmdplay</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -180,6 +180,7 @@
     <ClInclude Include="fmgen\opna.h" />
     <ClInclude Include="fmgen\psg.h" />
     <ClInclude Include="fmgen\types.h" />
+    <ClInclude Include="InputBoxResource.h" />
     <ClInclude Include="pmdmini.h" />
     <ClInclude Include="PMDPlayer.h" />
     <ClInclude Include="PMDScreen.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="fmgen\opm.cpp" />
     <ClCompile Include="fmgen\opna.cpp" />
     <ClCompile Include="fmgen\psg.cpp" />
+    <ClCompile Include="InputBox.cpp" />
     <ClCompile Include="pmdmini.c" />
     <ClCompile Include="PMDPlayer.cpp" />
     <ClCompile Include="PMDScreen.cpp" />
@@ -220,6 +222,7 @@
     <ClCompile Include="Update.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="InputBox.rc" />
     <ResourceCompile Include="pmdplay.rc" />
   </ItemGroup>
   <ItemGroup>

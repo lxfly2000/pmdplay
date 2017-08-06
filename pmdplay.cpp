@@ -7,10 +7,12 @@
 #include "DxShell.h"
 #include "resource.h"
 #include "Update.h"
+#include "InputBox.h"
 
 #define IDM_APP_HELP	0x101
 #define IDM_CONVERT		0x102
 #define IDM_APP_UPDATE	0x103
+#define IDM_BEATS_PER_BAR	0x104
 
 #define APP_NAME	"Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) Player"
 #define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)] [-st]"
@@ -29,7 +31,7 @@
 #define CHANNELS	2//通道数
 #define BYTE_RATE	(SAMPLE_RATE*BYTES_PER_VAR*CHANNELS)//每秒有多少字节通过
 #define FADEOUT_TIME_SEC	5
-#define STEPS_PER_BAR	4
+#define STEPS_PER_BAR	4//默认节拍数
 #define NUM_SHOW_CHANNELS 9
 #define DOUBLECLICK_BETWEEN_MS 500
 
@@ -86,6 +88,7 @@ public:
 	void Convert();
 	void ConvertDialog();
 	void CheckUpdate(bool showError);
+	void ChangeBeatsPerBar();
 	int End();
 private:
 	static LRESULT CALLBACK ExtraProcess(HWND, UINT, WPARAM, LPARAM);
@@ -110,7 +113,7 @@ private:
 	int screenWidth, screenHeight;
 	int posYLowerText;
 	int minute = 0, second = 0, millisecond = 0;
-	int xiaojie = 0, step = 0, tick = 0, ticksPerStep = 4;
+	int xiaojie = 0, step = 0, tick = 0, ticksPerStep = 4, stepsPerBar = STEPS_PER_BAR;
 	bool running = true;
 	TCHAR filepath[MAX_PATH] = TEXT("");
 	TCHAR szStr[200] = TEXT("");
@@ -191,6 +194,7 @@ int PMDPlay::Init(TCHAR* param)
 	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
 	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
 	HMENU hSysMenu = GetSystemMenu(hWindowDx, FALSE);
+	AppendMenu(hSysMenu, MF_STRING, IDM_BEATS_PER_BAR, TEXT("节拍数(&B)……"));
 	AppendMenu(hSysMenu, MF_STRING, IDM_CONVERT, TEXT("转换到 Wave(&C)……"));
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_UPDATE, TEXT("检查更新(&U)……"));
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_HELP, TEXT("关于本程序(&A)……\tF1"));
@@ -245,6 +249,18 @@ void PMDPlay::CheckUpdate(bool showError)
 		(a >> 24) & 0xFF, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF, TEXT(APP_VERSION_STRING));
 	if (MessageBox(hWindowDx, msg, TEXT(APP_NAME), MB_ICONQUESTION | MB_YESNO) == IDYES)
 		ShellExecute(hWindowDx, TEXT("open"), projectURL, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void PMDPlay::ChangeBeatsPerBar()
+{
+	TCHAR input[3];
+	int _spb;
+	do {
+		wsprintf(input, TEXT("%d"), stepsPerBar);
+		if (!InputBox(hWindowDx, input, ARRAYSIZE(input), TEXT("输入节拍数(&B):"), NULL, input))return;
+		_spb = _ttoi(input);
+	} while (!_spb);
+	stepsPerBar = _spb;
 }
 
 int PMDPlay::End()
@@ -345,6 +361,7 @@ LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDM_APP_HELP:SendMessage(hwnd, WM_HELP, 0, 0); break;
 		case IDM_CONVERT:_pObj->ConvertDialog(); break;
 		case IDM_APP_UPDATE:_pObj->CheckUpdate(true); break;
+		case IDM_BEATS_PER_BAR:_pObj->ChangeBeatsPerBar(); break;
 		}
 		break;
 	case WM_HELP:PMDPlay::_pObj->OnAbout(); break;
@@ -412,7 +429,7 @@ void PMDPlay::UpdateTextLastTime()
 	minute = second / 60;
 	second %= 60;
 	sprintfDx(szLastTime, TEXT("%d:%02d.%03d"), minute, second, millisecond);
-	ticksPerStep = player.GetXiaojieLength() / STEPS_PER_BAR;
+	ticksPerStep = player.GetXiaojieLength() / stepsPerBar;
 }
 
 void PMDPlay::DrawTime()
@@ -425,8 +442,8 @@ void PMDPlay::DrawTime()
 	tick = player.GetPositionInCount();
 	step = tick / ticksPerStep;
 	tick %= ticksPerStep;
-	xiaojie = step / STEPS_PER_BAR;
-	step %= STEPS_PER_BAR;
+	xiaojie = step / stepsPerBar;
+	step %= stepsPerBar;
 	sprintfDx(szTimeInfo, TEXT("BPM:%3d 循环：%2d 时间：%d:%02d.%03d/%s Tick:%3d:%d:%02d"), player.GetTempo(),
 		player.GetLoopedTimes(), minute, second, millisecond, szLastTime, xiaojie, step, tick);
 	DrawString(0, 0, szTimeInfo, 0x00FFFFFF);

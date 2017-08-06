@@ -10,7 +10,7 @@
 #define IDR_WAVE_2608_TOP               106
 
 #define APP_VERSION_MAJOR				1
-#define APP_VERSION_MINOR				9
+#define APP_VERSION_MINOR				10
 #define APP_VERSION_REVISION			0
 #define APP_VERSION_BUILD				0
 
