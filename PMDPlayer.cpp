@@ -67,9 +67,15 @@ void XAPlayer::Play()
 	C(pBuffer->Play(0, 0, DSBPLAY_LOOPING));
 }
 
-void XAPlayer::Stop()
+void XAPlayer::Stop(bool resetpos)
 {
 	C(pBuffer->Stop());
+	if (resetpos)
+	{
+		//因为播放时有两个已渲染缓冲区且停止时有一个未播放所以需要重置位置。（仅限DSound）
+		C(pBuffer->SetCurrentPosition(0));
+		writecursor = 0;
+	}
 }
 
 void XAPlayer::SetVolume(long v)
@@ -279,7 +285,7 @@ void PMDPlayer::Unload()
 {
 	playerstatus = nofile;
 	if (tSubPlayback.joinable())tSubPlayback.join();
-	x.Stop();
+	x.Stop(true);
 	pmd_stop();
 }
 

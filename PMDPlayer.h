@@ -16,7 +16,7 @@ public:
 	void *LockBuffer(DWORD length);
 	void UnlockBuffer();
 	void Play();
-	void Stop();
+	void Stop(bool resetpos = false);
 	void SetVolume(long v);
 	long GetVolume();
 	HRESULT SetPlaybackSpeed(float);
