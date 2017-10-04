@@ -1,3 +1,5 @@
+【注意】该分支版本只适用于Windows10 64位系统！
+---
 # pmdplay
 用于 [Yamaha YM2203](https://en.wikipedia.org/wiki/Yamaha_YM2203) 和 [YM2608](https://en.wikipedia.org/wiki/Yamaha_YM2608) 的 [FM](https://en.wikipedia.org/wiki/Frequency_modulation_synthesis) 音源播放器。
 
