@@ -127,6 +127,7 @@ private:
 	ClickTrigger leftclick;
 	int lastclicktime = 0, thisclicktime = 0;
 	int retcode = 0;
+	bool fileload_ok = true;
 };
 
 PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20), leftclick(MOUSE_INPUT_LEFT)
@@ -403,12 +404,11 @@ void PMDPlay::OnAbout()
 
 bool PMDPlay::OnLoadFile(TCHAR *path)
 {
-	bool ok = true;
-	if (!LoadFromString(path))ok = false;
-	if (!ok)strcatDx(path, TEXT("（无效文件）"));
+	fileload_ok = true;
+	if (!LoadFromString(path))fileload_ok = false;
 	USTR;
 	player.SetPlaybackSpeed(1.0f);
-	return ok;
+	return fileload_ok;
 }
 
 bool PMDPlay::LoadFromString(TCHAR* str)
@@ -547,6 +547,7 @@ void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR 
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
 		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), (int)player.GetVolume(),
 		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
+	if (!fileload_ok)strcatDx(str, TEXT("（无效文件）"));
 }
 
 int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
