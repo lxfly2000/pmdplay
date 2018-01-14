@@ -36,7 +36,7 @@
 #define DOUBLECLICK_BETWEEN_MS 500
 
 const TCHAR projectURL[] = TEXT("https://github.com/lxfly2000/pmdplay");
-const TCHAR updateFileURL[] = TEXT("https://raw.githubusercontent.com/lxfly2000/pmdplay/master/resource.h");
+const TCHAR updateFileURL[] = TEXT("https://raw.githubusercontent.com/lxfly2000/pmdplay/pmdplay-xaudio2/resource.h");
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2;*.m26;*.m86;*.mz;*.mp;*.ms\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), player.GetPlayerStatus() >= PMDPlayer::playing, filepath)
 
@@ -130,7 +130,7 @@ private:
 	bool fileload_ok = true;
 };
 
-PMDPlay::PMDPlay() :leftclick(MOUSE_INPUT_LEFT)
+PMDPlay::PMDPlay() :player(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 20), leftclick(MOUSE_INPUT_LEFT)
 {
 	for (int i = 0; i < ARRAYSIZE(channelOn); i++)channelOn[i] = true;
 }
@@ -142,8 +142,6 @@ int PMDPlay::Init(TCHAR* param)
 {
 	_pObj = this;
 	setlocale(LC_ALL, "");
-	player.Init(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR,
-		GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 50, profilename));
 	//加载节奏声音
 	if (!player.LoadRhythmFromDirectory("."))
 	{
@@ -267,7 +265,6 @@ void PMDPlay::ChangeBeatsPerBar()
 int PMDPlay::End()
 {
 	retcode |= DxLib_End();
-	player.Release();
 	return retcode;
 }
 
@@ -548,7 +545,7 @@ void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR 
 		path = strrchrDx(path, TEXT('\\')) + 1;
 	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s：%s"),
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
-		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), player.GetVolume(),
+		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), (int)player.GetVolume(),
 		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
 	if (!fileload_ok)strcatDx(str, TEXT("（无效文件）"));
 }
