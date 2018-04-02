@@ -328,8 +328,12 @@ void PMDPlay::ConvertDialog()
 	strcatDx(cmd, srcfile);
 	strcatDx(cmd, TEXT(" "));
 	sprintfDx(pmdppath, TEXT("%s.WAV"), srcfile);
-	if (!ChooseSaveFile(hWindowDx, pmdppath, NULL, TEXT("波形音频\0*.wav\0\0"), NULL))return;//选择保存文件
+	BOOL st;
+	if (!ChooseSaveFileWithCheckBox(hWindowDx, pmdppath, NULL, TEXT("波形音频\0*.wav\0\0"), NULL,
+		&st, TEXT("单独保存每个通道(&P)")))//选择保存文件
+		return;
 	strcatDx(cmd, pmdppath);
+	if (st)strcatDx(cmd, TEXT(" 1 5000 -st"));
 	SHELLEXECUTEINFO se = { 0 };
 	se.cbSize = sizeof se;
 	se.hwnd = hWindowDx;

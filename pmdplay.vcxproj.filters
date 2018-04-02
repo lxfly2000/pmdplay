@@ -108,6 +108,9 @@
     <ClInclude Include="InputBoxResource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="sfn_template_res.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fmgen\file.cpp">
@@ -182,6 +185,9 @@
       <Filter>资源文件</Filter>
     </ResourceCompile>
     <ResourceCompile Include="InputBox.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="sfn_template.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

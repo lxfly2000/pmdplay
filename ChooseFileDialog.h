@@ -9,3 +9,5 @@ BOOL ChooseSaveFile(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pc
 BOOL ChooseDirectory(HWND hWndParent, TCHAR *fullPath, PCTSTR pcszDefaultPath, PCTSTR pcszTitle);
 //打开 Win9X 风格对话框，选择一个目录
 BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR *fullPath, PCTSTR pcszDefaultPath, PCTSTR pcszInstruction);
+BOOL ChooseSaveFileWithCheckBox(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pcszFiletype,
+	PCTSTR pcszTitle, BOOL *bChecked, PCTSTR pcszCheckBox);

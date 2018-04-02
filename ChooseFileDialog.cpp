@@ -121,3 +121,65 @@ BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR *fullPath, PCTSTR pcszDefault
 	}
 	return FALSE;
 }
+
+#include"sfn_template_res.h"
+BOOL ChooseSaveFileWithCheckBox(HWND hWndParent, TCHAR *filepath, TCHAR *filename, PCTSTR pcszFiletype,
+	PCTSTR pcszTitle, BOOL *bChecked, PCTSTR pcszCheckBox)
+{
+	OPENFILENAME ofn = {};
+	ofn.lStructSize = sizeof OPENFILENAME;
+	ofn.hwndOwner = hWndParent;
+	ofn.hInstance = GetModuleHandle(NULL);
+	ofn.lpstrFilter = pcszFiletype;
+	ofn.lpstrFile = filepath;
+	ofn.lpstrTitle = pcszTitle;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFileTitle = filename;
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_ENABLETEMPLATE | OFN_ENABLEHOOK | OFN_EXPLORER | OFN_ENABLESIZING;
+	ofn.lpTemplateName = MAKEINTRESOURCE(IDD_DIALOGBAR_SFN);
+	static BOOL sfnCheck;
+	static PCTSTR sfn_pcszCheckBox = pcszCheckBox;
+	static int sfn_toBottom;
+	ofn.lpfnHook = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)->UINT_PTR
+	{
+		switch (msg)
+		{
+		case WM_INITDIALOG:
+			if (sfn_pcszCheckBox)
+			{
+				SetDlgItemText(hwnd, IDC_CHECK_SFN, sfn_pcszCheckBox);
+				SIZE scb;
+				RECT rcb;
+				HWND hcb = GetDlgItem(hwnd, IDC_CHECK_SFN);
+				GetTextExtentPoint32(GetDC(hcb), sfn_pcszCheckBox, lstrlen(sfn_pcszCheckBox), &scb);
+				GetClientRect(GetParent(hcb), &rcb);
+				sfn_toBottom = (rcb.bottom - rcb.top + scb.cy) / 2;
+				MoveWindow(hcb, 0, 0, scb.cx, scb.cy, FALSE);
+			}
+			break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+			case IDC_CHECK_SFN:
+				sfnCheck = IsDlgButtonChecked(hwnd, IDC_CHECK_SFN);
+				break;
+			}
+			break;
+		case WM_SIZE:
+			//w:LO h:HI
+			MoveWindow(GetParent(GetDlgItem(hwnd, IDC_CHECK_SFN)), 0, 0, LOWORD(lParam), HIWORD(lParam), FALSE);
+			{
+				RECT rcb;
+				GetClientRect(GetDlgItem(hwnd, IDC_CHECK_SFN), &rcb);
+				MoveWindow(GetDlgItem(hwnd, IDC_CHECK_SFN), (LOWORD(lParam) - rcb.right + rcb.left) / 2,
+					HIWORD(lParam) - sfn_toBottom, rcb.right - rcb.left, rcb.bottom - rcb.top, TRUE);
+			}
+			break;
+		}
+		return 0;
+	};
+	BOOL r = GetSaveFileName(&ofn);
+	*bChecked = sfnCheck;
+	return r;
+}

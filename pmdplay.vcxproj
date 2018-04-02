@@ -195,6 +195,7 @@
     <ClInclude Include="pmdwin\table.h" />
     <ClInclude Include="pmdwin\util.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="sfn_template_res.h" />
     <ClInclude Include="Update.h" />
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +225,7 @@
   <ItemGroup>
     <ResourceCompile Include="InputBox.rc" />
     <ResourceCompile Include="pmdplay.rc" />
+    <ResourceCompile Include="sfn_template.rc" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="2608_bd.wav" />
