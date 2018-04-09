@@ -1,7 +1,14 @@
 # pmdplay
-用于 [Yamaha YM2203](https://en.wikipedia.org/wiki/Yamaha_YM2203) 和 [YM2608](https://en.wikipedia.org/wiki/Yamaha_YM2608) 的 [FM](https://en.wikipedia.org/wiki/Frequency_modulation_synthesis) 音源播放器。
+用于 [Yamaha YM2203 (OPN)](https://en.wikipedia.org/wiki/Yamaha_YM2203) 和 [YM2608 (OPNA)](https://en.wikipedia.org/wiki/Yamaha_YM2608) 的 [FM](https://en.wikipedia.org/wiki/Frequency_modulation_synthesis) 音源播放器。
 
 支持的文件格式：.M, .M2 以及其他 PMD 支持的格式。
+
+## 下载
+[百度云](https://pan.baidu.com/s/1b0Tkce)
+
+## 运行环境
+* XAudio2 版（pmdplay.exe）：**Windows 10 64位**
+* DSound 版（pmdplay-dsound.exe）：**Windows Vista/7/8/8.1/10 64位**
 
 ## 编译
 请用 Visual Studio 2017 编译，需要下载 [DxLib](http://dxlib.o.oo7.jp).
@@ -38,7 +45,9 @@
 5. 按 F11 可全屏。
 6. 启动参数：“600p”以 960x600 的窗口启动，“720p”以 1280x720 的窗口启动。
 7. 按左右键控制播放位置。
-8. 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件，里面写上以下内容：
+
+### 对于 DSound 版 (pmdplay-dsound) 的补充说明
+* 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件，里面写上以下内容：
 ```ini
 [PMDPlayer]
 NotifyCount=4 ;缓冲区块数
