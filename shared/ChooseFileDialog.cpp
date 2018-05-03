@@ -149,6 +149,7 @@ BOOL ChooseSaveFileWithCheckBox(HWND hWndParent, TCHAR *filepath, TCHAR *filenam
 			if (sfn_pcszCheckBox)
 			{
 				SetDlgItemText(hwnd, IDC_CHECK_SFN, sfn_pcszCheckBox);
+				CheckDlgButton(hwnd, IDC_CHECK_SFN, sfnCheck = BST_UNCHECKED);
 				SIZE scb;
 				RECT rcb;
 				HWND hcb = GetDlgItem(hwnd, IDC_CHECK_SFN);
