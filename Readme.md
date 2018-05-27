@@ -15,7 +15,7 @@
 
 ## 参考的代码
 * Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - [M.Kajihara](http://www5.airnet.ne.jp/kajapon/)
-* OPNA FM Generator - cisc
+* [OPNA FM Generator](http://retropc.net/cisc/sound/) - cisc
 * PPZ8 PCM Driver - UKKY
 * PMDWin - [C60](http://c60.la.coocan.jp/)
 * [pmdmini](https://github.com/mistydemeo/pmdmini) - BouKiCHi
