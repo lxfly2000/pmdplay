@@ -78,11 +78,19 @@ int GetItemsInPath(const TCHAR *path, WIN32_FIND_DATA *pdata)
 	FindClose(hf);
 	return c;
 }
+int DxShellCreateFontToHandle(const TCHAR *fontname, int fontsize, int fontthick)
+{
+	if (fontthick == DXGUI_FONTTHICK_DEFAULT)
+		fontthick = 3;
+	if (fontsize == DXGUI_FONTSIZE_DEFAULT)
+		fontsize = 14 * (GetDeviceCaps(GetDC(NULL), LOGPIXELSX) + GetDeviceCaps(GetDC(NULL), LOGPIXELSY)) / 2 / 96;
+	return CreateFontToHandle(fontname, fontsize, fontthick, fontsize > 14 ? DX_FONTTYPE_ANTIALIASING : -1);
+}
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
 int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int bgcolor, const TCHAR *fontname,
 	int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
-	int hDxFont = CreateFontToHandle(fontname, fontsize, fontthick);
+	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
 	int ww, wh;
 	GetDrawScreenSize(&ww, &wh);
@@ -113,7 +121,7 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg, int chooseDir, int keyOk, int keyCancel, int strcolor,
 	int bgcolor, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
-	int hDxFont = CreateFontToHandle(fontname, fontsize, fontthick);
+	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
 	int ww, wh;
 	GetDrawScreenSize(&ww, &wh);
@@ -255,7 +263,7 @@ tagCursorMove:
 int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk, int keyCancel, int strcolor, int bgcolor,
 	const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
-	int hDxFont = CreateFontToHandle(fontname, fontsize, fontthick);
+	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
 	int ww, wh;
 	GetDrawScreenSize(&ww, &wh);
