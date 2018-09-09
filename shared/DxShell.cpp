@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include"DxShell.h"
 #include<Shlwapi.h>
+#include<deque>
 #pragma comment(lib,"shlwapi.lib")
 //缩短路径以使字符串的绘制宽度小于maxWidth
 //返回值为shortend
@@ -128,6 +129,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	if (cx == DXGUI_POSITION_CENTER)cx = ww / 2;
 	if (cy == DXGUI_POSITION_CENTER)cy = wh / 2;
 	
+	const int list_show_items = 5;
 	int strw, strh, lc, singlelineh;
 	GetDrawStringSizeToHandle(&strw, &singlelineh, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度
 	GetDrawStringSizeToHandle(&strw, &strh, &lc, msg, (int)strlenDx(msg), hDxFont);
@@ -142,6 +144,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	listy += cy + paddingHeight;
 
 	int keypressed;
+	std::deque<int> keyqueue;
 	int ret = FALSE;
 	int ci;
 	WIN32_FIND_DATA *fd = nullptr;
@@ -168,7 +171,7 @@ tagCursorMove:
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
 	DrawStringToHandle(listx, cy + paddingHeight, msg, strcolor, hDxFont);
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < list_show_items; i++)
 	{
 		if (listpagecur + i >= ci)break;
 		if (i == cur)
@@ -177,10 +180,13 @@ tagCursorMove:
 		DrawStringToHandle(listx, listy + singlelineh*i, ShortenPath(fd[listpagecur + i].cFileName,shortenedPath,hDxFont,strw),
 			((i == cur) && !(fd[listpagecur + i].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)) ? bgcolor : strcolor, hDxFont);
 	}
-	DrawStringToHandle(listx, listy + singlelineh * 5, ShortenPath(tempPath,shortenedPath,hDxFont,strw), strcolor, hDxFont);
+	DrawStringToHandle(listx, listy + singlelineh * list_show_items, ShortenPath(tempPath,shortenedPath,hDxFont,strw), strcolor, hDxFont);
 	
 	ScreenFlip();
-	keypressed = WaitKey();
+	if (keyqueue.empty())
+		keyqueue.push_back(WaitKey());
+	keypressed = keyqueue.front();
+	keyqueue.pop_front();
 	if (keypressed == keyOk)
 	{
 		if (fd[listpagecur + cur].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
@@ -203,8 +209,8 @@ tagCursorMove:
 		{
 			if (listpagecur == 0)
 			{
-				cur = min(4, ci - 1);
-				listpagecur = max(0, ci - 5);
+				cur = min(list_show_items - 1, ci - 1);
+				listpagecur = max(0, ci - list_show_items);
 			}
 			else
 			{
@@ -217,9 +223,9 @@ tagCursorMove:
 		}
 		goto tagCursorMove;
 	case KEY_INPUT_DOWN:
-		if (cur == 4)
+		if (cur == list_show_items - 1)
 		{
-			if (listpagecur == ci - 5)
+			if (listpagecur == ci - list_show_items)
 			{
 				cur = 0;
 				listpagecur = 0;
@@ -251,6 +257,14 @@ tagCursorMove:
 		{
 			goto tagCursorMove;
 		}
+	case KEY_INPUT_PGUP:
+		for (int i = 0; i < list_show_items; i++)
+			keyqueue.push_back(KEY_INPUT_UP);
+		goto tagCursorMove;
+	case KEY_INPUT_PGDN:
+		for (int i = 0; i < list_show_items; i++)
+			keyqueue.push_back(KEY_INPUT_DOWN);
+		goto tagCursorMove;
 	case KEY_INPUT_TAB:
 		GetNextLogicalDriveString(tempPath, tempPath);
 		goto tagUpdateDir;

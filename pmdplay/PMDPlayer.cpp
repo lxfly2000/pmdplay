@@ -435,8 +435,10 @@ void PMDPlayer::OnPlay()
 		//虽然是整型的，但该变量只用了一个字节，低四位表示一个八度内的半音（Semitone，https://zh.wikipedia.org/wiki/半音 ），
 		//高四位表示在哪个八度（Octave，https://zh.wikipedia.org/wiki/純八度 ），因此实际的音高是低四位＋高四位×12.
 		//这个问题害得我折腾了一下午……原作者也不在注释上写明白，妈的法克！！(╯‵□′)╯︵┻━┻
-		keyState[i] = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
-		if (keyState[i] == 195)keyState[i] = -1;
+		if (getpartwork(i)->onkai == 255)
+			keyState[i] = -1;
+		else
+			keyState[i] = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
 		voiceState[i] = getpartwork(i)->voicenum;
 		volumeState[i] = getpartwork(i)->volume;
 	}

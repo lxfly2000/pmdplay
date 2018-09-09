@@ -23,7 +23,7 @@
     <ProjectGuid>{86249B2D-85F0-4BF5-89B1-6D908F38F55D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>pmdplay</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
