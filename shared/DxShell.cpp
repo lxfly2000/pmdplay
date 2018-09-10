@@ -136,7 +136,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	strw = max(strw, DXGUI_DRAWSTRING_MIN_WIDTH);
 	if (paddingWidth == -1)paddingWidth = (ww - strw) / 2;
 	int listy = strh;
-	strh += 6 * singlelineh;
+	strh += (list_show_items + 1) * singlelineh;
 	if (paddingHeight == -1)paddingHeight = (wh - strh) / 2;
 	cx = cx - strw / 2 - paddingWidth;
 	cy = cy - strh / 2 - paddingHeight;
