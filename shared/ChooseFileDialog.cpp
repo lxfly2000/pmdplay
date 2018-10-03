@@ -154,6 +154,8 @@ BOOL ChooseSaveFileWithCheckBox(HWND hWndParent, TCHAR *filepath, TCHAR *filenam
 				RECT rcb;
 				HWND hcb = GetDlgItem(hwnd, IDC_CHECK_SFN);
 				GetTextExtentPoint32(GetDC(hcb), sfn_pcszCheckBox, lstrlen(sfn_pcszCheckBox), &scb);
+				scb.cx = scb.cx*GetDeviceCaps(GetDC(hcb), LOGPIXELSX) / USER_DEFAULT_SCREEN_DPI;
+				scb.cy = scb.cy*GetDeviceCaps(GetDC(hcb), LOGPIXELSY) / USER_DEFAULT_SCREEN_DPI;
 				GetClientRect(GetParent(hcb), &rcb);
 				sfn_toBottom = (rcb.bottom - rcb.top + scb.cy) / 2;
 				MoveWindow(hcb, 0, 0, scb.cx, scb.cy, FALSE);
