@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -30,6 +30,8 @@
     <ClCompile Include="fmgen\psg.cpp" />
     <ClCompile Include="InputBox.cpp" />
     <ClCompile Include="pmdmini.c" />
+    <ClCompile Include="pmdplay.cpp" />
+    <ClCompile Include="PMDScreen.cpp" />
     <ClCompile Include="pmdwin\opnaw.cpp" />
     <ClCompile Include="pmdwin\p86drv.cpp" />
     <ClCompile Include="pmdwin\pmdwin.cpp" />
@@ -38,6 +40,7 @@
     <ClCompile Include="pmdwin\table.cpp" />
     <ClCompile Include="pmdwin\util.cpp" />
     <ClCompile Include="Update.cpp" />
+    <ClCompile Include="viewmem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChooseFileDialog.h" />
@@ -59,6 +62,8 @@
     <ClInclude Include="InputBox.h" />
     <ClInclude Include="InputBoxResource.h" />
     <ClInclude Include="pmdmini.h" />
+    <ClInclude Include="PMDPlayer.h" />
+    <ClInclude Include="PMDScreen.h" />
     <ClInclude Include="pmdwin\compat.h" />
     <ClInclude Include="pmdwin\opnaw.h" />
     <ClInclude Include="pmdwin\p86drv.h" />
@@ -72,6 +77,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="sfn_template_res.h" />
     <ClInclude Include="Update.h" />
+    <ClInclude Include="viewmem.h" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="2608_bd.wav" />
@@ -86,7 +92,7 @@
     <ProjectGuid>{EF216E52-68E6-4047-AA41-3F920909D184}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>shared</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -152,7 +158,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;HAVE_WINDOWS_H;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -160,7 +166,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -170,7 +176,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;HAVE_WINDOWS_H;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -178,7 +184,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -190,7 +196,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;HAVE_WINDOWS_H;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -200,7 +206,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -212,7 +218,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;HAVE_WINDOWS_H;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -222,7 +228,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\DxLib_VC\僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ ç”Ÿæˆçš„åŒ…å«æ–‡ä»¶ã€‚
-// ä¾› pmdplay.rc ä½¿ç”¨
+// Microsoft Visual C++ Éú³ÉµÄ°üº¬ÎÄ¼ş¡£
+// ¹© pmdplay.rc Ê¹ÓÃ
 //
 #define IDR_WAVE_2608_BD                101
 #define IDR_WAVE_2608_HH                102
@@ -10,8 +10,8 @@
 #define IDR_WAVE_2608_TOP               106
 
 #define APP_VERSION_MAJOR				1
-#define APP_VERSION_MINOR				14
-#define APP_VERSION_REVISION			1
+#define APP_VERSION_MINOR				15
+#define APP_VERSION_REVISION			0
 #define APP_VERSION_BUILD				0
 
 #define RC_STR(x)						#x

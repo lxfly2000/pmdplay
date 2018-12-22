@@ -1,6 +1,6 @@
 #include<fstream>
 #include<string>
-#include "PMDPlayer.h"
+#include "../shared/PMDPlayer.h"
 #include "../shared/pmdmini.h"
 #pragma comment(lib,"XAudio2.lib")
 
@@ -11,6 +11,45 @@ DebugBreak()
 #else
 #define C(e) e
 #endif
+
+#include <xaudio2.h>
+class XASCallback :public IXAudio2VoiceCallback
+{
+public:
+	HANDLE hBufferEndEvent;
+	XASCallback();
+	~XASCallback();
+	void OnBufferEnd(void *)override;
+	void OnBufferStart(void*)override {}
+	void OnLoopEnd(void*)override {}
+	void OnStreamEnd()override {}
+	void OnVoiceError(void*, HRESULT)override {}
+	void OnVoiceProcessingPassEnd()override {}
+	void OnVoiceProcessingPassStart(UINT32)override {}
+};
+//https://github.com/lxfly2000/XAPlayer
+class XAPlayer
+{
+public:
+	void Init(int nChannel, int sampleRate, int bytesPerVar);
+	void Release();
+	void Play(BYTE* buf, int length);
+	void SetVolume(float v);
+	float GetVolume();
+	int SetPlaybackSpeed(float);
+	int GetQueuedBuffersNum();
+	void WaitForBufferEndEvent();
+private:
+	IXAudio2*xAudio2Engine;
+	IXAudio2MasteringVoice* masterVoice;
+	IXAudio2SourceVoice* sourceVoice;
+	XAUDIO2_BUFFER xbuffer;
+	XAUDIO2_VOICE_STATE state;
+	XASCallback xcallback;
+};
+
+XAPlayer x;
+static short* soundbuffer;//PMD_Renderer那个函数用的类型是short我表示难以理解……
 
 XASCallback::XASCallback()
 {
@@ -27,10 +66,6 @@ void XASCallback::OnBufferEnd(void *p)
 	SetEvent(hBufferEndEvent);
 }
 
-XAPlayer::XAPlayer(int nChannel, int sampleRate, int bytesPerVar)
-{
-	Init(nChannel, sampleRate, bytesPerVar);
-}
 void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
 {
 	xAudio2Engine = NULL;
@@ -51,11 +86,6 @@ void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
 	if (FAILED(xAudio2Engine->CreateMasteringVoice(&masterVoice)))return;
 	xAudio2Engine->CreateSourceVoice(&sourceVoice, &w, 0, XAUDIO2_DEFAULT_FREQ_RATIO, &xcallback);
 	sourceVoice->Start();
-}
-
-XAPlayer::~XAPlayer()
-{
-	Release();
 }
 
 void XAPlayer::Release()
@@ -103,16 +133,6 @@ int XAPlayer::SetPlaybackSpeed(float speed)
 	return sourceVoice->SetFrequencyRatio(speed);
 }
 
-
-PMDPlayer::PMDPlayer(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms) :x(nChannel, sampleRate, bytesPerVar)
-{
-	Init(nChannel, sampleRate, bytesPerVar, buffer_time_ms);
-}
-
-PMDPlayer::~PMDPlayer()
-{
-	Release();
-}
 
 int PMDPlayer::LoadFromFile(const char *filepath)
 {
@@ -278,16 +298,16 @@ float PMDPlayer::GetPlaybackSpeed()
 	return playbackspeed;
 }
 
-void PMDPlayer::SetVolume(float v)
+void PMDPlayer::SetVolume(int v)
 {
 	v = min(PMDPLAYER_MAX_VOLUME, v);
 	v = max(0, v);
-	x.SetVolume(v / PMDPLAYER_MAX_VOLUME);
+	x.SetVolume((float)v / PMDPLAYER_MAX_VOLUME);
 }
 
-float PMDPlayer::GetVolume()
+int PMDPlayer::GetVolume()
 {
-	return x.GetVolume()*PMDPLAYER_MAX_VOLUME;
+	return (int)(x.GetVolume()*PMDPLAYER_MAX_VOLUME);
 }
 
 void PMDPlayer::Unload()
@@ -370,9 +390,12 @@ PMDPlayer::PlayerStatus PMDPlayer::GetPlayerStatus()
 
 void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms)
 {
+	x.Init(nChannel, sampleRate, bytesPerVar);
 	m_channels = nChannel;
 	m_bytesPerVar = bytesPerVar;
 	m_sampleRate = sampleRate;
+	if (buffer_time_ms == 0)
+		buffer_time_ms = GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 20, profilename);
 	bytesof_soundbuffer = sampleRate*bytesPerVar*nChannel*buffer_time_ms / 1000;
 	soundbuffer = reinterpret_cast<decltype(soundbuffer)>(new BYTE[bytesof_soundbuffer]);
 	playerstatus = nofile;
@@ -383,12 +406,17 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 	setfmcalc55k(true);
 	pmd_setrate(sampleRate);
 	playbackspeed = 1.0f;
+	memset(keyState, -1, sizeof keyState);
+	keyState[8] = 0;
+	ZeroMemory(voiceState, sizeof voiceState);
+	ZeroMemory(volumeState, sizeof volumeState);
 }
 
 void PMDPlayer::Release()
 {
 	Unload();
 	delete[]soundbuffer;
+	x.Release();
 }
 
 void PMDPlayer::_Subthread_Playback(PMDPlayer *param)
@@ -407,21 +435,6 @@ void PMDPlayer::_LoopPlayback()
 		}
 	}
 }
-//#define NOTE_PITCH_NOT_CORRECT
-#ifdef NOTE_PITCH_NOT_CORRECT
-#include<DxLib.h>
-int look = 0;
-TCHAR *des[24] = {
-	L"FM1",L"FM2",L"FM3",L"FM4",L"FM5",L"FM6",
-	L"SSG1",L"SSG2",L"SSG3",
-	L"ADPCM",
-	L"OPNAR",
-	L"Ext1",L"Ext2",L"Ext3",
-	L"Rhy",
-	L"Eff",
-	L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ"
-};
-#endif
 void PMDPlayer::OnPlay()
 {
 	pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
@@ -435,7 +448,7 @@ void PMDPlayer::OnPlay()
 		//虽然是整型的，但该变量只用了一个字节，低四位表示一个八度内的半音（Semitone，https://zh.wikipedia.org/wiki/半音 ），
 		//高四位表示在哪个八度（Octave，https://zh.wikipedia.org/wiki/純八度 ），因此实际的音高是低四位＋高四位×12.
 		//这个问题害得我折腾了一下午……原作者也不在注释上写明白，妈的法克！！(╯‵□′)╯︵┻━┻
-		if (getpartwork(i)->onkai == 255)
+		if (getpartwork(i)->onkai == 255||getpartwork(i)->keyoff_flag==-1)
 			keyState[i] = -1;
 		else
 			keyState[i] = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
@@ -443,28 +456,6 @@ void PMDPlayer::OnPlay()
 		volumeState[i] = getpartwork(i)->volume;
 	}
 	if (!getopenwork()->effflag)keyState[8] = getopenwork()->kshot_dat;// % 128;//SSG鼓声
-#ifdef NOTE_PITCH_NOT_CORRECT
-	if (GetAsyncKeyState(VK_UP)&1)look++;
-	if (GetAsyncKeyState(VK_DOWN)&1)look--;
-	clsDx();
-	if (look == -1)
-	{
-		for (int i = 0; i < 524; i++)
-		{
-			if (i % 16 == 0)printfDx(TEXT("\n"));
-			printfDx(TEXT("%02x "), ((char*)getopenwork())[i] & 0xFF);
-		}
-	}
-	else
-	{
-		printfDx(TEXT("%d %s"), look, des[look]);
-		for (int i = 0; i < sizeof QQ; i++)
-		{
-			if (i % 16 == 0)printfDx(TEXT("\n"));
-			printfDx(TEXT("%02x "), ((char*)getpartwork(look))[i] & 0xFF);
-		}
-	}
-#endif
 }
 
 void PMDPlayer::OnFadingOut()
@@ -472,4 +463,10 @@ void PMDPlayer::OnFadingOut()
 	OnPlay();
 	if (GetPositionInMs() / 1000 > fadingout_end_time_sec)
 		playerstatus = fadedout;
+}
+
+int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+{
+	extern int pmdplayMain(wchar_t*);
+	return pmdplayMain(lpCmdLine);
 }
