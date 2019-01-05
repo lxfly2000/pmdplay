@@ -5,7 +5,7 @@
 #pragma comment(lib,"shlwapi.lib")
 //缩短路径以使字符串的绘制宽度小于maxWidth
 //返回值为shortend
-TCHAR *ShortenPath(const TCHAR *src, TCHAR *shortened, int fontHandle, int maxWidth)
+TCHAR *ShortenPath(const TCHAR *src, BOOL isDir, TCHAR *shortened, int fontHandle, int maxWidth)
 {
 	int w = GetDrawStringWidthToHandle(src, (int)strlenDx(src), fontHandle);
 	if (w <= maxWidth)return (TCHAR*)src;
@@ -14,8 +14,15 @@ TCHAR *ShortenPath(const TCHAR *src, TCHAR *shortened, int fontHandle, int maxWi
 	if (pc == -1)strncpyDx(fileext, src, ARRAYSIZE(fileext));
 	else strncpyDx(fileext, src + pc + 1, ARRAYSIZE(fileext));
 	pc = strrchr2Dx(fileext, '.');
-	if (pc == -1)fileext[0] = 0;
-	else strcpyDx(fileext, fileext + pc + 1);
+	if (pc == -1||isDir)fileext[0] = 0;
+	else
+	{
+		strcpyDx(fileext, fileext + pc + 1);
+		TCHAR testOnlyExt[MAX_PATH];
+		sprintfDx(testOnlyExt, TEXT("...%s"), fileext);
+		if (GetDrawStringWidthToHandle(testOnlyExt, (int)strlenDx(testOnlyExt), fontHandle) > maxWidth)
+			fileext[0] = 0;
+	}
 	strcpyDx(shortened, src);
 	while (w > maxWidth)
 	{
@@ -177,10 +184,11 @@ tagCursorMove:
 		if (i == cur)
 			DrawBox(listx, listy + singlelineh*i, listx + strw, listy + singlelineh*(i + 1), strcolor,
 				!(fd[listpagecur + i].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY));
-		DrawStringToHandle(listx, listy + singlelineh*i, ShortenPath(fd[listpagecur + i].cFileName,shortenedPath,hDxFont,strw),
+		DrawStringToHandle(listx, listy + singlelineh*i, ShortenPath(fd[listpagecur + i].cFileName,
+			fd[listpagecur+i].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY,shortenedPath,hDxFont,strw),
 			((i == cur) && !(fd[listpagecur + i].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)) ? bgcolor : strcolor, hDxFont);
 	}
-	DrawStringToHandle(listx, listy + singlelineh * list_show_items, ShortenPath(tempPath,shortenedPath,hDxFont,strw), strcolor, hDxFont);
+	DrawStringToHandle(listx, listy + singlelineh * list_show_items, ShortenPath(tempPath,TRUE,shortenedPath,hDxFont,strw), strcolor, hDxFont);
 	
 	ScreenFlip();
 	if (keyqueue.empty())

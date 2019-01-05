@@ -9,7 +9,7 @@
 
 ## 运行环境
 * XAudio2 版（pmdplay.exe，pmdplay64.exe）：**Windows 10**
-* DSound 版（pmdplay-dsound.exe，pmdplay-ds64.exe）：**Windows Vista/7/8/8.1/10**
+* DSound 版（pmdplay-dsound.exe，pmdplay-dsound64.exe）：**Windows Vista/7/8/8.1/10**
 
 ## 编译
 请用 Visual Studio 2017 编译，需要下载 [DxLib](http://dxlib.o.oo7.jp).
@@ -52,6 +52,6 @@
 * 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件，里面写上以下内容：
 ```ini
 [PMDPlayer]
-NotifyCount=4 ;缓冲区块数，这个选项只对pmdplay-dsound.exe有效。
+NotifyCount=4 ;缓冲区块数，这个选项只对pmdplay-dsound(64).exe有效。
 BufferBlockTimeMS=50 ;块大小（用时长表示，毫秒）
 ```

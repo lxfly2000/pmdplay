@@ -231,9 +231,11 @@ int PMDPlay::Init(TCHAR* param)
 void PMDPlay::CheckUpdate(bool showError)
 {
 	int a;
+	TCHAR ti[400];
+	GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
 	SetWindowText(TEXT("检查更新中……"));
 	int r = CheckForUpdate(updateFileURL, &a);
-	SetWindowText(TEXT(APP_NAME));
+	SetWindowText(ti);
 	if(showError)switch (r)
 	{
 	case -2:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
