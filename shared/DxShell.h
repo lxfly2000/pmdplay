@@ -49,3 +49,6 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk = 
 	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
 	int fontsize = DXGUI_FONTSIZE_DEFAULT, int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER,
 	int cy = DXGUI_POSITION_CENTER, int paddingWidth = DXGUI_PADDING_WIDTH_DEFAULT, int paddingHeight = DXGUI_PADDING_WIDTH_DEFAULT);
+//缩短路径以使字符串的绘制宽度小于maxWidth
+//返回值为shortend
+TCHAR *ShortenPath(const TCHAR *src, BOOL isDir, TCHAR *shortened, int fontHandle, int maxWidth);

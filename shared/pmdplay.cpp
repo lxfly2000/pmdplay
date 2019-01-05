@@ -115,7 +115,7 @@ private:
 	int xiaojie = 0, step = 0, tick = 0, ticksPerStep = 4, stepsPerBar = STEPS_PER_BAR;
 	bool running = true;
 	TCHAR filepath[MAX_PATH] = TEXT("");
-	TCHAR szStr[200] = TEXT("");
+	TCHAR szStr[380] = TEXT("");
 	TCHAR szTimeInfo[80] = TEXT("");
 	TCHAR szLastTime[10] = TEXT("0:00.000");
 	bool channelOn[NumOfAllPart];
@@ -127,6 +127,7 @@ private:
 	int lastclicktime = 0, thisclicktime = 0;
 	int retcode = 0;
 	bool fileload_ok = true;
+	int originalWinWidth, originalWinHeight, displayWinWidth, displayWinHeight;
 };
 
 PMDPlay::PMDPlay() :leftclick(MOUSE_INPUT_LEFT)
@@ -158,19 +159,19 @@ int PMDPlay::Init(TCHAR* param)
 	}
 
 	//程序设定
-	int w = 800, h = 600;
+	originalWinWidth = 800, originalWinHeight = 600;
 	if (__argc > 1)
 	{
 		if (stricmpDx(__wargv[1], TEXT("600p")) == 0)
 		{
-			w = 960;
-			h = 600;
+			originalWinWidth = 960;
+			originalWinHeight = 600;
 			param[0] = 0;
 		}
 		else if (stricmpDx(__wargv[1], TEXT("720p")) == 0)
 		{
-			w = 1280;
-			h = 720;
+			originalWinWidth = 1280;
+			originalWinHeight = 720;
 			param[0] = 0;
 		}
 		else if (stricmpDx(__wargv[1], TEXT("-e")) == 0)
@@ -181,7 +182,7 @@ int PMDPlay::Init(TCHAR* param)
 	SetWindowSizeChangeEnableFlag(TRUE);
 	SetAlwaysRunFlag(TRUE);
 	DPIInfo hdpi;
-	SetGraphMode(hdpi.X(w), hdpi.Y(h), 32);
+	SetGraphMode(displayWinWidth = hdpi.X(originalWinWidth), displayWinHeight = hdpi.Y(originalWinHeight), 32);
 	ChangeFont(TEXT("SimSun"));
 	SetFontSize(hdpi.X(14));
 	if (hdpi.X(14) > 14)ChangeFontType(DX_FONTTYPE_ANTIALIASING);
@@ -562,12 +563,15 @@ void PMDPlay::OnLoop()
 
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
 {
-	if (strlenDx(path) > 80)
-		path = strrchrDx(path, TEXT('\\')) + 1;
+	TCHAR displayPath[MAX_PATH];
+	const TCHAR *strPlayStat = isplaying ? TEXT("正在播放") : TEXT("当前文件");
+	int mw = displayWinWidth - GetDrawStringWidth(strPlayStat, (int)strlenDx(strPlayStat));
+	if (!fileload_ok)
+		mw -= GetDrawStringWidth(TEXT("（无效文件）"), 6);
 	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s：%s"),
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
-		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), player.GetVolume(),
-		isplaying ? TEXT("正在播放") : TEXT("当前文件"), path[0] ? path : TEXT("未选择"));
+		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), player.GetVolume(), strPlayStat,
+		path[0] ? ShortenPath(path, FALSE, displayPath, GetDefaultFontHandle(), mw) : TEXT("未选择"));
 	if (!fileload_ok)strcatDx(str, TEXT("（无效文件）"));
 }
 
