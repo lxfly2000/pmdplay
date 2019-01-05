@@ -564,11 +564,11 @@ void PMDPlay::OnLoop()
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
 {
 	TCHAR displayPath[MAX_PATH];
-	const TCHAR *strPlayStat = isplaying ? TEXT("正在播放") : TEXT("当前文件");
+	const TCHAR *strPlayStat = isplaying ? TEXT("正在播放：") : TEXT("当前文件：");
 	int mw = displayWinWidth - GetDrawStringWidth(strPlayStat, (int)strlenDx(strPlayStat));
 	if (!fileload_ok)
 		mw -= GetDrawStringWidth(TEXT("（无效文件）"), 6);
-	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s：%s"),
+	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s%s"),
 		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
 		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), player.GetVolume(), strPlayStat,
 		path[0] ? ShortenPath(path, FALSE, displayPath, GetDefaultFontHandle(), mw) : TEXT("未选择"));
