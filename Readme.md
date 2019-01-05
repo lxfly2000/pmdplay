@@ -4,7 +4,8 @@
 支持的文件格式：.M, .M2 以及其他 PMD 支持的格式。
 
 ## 下载
-[百度云](https://pan.baidu.com/s/1b0Tkce)
+[GitHub](https://github.com/lxfly2000/pmdplay/releases)  
+[Old Versions](https://pan.baidu.com/s/1b0Tkce)
 
 ## 运行环境
 * XAudio2 版（pmdplay.exe）：**Windows 10 64位**
@@ -45,11 +46,12 @@
 5. 按 F11 可全屏。
 6. 启动参数：“600p”以 960x600 的窗口启动，“720p”以 1280x720 的窗口启动。
 7. 按左右键控制播放位置。
+8. 按M显示各通道的内存状态，‘<’、‘>’键切换通道。
 
-### 对于 DSound 版 (pmdplay-dsound) 的补充说明
+### 补充说明
 * 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件，里面写上以下内容：
 ```ini
 [PMDPlayer]
 NotifyCount=4 ;缓冲区块数
-BufferBlockTimeMS=50 ;块大小（用时长表示，毫秒）
+BufferBlockTimeMS=50 ;块大小（用时长表示，毫秒），这个选项只对pmdplay-dsound.exe有效。
 ```
