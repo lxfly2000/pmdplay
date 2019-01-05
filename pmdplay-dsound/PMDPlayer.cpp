@@ -465,7 +465,7 @@ void PMDPlayer::OnFadingOut()
 		playerstatus = fadedout;
 }
 
-int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	extern int pmdplayMain(wchar_t*);
 	return pmdplayMain(lpCmdLine);

@@ -117,8 +117,8 @@ void MakeTable()
 	if (CH4S != sizeof(Channel4))
 	{
 		char buf[40];
-		wsprintf(buf, "CH4S incorrect.\nsizeof(Channel4) == %d", sizeof(Channel4));
-		MessageBox(0, buf, "FMGen", MB_OK);
+		wsprintfA(buf, "CH4S incorrect.\nsizeof(Channel4) == %d", sizeof(Channel4));
+		MessageBoxA(0, buf, "FMGen", MB_OK);
 	}
 #endif
 	assert(CH4S == sizeof(Channel4));

@@ -19,13 +19,13 @@ public:
 	HANDLE hBufferEndEvent;
 	XASCallback();
 	~XASCallback();
-	void OnBufferEnd(void *)override;
-	void OnBufferStart(void*)override {}
-	void OnLoopEnd(void*)override {}
-	void OnStreamEnd()override {}
-	void OnVoiceError(void*, HRESULT)override {}
-	void OnVoiceProcessingPassEnd()override {}
-	void OnVoiceProcessingPassStart(UINT32)override {}
+	void WINAPI OnBufferEnd(void *)override;
+	void WINAPI OnBufferStart(void*)override {}
+	void WINAPI OnLoopEnd(void*)override {}
+	void WINAPI OnStreamEnd()override {}
+	void WINAPI OnVoiceError(void*, HRESULT)override {}
+	void WINAPI OnVoiceProcessingPassEnd()override {}
+	void WINAPI OnVoiceProcessingPassStart(UINT32)override {}
 };
 //https://github.com/lxfly2000/XAPlayer
 class XAPlayer
@@ -61,7 +61,7 @@ XASCallback::~XASCallback()
 	CloseHandle(hBufferEndEvent);
 }
 
-void XASCallback::OnBufferEnd(void *p)
+void WINAPI XASCallback::OnBufferEnd(void *p)
 {
 	SetEvent(hBufferEndEvent);
 }
@@ -465,7 +465,7 @@ void PMDPlayer::OnFadingOut()
 		playerstatus = fadedout;
 }
 
-int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	extern int pmdplayMain(wchar_t*);
 	return pmdplayMain(lpCmdLine);
