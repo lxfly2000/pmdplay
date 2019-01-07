@@ -119,7 +119,7 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 	cy = cy - strh / 2 - paddingHeight;
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
 	if (borderwidth > 0.0f)
-		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, HdpiNum(borderwidth));
+		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, borderwidth);
 	DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
 	ScreenFlip();
 	int ret = -1;
@@ -147,9 +147,9 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	
 	const int list_show_items = 5;
 	int strw, strh, lc, singlelineh;
-	GetDrawStringSizeToHandle(&strw, &singlelineh, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度
+	GetDrawStringSizeToHandle(&strw, &singlelineh, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度，也可以用singlelineh = strh / lc获取
 	GetDrawStringSizeToHandle(&strw, &strh, &lc, msg, (int)strlenDx(msg), hDxFont);
-	strw = max(strw, DXGUI_DRAWSTRING_MIN_WIDTH);
+	strw = max(strw, HdpiNum(DXGUI_DRAWSTRING_MIN_WIDTH));
 	if (paddingWidth == -1)paddingWidth = (ww - strw) / 2;
 	int listy = strh;
 	strh += (list_show_items + 1) * singlelineh;
@@ -216,7 +216,7 @@ tagUpdateDir:
 tagCursorMove:
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
 	if (borderwidth > 0.0f)
-		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, HdpiNum(borderwidth));
+		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, borderwidth);
 	DrawStringToHandle(listx, cy + paddingHeight, msg, strcolor, hDxFont);
 
 	for (int i = 0; i < list_show_items; i++)
@@ -332,7 +332,7 @@ tagCursorMove:
 	return ret;
 }
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
-int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk, int keyCancel, int strcolor, int bgcolor, int bordercolor,
+int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL onlyNum, int strcolor, int bgcolor, int bordercolor,
 	float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
@@ -342,6 +342,43 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk, i
 	if (cx == DXGUI_POSITION_CENTER)cx = ww / 2;
 	if (cy == DXGUI_POSITION_CENTER)cy = wh / 2;
 	int len = 0;
-	throw "Not implemented.";
+	
+	if (msg == NULL)
+		msg = TEXT(DXGUI_GETINPUT_MSG_DEFAULT);
+	int strw, strh, lc, singlelineh;
+	GetDrawStringSizeToHandle(&strw, &singlelineh, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度，也可以用singlelineh = strh / lc获取
+	GetDrawStringSizeToHandle(&strw, &strh, &lc, msg, (int)strlenDx(msg), hDxFont);
+	if (paddingWidth == -1)
+		paddingWidth = (ww - strw) / 2;
+	if (paddingHeight == -1)
+		paddingHeight = (wh - strh - singlelineh) / 2;
+	strw = max(strw, HdpiNum(DXGUI_DRAWSTRING_MIN_WIDTH));
+	cx = cx - strw / 2 - paddingWidth;
+	cy = cy - (strh + singlelineh) / 2 - paddingHeight;
+	int inputHandle = MakeKeyInput(limit, TRUE, FALSE, onlyNum);
+	RECT inputRect = { cx + paddingWidth,cy + paddingHeight + strh,cx + paddingWidth + strw,cy + paddingHeight + strh + singlelineh };
+	SetKeyInputDrawArea(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, inputHandle);
+	SetActiveKeyInput(inputHandle);
+	SetKeyInputString(outString, inputHandle);
+	int keyInputState = 0;
+	while (keyInputState == 0)
+	{
+		DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + singlelineh + 2 * paddingHeight, bgcolor, TRUE);
+		if (borderwidth > 0.0f)
+			DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + singlelineh + 2.0f * paddingHeight, bordercolor, FALSE, borderwidth);
+		DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
+		DrawBox(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, strcolor, FALSE);
+		DrawKeyInputString(inputRect.left, inputRect.top, inputHandle);
+		GetKeyInputString(outString, inputHandle);
+		len = strlenDx(outString);
+		ScreenFlip();
+		ProcessMessage();//输入系统需要处理消息事件
+		keyInputState = CheckKeyInput(inputHandle);
+	}
+	DeleteKeyInput(inputHandle);
+	DeleteFontToHandle(hDxFont);
+	if (keyInputState == 2)
+		len = -1;
+	while (CheckHitKey(KEY_INPUT_ESCAPE) || CheckHitKey(KEY_INPUT_RETURN));
 	return len;
 }

@@ -11,8 +11,8 @@
 
 #define APP_VERSION_MAJOR				1
 #define APP_VERSION_MINOR				15
-#define APP_VERSION_REVISION			5
-#define APP_VERSION_BUILD				2
+#define APP_VERSION_REVISION			6
+#define APP_VERSION_BUILD				0
 
 #define RC_STR(x)						#x
 #define _RC_STR(x)						RC_STR(x)
