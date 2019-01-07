@@ -8,7 +8,7 @@
 [Old Versions](https://pan.baidu.com/s/1b0Tkce)
 
 ## 运行环境
-* XAudio2 版（pmdplay.exe，pmdplay64.exe）：**Windows 10**
+* XAudio2 版（pmdplay.exe，pmdplay64.exe）：**Windows 10**（Win10用户推荐使用这个）
 * DSound 版（pmdplay-dsound.exe，pmdplay-dsound64.exe）：**Windows Vista/7/8/8.1/10**
 
 ## 编译
