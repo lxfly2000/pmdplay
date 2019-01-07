@@ -370,7 +370,7 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL onlyNum
 		DrawBox(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, strcolor, FALSE);
 		DrawKeyInputString(inputRect.left, inputRect.top, inputHandle);
 		GetKeyInputString(outString, inputHandle);
-		len = strlenDx(outString);
+		len = (int)strlenDx(outString);
 		ScreenFlip();
 		ProcessMessage();//输入系统需要处理消息事件
 		keyInputState = CheckKeyInput(inputHandle);
