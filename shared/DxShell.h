@@ -2,6 +2,8 @@
 #include<DxLib.h>
 #define DXGUI_COLOR_STRING_DEFAULT		0x00FFFFFF
 #define DXGUI_COLOR_BACKGROUND_DEFAULT	0x00000000
+#define DXGUI_COLOR_BORDER_DEFAULT		0x00FFFFFF
+#define DXGUI_BORDER_WIDTH_DEFAULT		0.0f
 #define DXGUI_FONTSIZE_DEFAULT			-1
 #define DXGUI_FONTNAME_DEFAULT			"宋体"
 #define DXGUI_FONTTHICK_DEFAULT			-1
@@ -18,6 +20,7 @@
 //返回值：按下keyOk键返回TRUE，keyCancel返回FALSE
 int DxMessageBox(const TCHAR *msg, int keyOk = KEY_INPUT_RETURN, int keyCancel = KEY_INPUT_ESCAPE,
 	int strcolor = DXGUI_COLOR_STRING_DEFAULT, int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT,
+	int bordercolor = DXGUI_COLOR_BORDER_DEFAULT, float borderwidth = DXGUI_BORDER_WIDTH_DEFAULT,
 	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT), int fontsize = DXGUI_FONTSIZE_DEFAULT,
 	int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER, int cy = DXGUI_POSITION_CENTER,
 	int paddingWidth = DXGUI_PADDING_WIDTH_DEFAULT, int paddingHeight = DXGUI_PADDING_WIDTH_DEFAULT);
@@ -34,7 +37,8 @@ int DxMessageBox(const TCHAR *msg, int keyOk = KEY_INPUT_RETURN, int keyCancel =
 //返回值：按下keyOk键返回TRUE，keyCancel返回FALSE
 int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg = TEXT(DXGUI_CHOOSEFILE_MSG_DEFAULT),
 	int chooseDir = 0, int keyOk = KEY_INPUT_RETURN, int keyCancel = KEY_INPUT_ESCAPE, int strcolor = DXGUI_COLOR_STRING_DEFAULT,
-	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
+	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, int bordercolor = DXGUI_COLOR_BORDER_DEFAULT, float borderwidth = DXGUI_BORDER_WIDTH_DEFAULT,
+	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
 	int fontsize = DXGUI_FONTSIZE_DEFAULT, int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER,
 	int cy = DXGUI_POSITION_CENTER, int paddingWidth = DXGUI_PADDING_WIDTH_DEFAULT, int paddingHeight = DXGUI_PADDING_WIDTH_DEFAULT);
 //获取用户输入的一串文字，limit为长度上限，Enter返回输入的字符数量，Esc返回FALSE
@@ -46,7 +50,8 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 //返回值：按下keyOk键返回输入的字符串长度，keyCancel返回0
 int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk = KEY_INPUT_RETURN,
 	int keyCancel = KEY_INPUT_ESCAPE, int strcolor = DXGUI_COLOR_STRING_DEFAULT,
-	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
+	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, int bordercolor = DXGUI_COLOR_BORDER_DEFAULT, float borderwidth = DXGUI_BORDER_WIDTH_DEFAULT,
+	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
 	int fontsize = DXGUI_FONTSIZE_DEFAULT, int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER,
 	int cy = DXGUI_POSITION_CENTER, int paddingWidth = DXGUI_PADDING_WIDTH_DEFAULT, int paddingHeight = DXGUI_PADDING_WIDTH_DEFAULT);
 //缩短路径以使字符串的绘制宽度小于maxWidth

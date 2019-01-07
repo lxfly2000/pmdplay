@@ -408,7 +408,6 @@ void PMDPlay::OnAbout()
 		strcpyDx(unicode_str, TEXT(HELP_INFO));
 		strcatDx(unicode_str, TEXT("\n\n[Enter]继续"));
 		DxMessageBox(unicode_str);
-		while (CheckHitKey(KEY_INPUT_ESCAPE));
 	}
 }
 
@@ -498,7 +497,6 @@ void PMDPlay::OnLoop()
 		{
 			OnLoadFile(filepath);
 		}
-		else while (CheckHitKey(KEY_INPUT_ESCAPE));
 	}
 	//D
 	if (KeyReleased(KEY_INPUT_D)) { showVoiceAndVolume = !showVoiceAndVolume; USTR; }

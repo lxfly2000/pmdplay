@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"DxShell.h"
+#include"DxKeyTrigger.h"
 #include<Shlwapi.h>
 #include<deque>
 #pragma comment(lib,"shlwapi.lib")
@@ -86,16 +87,20 @@ int GetItemsInPath(const TCHAR *path, WIN32_FIND_DATA *pdata)
 	FindClose(hf);
 	return c;
 }
+template<typename Tnum>Tnum HdpiNum(Tnum n)
+{
+	return (Tnum)(GetDeviceCaps(GetDC(NULL), LOGPIXELSX) * n / USER_DEFAULT_SCREEN_DPI);
+}
 int DxShellCreateFontToHandle(const TCHAR *fontname, int fontsize, int fontthick)
 {
 	if (fontthick == DXGUI_FONTTHICK_DEFAULT)
 		fontthick = 3;
 	if (fontsize == DXGUI_FONTSIZE_DEFAULT)
-		fontsize = 14 * (GetDeviceCaps(GetDC(NULL), LOGPIXELSX) + GetDeviceCaps(GetDC(NULL), LOGPIXELSY)) / 2 / 96;
+		fontsize = HdpiNum(14);
 	return CreateFontToHandle(fontname, fontsize, fontthick, fontsize > 14 ? DX_FONTTYPE_ANTIALIASING : -1);
 }
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
-int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int bgcolor, const TCHAR *fontname,
+int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int bgcolor, int bordercolor, float borderwidth, const TCHAR *fontname,
 	int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
@@ -113,21 +118,25 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 	cx = cx - strw / 2 - paddingWidth;
 	cy = cy - strh / 2 - paddingHeight;
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
+	if (borderwidth > 0.0f)
+		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, HdpiNum(borderwidth));
 	DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
 	ScreenFlip();
-	int keypressed;
 	int ret = -1;
+	DxKeyTrigger trKeyOk(keyOk), trKeyCancel(keyCancel);
 	do {
-		keypressed = WaitKey();
-		if (keypressed == keyOk)ret = TRUE;
-		if (keypressed == keyCancel)ret = FALSE;
+		if (trKeyOk.Released())
+			ret = TRUE;
+		if (trKeyCancel.Released())
+			ret = FALSE;
 	} while (ret == -1);
 	DeleteFontToHandle(hDxFont);
 	return ret;
 }
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
 int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg, int chooseDir, int keyOk, int keyCancel, int strcolor,
-	int bgcolor, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
+	int bgcolor, int bordercolor, float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth,
+	int paddingHeight)
 {
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
@@ -158,14 +167,22 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	int cur, listpagecur;
 	TCHAR tempPath[MAX_PATH] = TEXT(""), shortenedPath[MAX_PATH] = TEXT("");
 	ConvertFullPath(initPath, tempPath);
-	if (!PathFileExists(tempPath) || !PathIsDirectory(tempPath))
+	bool findingInitPath = !PathIsDirectory(tempPath);
+	while (!(PathFileExists(tempPath) && PathIsDirectory(tempPath)))
+	{
+		if (!PathFileExists(tempPath))
+			findingInitPath = false;
 		PathCombine(tempPath, tempPath, TEXT(".."));
+		if (PathIsRoot(tempPath))
+			break;
+	}
 tagUpdateDir:
 	listpagecur = 0;
 	cur = 0;
 	ci = GetItemsInPath(tempPath, NULL);
 	if (ci == 0)
 	{
+		findingInitPath = false;
 		DxMessageBox(TEXT("该文件夹是空的。\n按Enter继续……"));
 		if (strlenDx(tempPath) < 4)GetNextLogicalDriveString(tempPath, tempPath);
 		else PathCombine(tempPath, tempPath, TEXT(".."));
@@ -174,8 +191,32 @@ tagUpdateDir:
 	if (fd)delete fd;
 	fd = new WIN32_FIND_DATA[ci];
 	ci = GetItemsInPath(tempPath, fd);
+	if (findingInitPath)
+	{
+		findingInitPath = false;
+		listpagecur = max(0, ci - list_show_items);
+		cur = ci - listpagecur - 1;
+		while (listpagecur + cur > 0)
+		{
+			for (size_t i = strlenDx(initPath) - 1; i >= 0; i--)
+			{
+				if (initPath[i] == '\\' || initPath[i] == '/')
+				{
+					if (strcmpDx(initPath + i + 1, fd[listpagecur + cur].cFileName) == 0)
+						goto tagCursorMove;
+					break;
+				}
+			}
+			if (cur > 0)
+				cur--;
+			else
+				listpagecur--;
+		}
+	}
 tagCursorMove:
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
+	if (borderwidth > 0.0f)
+		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, HdpiNum(borderwidth));
 	DrawStringToHandle(listx, cy + paddingHeight, msg, strcolor, hDxFont);
 
 	for (int i = 0; i < list_show_items; i++)
@@ -276,14 +317,23 @@ tagCursorMove:
 	case KEY_INPUT_TAB:
 		GetNextLogicalDriveString(tempPath, tempPath);
 		goto tagUpdateDir;
+	case KEY_INPUT_HOME:
+		for (int i = listpagecur + cur; i > 0; i--)
+			keyqueue.push_back(KEY_INPUT_UP);
+		goto tagCursorMove;
+	case KEY_INPUT_END:
+		for (int i = ci - 1 - listpagecur - cur; i > 0; i--)
+			keyqueue.push_back(KEY_INPUT_DOWN);
+		goto tagCursorMove;
 	default:goto tagCursorMove;
 	}
 	delete fd;
+	while (CheckHitKey(keypressed));
 	return ret;
 }
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
-int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk, int keyCancel, int strcolor, int bgcolor,
-	const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
+int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, int keyOk, int keyCancel, int strcolor, int bgcolor, int bordercolor,
+	float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
