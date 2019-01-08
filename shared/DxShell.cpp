@@ -332,7 +332,7 @@ tagCursorMove:
 	return ret;
 }
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
-int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL onlyNum, int strcolor, int bgcolor, int bordercolor,
+int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL multiline, BOOL onlyNum, int strcolor, int bgcolor, int bordercolor,
 	float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
@@ -343,37 +343,62 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL onlyNum
 	if (cy == DXGUI_POSITION_CENTER)cy = wh / 2;
 	int len = 0;
 	
+	const int show_lines = 5;
 	if (msg == NULL)
-		msg = TEXT(DXGUI_GETINPUT_MSG_DEFAULT);
-	int strw, strh, lc, singlelineh;
-	GetDrawStringSizeToHandle(&strw, &singlelineh, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度，也可以用singlelineh = strh / lc获取
+		msg = multiline ? TEXT(DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT) : TEXT(DXGUI_GETINPUT_MSG_DEFAULT);
+	int strw, strh, lc, inputLineH, statusLineH;
+	GetDrawStringSizeToHandle(&strw, &inputLineH, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度，也可以用singlelineh = strh / lc获取
+	statusLineH = inputLineH;
 	GetDrawStringSizeToHandle(&strw, &strh, &lc, msg, (int)strlenDx(msg), hDxFont);
 	if (paddingWidth == -1)
 		paddingWidth = (ww - strw) / 2;
+	bool expandingPaddingHeight = false;
 	if (paddingHeight == -1)
-		paddingHeight = (wh - strh - singlelineh) / 2;
+		expandingPaddingHeight = true;
 	strw = max(strw, HdpiNum(DXGUI_DRAWSTRING_MIN_WIDTH));
-	cx = cx - strw / 2 - paddingWidth;
-	cy = cy - (strh + singlelineh) / 2 - paddingHeight;
-	int inputHandle = MakeKeyInput(limit, TRUE, FALSE, onlyNum);
-	RECT inputRect = { cx + paddingWidth,cy + paddingHeight + strh,cx + paddingWidth + strw,cy + paddingHeight + strh + singlelineh };
-	SetKeyInputDrawArea(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, inputHandle);
+	int inputHandle = MakeKeyInput(limit, TRUE, FALSE, onlyNum, FALSE, multiline);
 	SetActiveKeyInput(inputHandle);
 	SetKeyInputString(outString, inputHandle);
-	int keyInputState = 0;
+	SetKeyInputStringFont(hDxFont);
+	cx = cx - strw / 2 - paddingWidth;
+	RECT inputRect = { cx + paddingWidth,0,cx + paddingWidth + strw,0 };
+	int keyInputState = 0, inputStrW, inputLineCount;
+	TCHAR strChCount[24];
+	int boxY;
 	while (keyInputState == 0)
 	{
-		DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + singlelineh + 2 * paddingHeight, bgcolor, TRUE);
-		if (borderwidth > 0.0f)
-			DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + singlelineh + 2.0f * paddingHeight, bordercolor, FALSE, borderwidth);
-		DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
-		DrawBox(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, strcolor, FALSE);
-		DrawKeyInputString(inputRect.left, inputRect.top, inputHandle);
 		GetKeyInputString(outString, inputHandle);
 		len = (int)strlenDx(outString);
+		GetDrawStringSizeToHandle(&inputStrW, &inputLineH, &inputLineCount, outString, len, hDxFont);
+		if (inputLineH == 0)
+			inputLineH = statusLineH;
+		else if (inputLineCount > show_lines)
+			inputLineH = statusLineH * show_lines;
+		if (multiline)
+			inputLineH += statusLineH / 2;
+		if (expandingPaddingHeight)
+			paddingHeight = (wh - strh - inputLineH - statusLineH) / 2;
+		boxY = cy - (strh + inputLineH + statusLineH) / 2 - paddingHeight;
+		inputRect.top = boxY + paddingHeight + strh;
+		inputRect.bottom = boxY + paddingHeight + strh + inputLineH;
+		SetKeyInputDrawArea(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, inputHandle);
+		DrawBox(cx, boxY, cx + strw + 2 * paddingWidth, boxY + strh + inputLineH + statusLineH + 2 * paddingHeight, bgcolor, TRUE);
+		if (borderwidth > 0.0f)
+			DrawBoxAA((float)cx, (float)boxY, cx + strw + 2.0f * paddingWidth, boxY + strh + inputLineH + statusLineH + 2.0f * paddingHeight,
+				bordercolor, FALSE, borderwidth);
+		DrawStringToHandle(cx + paddingWidth, boxY + paddingHeight, msg, strcolor, hDxFont);
+		DrawBox(inputRect.left, inputRect.top, inputRect.right, inputRect.bottom, strcolor, FALSE);
+		DrawKeyInputModeString(inputRect.left, inputRect.bottom);
+		sprintfDx(strChCount, TEXT("%d/%d"), len, limit);
+		GetDrawStringSizeToHandle(&inputStrW, &inputLineH, &inputLineCount, strChCount, (int)strlenDx(strChCount), hDxFont);
+		DrawStringToHandle(inputRect.right - inputStrW, inputRect.bottom, strChCount, strcolor, hDxFont);
+		DrawKeyInputString(inputRect.left, inputRect.top, inputHandle);
 		ScreenFlip();
 		ProcessMessage();//输入系统需要处理消息事件
 		keyInputState = CheckKeyInput(inputHandle);
+		if (multiline&&CheckHitKey(KEY_INPUT_RETURN))
+			if (CheckHitKey(KEY_INPUT_LCONTROL) || CheckHitKey(KEY_INPUT_RCONTROL))
+				keyInputState = 1;
 	}
 	DeleteKeyInput(inputHandle);
 	DeleteFontToHandle(hDxFont);

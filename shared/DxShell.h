@@ -11,6 +11,7 @@
 #define DXGUI_PADDING_WIDTH_DEFAULT		20
 #define DXGUI_CHOOSEFILE_MSG_DEFAULT	"选择文件\n[方向键]移动 [Tab]盘符 [Enter]确定 [Esc]取消"
 #define DXGUI_GETINPUT_MSG_DEFAULT		"输入\n[Enter]确定 [Esc]取消"
+#define DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT	"输入\n[Ctrl+Enter]确定 [Esc]取消"
 #define DXGUI_DRAWSTRING_MIN_WIDTH		320
 //显示一段提示信息，可以多行，返回值为键盘上按下的键（任何键均返回）
 //strcolor：文字颜色
@@ -42,7 +43,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
 	int fontsize = DXGUI_FONTSIZE_DEFAULT, int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER,
 	int cy = DXGUI_POSITION_CENTER, int paddingWidth = DXGUI_PADDING_WIDTH_DEFAULT, int paddingHeight = DXGUI_PADDING_WIDTH_DEFAULT);
-//获取用户输入的一串文字（无换行），limit为长度上限，Enter返回输入的字符数量，Esc返回-1
+//获取用户输入的一串文字，limit为长度上限，Enter返回输入的字符数量，Esc返回-1
 //msg：提示文字，如果指定为NULL会使用默认值DXGUI_GETINPUT_MSG_DEFAULT
 //outString：输出字符串，可以指定默认值
 //strcolor：文字颜色
@@ -51,7 +52,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 //fontsize：字体大小
 //paddingWidth，paddingHeight：文字与边缘的距离（像素），-1为扩展至屏幕边缘
 //返回值：按下ENTER键返回输入的字符串长度，ESC返回-1，但无论何种情况下outString都会被更新
-int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL onlyNum = FALSE, int strcolor = DXGUI_COLOR_STRING_DEFAULT,
+int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL multiline = FALSE, BOOL onlyNum = FALSE, int strcolor = DXGUI_COLOR_STRING_DEFAULT,
 	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, int bordercolor = DXGUI_COLOR_BORDER_DEFAULT, float borderwidth = DXGUI_BORDER_WIDTH_DEFAULT,
 	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),
 	int fontsize = DXGUI_FONTSIZE_DEFAULT, int fontthick = DXGUI_FONTTHICK_DEFAULT, int cx = DXGUI_POSITION_CENTER,
