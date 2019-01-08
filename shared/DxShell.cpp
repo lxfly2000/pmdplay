@@ -133,6 +133,18 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 	DeleteFontToHandle(hDxFont);
 	return ret;
 }
+const TCHAR *ParseFileNameFromPath(const TCHAR *path, TCHAR *filename)
+{
+	for (int i = (int)strlenDx(path) - 1; i >= 0; i--)
+	{
+		if (path[i] == '\\' || path[i] == '/')
+		{
+			strcpyDx(filename, path + i + 1);
+			return filename;
+		}
+	}
+	return NULL;
+}
 //cx,cy有虚值DXGUI_POSITION_CENTER表示屏幕中心
 int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg, int chooseDir, int keyOk, int keyCancel, int strcolor,
 	int bgcolor, int bordercolor, float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth,
@@ -167,11 +179,13 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	int cur, listpagecur;
 	TCHAR tempPath[MAX_PATH] = TEXT(""), shortenedPath[MAX_PATH] = TEXT("");
 	ConvertFullPath(initPath, tempPath);
-	bool findingInitPath = !PathIsDirectory(tempPath);
+	TCHAR findingInitPath[MAX_PATH] = TEXT("");
+	if (!PathIsDirectory(tempPath))
+		ParseFileNameFromPath(tempPath, findingInitPath);
 	while (!(PathFileExists(tempPath) && PathIsDirectory(tempPath)))
 	{
 		if (!PathFileExists(tempPath))
-			findingInitPath = false;
+			findingInitPath[0] = 0;
 		PathCombine(tempPath, tempPath, TEXT(".."));
 		if (PathIsRoot(tempPath))
 			break;
@@ -182,7 +196,7 @@ tagUpdateDir:
 	ci = GetItemsInPath(tempPath, NULL);
 	if (ci == 0)
 	{
-		findingInitPath = false;
+		findingInitPath[0] = 0;
 		DxMessageBox(TEXT("该文件夹是空的。\n按Enter继续……"));
 		if (strlenDx(tempPath) < 4)GetNextLogicalDriveString(tempPath, tempPath);
 		else PathCombine(tempPath, tempPath, TEXT(".."));
@@ -191,27 +205,20 @@ tagUpdateDir:
 	if (fd)delete fd;
 	fd = new WIN32_FIND_DATA[ci];
 	ci = GetItemsInPath(tempPath, fd);
-	if (findingInitPath)
+	if (findingInitPath[0])
 	{
-		findingInitPath = false;
 		listpagecur = max(0, ci - list_show_items);
 		cur = ci - listpagecur - 1;
 		while (listpagecur + cur > 0)
 		{
-			for (size_t i = strlenDx(initPath) - 1; i >= 0; i--)
-			{
-				if (initPath[i] == '\\' || initPath[i] == '/')
-				{
-					if (strcmpDx(initPath + i + 1, fd[listpagecur + cur].cFileName) == 0)
-						goto tagCursorMove;
-					break;
-				}
-			}
+			if (strcmpDx(findingInitPath, fd[listpagecur + cur].cFileName) == 0)
+				break;
 			if (cur > 0)
 				cur--;
 			else
 				listpagecur--;
 		}
+		findingInitPath[0] = 0;
 	}
 tagCursorMove:
 	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
@@ -294,6 +301,7 @@ tagCursorMove:
 		}
 		goto tagCursorMove;
 	case KEY_INPUT_LEFT:
+		ParseFileNameFromPath(tempPath, findingInitPath);
 		PathCombine(tempPath, tempPath, TEXT(".."));
 		goto tagUpdateDir;
 	case KEY_INPUT_RIGHT:
