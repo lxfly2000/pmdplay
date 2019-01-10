@@ -231,7 +231,8 @@ int PMDPlay::Init(TCHAR* param)
 
 void PMDPlay::CheckUpdate(bool showError)
 {
-	std::thread([=]() {
+	std::thread([=]()
+	{
 		int a;
 		TCHAR ti[400];
 		GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
