@@ -231,28 +231,30 @@ int PMDPlay::Init(TCHAR* param)
 
 void PMDPlay::CheckUpdate(bool showError)
 {
-	int a;
-	TCHAR ti[400];
-	GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
-	SetWindowText(TEXT("检查更新中……"));
-	int r = CheckForUpdate(updateFileURL, &a);
-	SetWindowText(ti);
-	if(showError)switch (r)
-	{
-	case -2:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
-		"* 你没有连接到网络；\n* 网络有问题；\n* 目标服务器已更改。"), NULL, MB_ICONERROR); break;
-	case -1:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
-		"* URL 路径有误；\n* 更新配置文件不正确。"), NULL, MB_ICONERROR); break;
-	case 0:MessageBox(hWindowDx, TEXT("该软件是最新的。"), TEXT(APP_NAME), MB_ICONINFORMATION); break;
-	case 1:break;
-	default:MessageBox(hWindowDx, TEXT("检查更新时出错。"), NULL, MB_ICONERROR); break;
-	}
-	if (r != 1)return;
-	TCHAR msg[100] = TEXT("");
-	wsprintf(msg, TEXT("检测到新版本：%d.%d.%d.%d\n当前版本：%s\n\n是否下载新版本？"),
-		(a >> 24) & 0xFF, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF, TEXT(APP_VERSION_STRING));
-	if (MessageBox(hWindowDx, msg, TEXT(APP_NAME), MB_ICONQUESTION | MB_YESNO) == IDYES)
-		ShellExecute(hWindowDx, TEXT("open"), projectURL, NULL, NULL, SW_SHOWNORMAL);
+	std::thread([=]() {
+		int a;
+		TCHAR ti[400];
+		GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
+		SetWindowText(TEXT("检查更新中……"));
+		int r = CheckForUpdate(updateFileURL, &a);
+		SetWindowText(ti);
+		if (showError)switch (r)
+		{
+		case -2:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
+			"* 你没有连接到网络；\n* 网络有问题；\n* 目标服务器已更改。"), NULL, MB_ICONERROR); break;
+		case -1:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
+			"* URL 路径有误；\n* 更新配置文件不正确。"), NULL, MB_ICONERROR); break;
+		case 0:MessageBox(hWindowDx, TEXT("该软件是最新的。"), TEXT(APP_NAME), MB_ICONINFORMATION); break;
+		case 1:break;
+		default:MessageBox(hWindowDx, TEXT("检查更新时出错。"), NULL, MB_ICONERROR); break;
+		}
+		if (r != 1)return;
+		TCHAR msg[100] = TEXT("");
+		wsprintf(msg, TEXT("检测到新版本：%d.%d.%d.%d\n当前版本：%s\n\n是否下载新版本？"),
+			(a >> 24) & 0xFF, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF, TEXT(APP_VERSION_STRING));
+		if (MessageBox(hWindowDx, msg, TEXT(APP_NAME), MB_ICONQUESTION | MB_YESNO) == IDYES)
+			ShellExecute(hWindowDx, TEXT("open"), projectURL, NULL, NULL, SW_SHOWNORMAL);
+	}).detach();
 }
 
 void PMDPlay::ChangeBeatsPerBar()
