@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6CE59CA6-32D8-4E21-9AD0-58C357F1F800}"
 	ProjectSection(SolutionItems) = preProject
 		Readme.md = Readme.md
+		shared\resource.h = shared\resource.h
 	EndProjectSection
 EndProject
 Global

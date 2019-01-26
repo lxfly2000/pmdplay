@@ -9,10 +9,7 @@
 #define IDR_WAVE_2608_TOM               105
 #define IDR_WAVE_2608_TOP               106
 
-#define APP_VERSION_MAJOR				1
-#define APP_VERSION_MINOR				16
-#define APP_VERSION_REVISION			0
-#define APP_VERSION_BUILD				0
+#include "../shared/resource.h"
 
 #define RC_STR(x)						#x
 #define _RC_STR(x)						RC_STR(x)
