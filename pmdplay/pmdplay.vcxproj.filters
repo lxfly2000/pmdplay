@@ -13,21 +13,212 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="fmgen">
+      <UniqueIdentifier>{4f164ea3-093d-4a14-8f57-914707eedeb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pmdwin">
+      <UniqueIdentifier>{60631600-8e54-4230-a249-d2012597f3c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PMDPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ChooseFileDialog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DxKeyTrigger.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DxShell.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InputBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdmini.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdplay.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDPlayer_DSound.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDPlayer_XAudio2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDScreen.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Update.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="viewmem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\file.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\fmgen.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\fmtimer.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\opm.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\opna.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\psg.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\opnaw.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\p86drv.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\pmdwin.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\ppsdrv.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\ppz8l.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\table.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdwin\util.cpp">
+      <Filter>pmdwin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\shared\InputBox.rc">
+    <ResourceCompile Include="InputBox.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\shared\pmdplay.rc">
+    <ResourceCompile Include="pmdplay.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\shared\sfn_template.rc">
+    <ResourceCompile Include="sfn_template.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ChooseFileDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DxKeyTrigger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DxShell.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBoxResource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdmini.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDPlayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDPlayer_DSound.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDPlayer_XAudio2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDScreen.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sfn_template_res.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Update.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="viewmem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\compat.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\diag.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\file.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmgen.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmgeninl.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmgenx86.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmtimer.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\headers.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\misc.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\opm.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\opna.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\psg.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\types.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\compat.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\opnaw.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\p86drv.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\PCMMusDriver.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\pmdwin.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\pmdwinimport.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\ppsdrv.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\ppz8l.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\table.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
+    <ClInclude Include="pmdwin\util.h">
+      <Filter>pmdwin</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

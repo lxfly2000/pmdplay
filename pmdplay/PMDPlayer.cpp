@@ -1,137 +1,9 @@
+#include "PMDPlayer.h"
+#include "pmdmini.h"
+#include "pmdwin/pmdwinimport.h"
 #include<fstream>
 #include<string>
-#include "../shared/PMDPlayer.h"
-#include "../shared/pmdmini.h"
-#pragma comment(lib,"XAudio2.lib")
 
-#ifdef _DEBUG
-#define C(e) if(e)\
-if(MessageBox(NULL,__FILE__ L":" _STRINGIZE(__LINE__) "\n" __FUNCTION__ "\n" _STRINGIZE(e),NULL,MB_OKCANCEL)==IDOK)\
-DebugBreak()
-#else
-#define C(e) e
-#endif
-
-#include <xaudio2.h>
-class XASCallback :public IXAudio2VoiceCallback
-{
-public:
-	HANDLE hBufferEndEvent;
-	XASCallback();
-	~XASCallback();
-	void WINAPI OnBufferEnd(void *)override;
-	void WINAPI OnBufferStart(void*)override {}
-	void WINAPI OnLoopEnd(void*)override {}
-	void WINAPI OnStreamEnd()override {}
-	void WINAPI OnVoiceError(void*, HRESULT)override {}
-	void WINAPI OnVoiceProcessingPassEnd()override {}
-	void WINAPI OnVoiceProcessingPassStart(UINT32)override {}
-};
-//https://github.com/lxfly2000/XAPlayer
-class XAPlayer
-{
-public:
-	void Init(int nChannel, int sampleRate, int bytesPerVar);
-	void Release();
-	void Play(BYTE* buf, int length);
-	void SetVolume(float v);
-	float GetVolume();
-	int SetPlaybackSpeed(float);
-	int GetQueuedBuffersNum();
-	void WaitForBufferEndEvent();
-private:
-	IXAudio2*xAudio2Engine;
-	IXAudio2MasteringVoice* masterVoice;
-	IXAudio2SourceVoice* sourceVoice;
-	XAUDIO2_BUFFER xbuffer;
-	XAUDIO2_VOICE_STATE state;
-	XASCallback xcallback;
-};
-
-XAPlayer x;
-static short* soundbuffer;//PMD_Renderer那个函数用的类型是short我表示难以理解……
-
-XASCallback::XASCallback()
-{
-	hBufferEndEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-}
-
-XASCallback::~XASCallback()
-{
-	CloseHandle(hBufferEndEvent);
-}
-
-void WINAPI XASCallback::OnBufferEnd(void *p)
-{
-	SetEvent(hBufferEndEvent);
-}
-
-void XAPlayer::Init(int nChannel, int sampleRate, int bytesPerVar)
-{
-	xAudio2Engine = NULL;
-	masterVoice = NULL;
-	sourceVoice = NULL;
-	WAVEFORMATEX w;
-	w.wFormatTag = WAVE_FORMAT_PCM;
-	w.nChannels = nChannel;
-	w.nSamplesPerSec = sampleRate;
-	w.nAvgBytesPerSec = sampleRate*bytesPerVar*nChannel;
-	w.nBlockAlign = 4;
-	w.wBitsPerSample = bytesPerVar * 8;
-	w.cbSize = 0;
-	xbuffer = { 0 };
-	xbuffer.Flags = XAUDIO2_END_OF_STREAM;
-	if (FAILED(CoInitializeEx(0, COINIT_MULTITHREADED)))return;
-	if (FAILED(XAudio2Create(&xAudio2Engine)))return;
-	if (FAILED(xAudio2Engine->CreateMasteringVoice(&masterVoice)))return;
-	xAudio2Engine->CreateSourceVoice(&sourceVoice, &w, 0, XAUDIO2_DEFAULT_FREQ_RATIO, &xcallback);
-	sourceVoice->Start();
-}
-
-void XAPlayer::Release()
-{
-	sourceVoice->Stop();
-	sourceVoice->FlushSourceBuffers();
-	if (sourceVoice)sourceVoice->DestroyVoice();
-	masterVoice->DestroyVoice();
-	xAudio2Engine->Release();
-	CoUninitialize();
-}
-
-void XAPlayer::Play(BYTE*buf, int length)
-{
-	xbuffer.pAudioData = buf;
-	xbuffer.AudioBytes = length;
-	sourceVoice->SubmitSourceBuffer(&xbuffer);
-}
-
-void XAPlayer::SetVolume(float v)
-{
-	masterVoice->SetVolume(v);
-}
-
-float XAPlayer::GetVolume()
-{
-	float v;
-	masterVoice->GetVolume(&v);
-	return v;
-}
-
-int XAPlayer::GetQueuedBuffersNum()
-{
-	sourceVoice->GetState(&state);
-	return state.BuffersQueued;
-}
-
-void XAPlayer::WaitForBufferEndEvent()
-{
-	WaitForSingleObject(xcallback.hBufferEndEvent, INFINITE);
-}
-
-int XAPlayer::SetPlaybackSpeed(float speed)
-{
-	return sourceVoice->SetFrequencyRatio(speed);
-}
 
 
 int PMDPlayer::LoadFromFile(const char *filepath)
@@ -144,7 +16,7 @@ int PMDPlayer::LoadFromFile(const char *filepath)
 	return LoadFromMemory((uchar*)sf.data(), (int)sf.size());
 }
 
-int PMDPlayer::LoadFromMemory(uchar *pdata, int length)
+int PMDPlayer::LoadFromMemory(unsigned char *pdata, int length)
 {
 	char curdir[MAX_PATH];
 	char* path[2] = { curdir,NULL };
@@ -203,6 +75,7 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime, b
 		'd','a','t','a',//strData
 		0//subchunk2Size
 	};
+	short *soundbuffer = (short*)new char[bytesof_soundbuffer];
 	if (LoadFromFile(srcfile))return false;
 	if (splittracks)
 	{
@@ -269,6 +142,7 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime, b
 		f.write((char*)&wavfileheader, sizeof wavfileheader);
 	}
 	Unload();
+	delete[]soundbuffer;
 	return true;
 }
 
@@ -290,7 +164,7 @@ int PMDPlayer::Pause()
 
 int PMDPlayer::SetPlaybackSpeed(float speed)
 {
-	return x.SetPlaybackSpeed(playbackspeed = speed);
+	return -1;
 }
 
 float PMDPlayer::GetPlaybackSpeed()
@@ -300,14 +174,11 @@ float PMDPlayer::GetPlaybackSpeed()
 
 void PMDPlayer::SetVolume(int v)
 {
-	v = min(PMDPLAYER_MAX_VOLUME, v);
-	v = max(0, v);
-	x.SetVolume((float)v / PMDPLAYER_MAX_VOLUME);
 }
 
 int PMDPlayer::GetVolume()
 {
-	return (int)(x.GetVolume()*PMDPLAYER_MAX_VOLUME);
+	return 0;
 }
 
 void PMDPlayer::Unload()
@@ -315,6 +186,7 @@ void PMDPlayer::Unload()
 	playerstatus = nofile;
 	if (tSubPlayback.joinable())tSubPlayback.join();
 	pmd_stop();
+	Stop();
 }
 
 int PMDPlayer::FadeoutAndStop(int time_ms)
@@ -388,16 +260,11 @@ PMDPlayer::PlayerStatus PMDPlayer::GetPlayerStatus()
 	return playerstatus;
 }
 
-void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms)
+int PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_time_ms)
 {
-	x.Init(nChannel, sampleRate, bytesPerVar);
 	m_channels = nChannel;
 	m_bytesPerVar = bytesPerVar;
 	m_sampleRate = sampleRate;
-	if (buffer_time_ms == 0)
-		buffer_time_ms = GetPrivateProfileInt(sectionname, varstring_bufferblocktime, 20, profilename);
-	bytesof_soundbuffer = sampleRate*bytesPerVar*nChannel*buffer_time_ms / 1000;
-	soundbuffer = reinterpret_cast<decltype(soundbuffer)>(new BYTE[bytesof_soundbuffer]);
 	playerstatus = nofile;
 	pmd_init();
 	setppsuse(false);
@@ -410,13 +277,13 @@ void PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_t
 	keyState[8] = 0;
 	ZeroMemory(voiceState, sizeof voiceState);
 	ZeroMemory(volumeState, sizeof volumeState);
+	return 0;
 }
 
-void PMDPlayer::Release()
+int PMDPlayer::Release()
 {
 	Unload();
-	delete[]soundbuffer;
-	x.Release();
+	return 0;
 }
 
 void PMDPlayer::_Subthread_Playback(PMDPlayer *param)
@@ -437,9 +304,6 @@ void PMDPlayer::_LoopPlayback()
 }
 void PMDPlayer::OnPlay()
 {
-	pmd_renderer(soundbuffer, bytesof_soundbuffer / m_channels / m_bytesPerVar);
-	x.Play((BYTE*)soundbuffer, bytesof_soundbuffer);
-	x.WaitForBufferEndEvent();
 	for (int i = 0; i < ARRAYSIZE(keyState); i++)
 	{
 		//*(unsigned short*)(keyState + i) = (getpartwork(i)->onkai & 0xF) + ((getpartwork(i)->onkai >> 4) * 12);
@@ -465,8 +329,32 @@ void PMDPlayer::OnFadingOut()
 		playerstatus = fadedout;
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+void PMDPlayer::SetPositionInMs(int pos)
 {
-	extern int pmdplayMain(wchar_t*);
-	return pmdplayMain(lpCmdLine);
+	setpos(pos);
+}
+
+void PMDPlayer::SetChannelOn(int n, bool on)
+{
+	on ? maskoff(n) : maskon(n);
+}
+
+void PMDPlayer::SetSSGEffectOn(bool on)
+{
+	getopenwork()->effflag = !on;
+}
+
+bool PMDPlayer::GetSSGEffectOn()
+{
+	return !getopenwork()->effflag;
+}
+
+void PMDPlayer::SetRhythmOn(bool on)
+{
+	setrhythmwithssgeffect(on);
+}
+
+int PMDPlayer::Stop()
+{
+	return 0;
 }

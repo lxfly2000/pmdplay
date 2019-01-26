@@ -8,8 +8,14 @@
 [Old Versions](https://pan.baidu.com/s/1b0Tkce)
 
 ## 运行环境
-* XAudio2 版（pmdplay.exe，pmdplay64.exe）：**Windows 10**（Win10用户推荐使用这个）
-* DSound 版（pmdplay-dsound.exe，pmdplay-dsound64.exe）：**Windows Vista/7/8/8.1/10**
+经测试可以运行的系统：
+* Windows 7
+* Windows 8.1
+* Windows 10
+
+以下系统理论上可以运行但未测试：
+* Windows Vista
+* Windows 8
 
 ## 编译
 请用 Visual Studio 2017 编译，需要下载 [DxLib](http://dxlib.o.oo7.jp).
@@ -49,9 +55,11 @@
 8. 按M显示各通道的内存状态，‘<’、‘>’键切换通道。
 
 ### 补充说明
-* 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件，里面写上以下内容：
+* 如果播放时声音卡顿严重，你可以在程序相同目录下建立一个`pmdplay.ini`文件（注意编码只能使用ANSI或Unicode），里面写上以下内容：
 ```ini
 [PMDPlayer]
-NotifyCount=4 ;缓冲区块数，这个选项只对pmdplay-dsound(64).exe有效。
-BufferBlockTimeMS=50 ;块大小（用时长表示，毫秒）
+NoXAudio2=1 ;不使用XAudio2
+DSoundNotifyCount=4 ;DSound缓冲区块数
+DSoundBufferTime=50 ;DSound单块缓冲区大小（用时长表示，毫秒）
+XAudio2BufferTime=20 ;XAudio2缓冲区大小（用时长表示，毫秒）
 ```

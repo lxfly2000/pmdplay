@@ -89,8 +89,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;HAVE_WINDOWS_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
@@ -107,8 +107,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;HAVE_WINDOWS_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
@@ -127,8 +127,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;HAVE_WINDOWS_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -150,8 +150,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../DxLib_VC/僾儘僕僃僋僩偵捛壛偡傋偒僼傽僀儖_VC梡;fmgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;HAVE_WINDOWS_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -167,17 +167,75 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ChooseFileDialog.cpp" />
+    <ClCompile Include="DxKeyTrigger.cpp" />
+    <ClCompile Include="DxShell.cpp" />
+    <ClCompile Include="fmgen\file.cpp" />
+    <ClCompile Include="fmgen\fmgen.cpp" />
+    <ClCompile Include="fmgen\fmtimer.cpp" />
+    <ClCompile Include="fmgen\opm.cpp" />
+    <ClCompile Include="fmgen\opna.cpp" />
+    <ClCompile Include="fmgen\psg.cpp" />
+    <ClCompile Include="InputBox.cpp" />
+    <ClCompile Include="pmdmini.c" />
+    <ClCompile Include="pmdplay.cpp" />
     <ClCompile Include="PMDPlayer.cpp" />
+    <ClCompile Include="PMDPlayer_DSound.cpp" />
+    <ClCompile Include="PMDPlayer_XAudio2.cpp" />
+    <ClCompile Include="PMDScreen.cpp" />
+    <ClCompile Include="pmdwin\opnaw.cpp" />
+    <ClCompile Include="pmdwin\p86drv.cpp" />
+    <ClCompile Include="pmdwin\pmdwin.cpp" />
+    <ClCompile Include="pmdwin\ppsdrv.cpp" />
+    <ClCompile Include="pmdwin\ppz8l.cpp" />
+    <ClCompile Include="pmdwin\table.cpp" />
+    <ClCompile Include="pmdwin\util.cpp" />
+    <ClCompile Include="Update.cpp" />
+    <ClCompile Include="viewmem.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\shared\InputBox.rc" />
-    <ResourceCompile Include="..\shared\pmdplay.rc" />
-    <ResourceCompile Include="..\shared\sfn_template.rc" />
+    <ResourceCompile Include="InputBox.rc" />
+    <ResourceCompile Include="pmdplay.rc" />
+    <ResourceCompile Include="sfn_template.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\shared\shared.vcxproj">
-      <Project>{ef216e52-68e6-4047-aa41-3f920909d184}</Project>
-    </ProjectReference>
+    <ClInclude Include="ChooseFileDialog.h" />
+    <ClInclude Include="DxKeyTrigger.h" />
+    <ClInclude Include="DxShell.h" />
+    <ClInclude Include="fmgen\compat.h" />
+    <ClInclude Include="fmgen\diag.h" />
+    <ClInclude Include="fmgen\file.h" />
+    <ClInclude Include="fmgen\fmgen.h" />
+    <ClInclude Include="fmgen\fmgeninl.h" />
+    <ClInclude Include="fmgen\fmgenx86.h" />
+    <ClInclude Include="fmgen\fmtimer.h" />
+    <ClInclude Include="fmgen\headers.h" />
+    <ClInclude Include="fmgen\misc.h" />
+    <ClInclude Include="fmgen\opm.h" />
+    <ClInclude Include="fmgen\opna.h" />
+    <ClInclude Include="fmgen\psg.h" />
+    <ClInclude Include="fmgen\types.h" />
+    <ClInclude Include="InputBox.h" />
+    <ClInclude Include="InputBoxResource.h" />
+    <ClInclude Include="pmdmini.h" />
+    <ClInclude Include="PMDPlayer.h" />
+    <ClInclude Include="PMDPlayer_DSound.h" />
+    <ClInclude Include="PMDPlayer_XAudio2.h" />
+    <ClInclude Include="PMDScreen.h" />
+    <ClInclude Include="pmdwin\compat.h" />
+    <ClInclude Include="pmdwin\opnaw.h" />
+    <ClInclude Include="pmdwin\p86drv.h" />
+    <ClInclude Include="pmdwin\PCMMusDriver.h" />
+    <ClInclude Include="pmdwin\pmdwin.h" />
+    <ClInclude Include="pmdwin\pmdwinimport.h" />
+    <ClInclude Include="pmdwin\ppsdrv.h" />
+    <ClInclude Include="pmdwin\ppz8l.h" />
+    <ClInclude Include="pmdwin\table.h" />
+    <ClInclude Include="pmdwin\util.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="sfn_template_res.h" />
+    <ClInclude Include="Update.h" />
+    <ClInclude Include="viewmem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
