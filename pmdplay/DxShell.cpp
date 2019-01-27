@@ -336,6 +336,7 @@ tagCursorMove:
 	default:goto tagCursorMove;
 	}
 	delete fd;
+	DeleteFontToHandle(hDxFont);
 	while (CheckHitKey(keypressed));
 	return ret;
 }
