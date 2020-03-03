@@ -4,17 +4,13 @@
 //			Windows Converted by C60
 //=============================================================================
 
-#ifdef _WINDOWS
-# include <windows.h>
-# include <process.h>
-# include <mbstring.h>
-#endif
+#include <windows.h>
 #include <stdio.h>
 #include <memory.h>
+#include <process.h>
 #include <string.h>
-#include <ctype.h>
+#include <mbstring.h>
 #include <math.h>
-#include "compat.h"
 #include "misc.h"
 #include "util.h"
 #include "table.h"
@@ -24,71 +20,6 @@
 #include "ppsdrv.h"
 #include "p86drv.h"
 
-#ifndef _WINDOWS
-static void _splitpath (const char *path, char *drive, char *dir, char *fname,
-						char *ext)
-{
-	char *slash, *dot;
-
-	if (*path && *(path + 1) == ':') {
-		if (drive) *drive = toupper(*path);
-		path += 2;
-    }
-	else
-		if (drive) *drive = 0;
-
-	slash = strrchr(path, '\\');
-	if (!slash)
-		slash = strrchr(path, '/');
-	dot = strrchr(path, '.');
-	if (dot && slash && dot < slash)
-		// a:/home/kaoru-k/.xxx/foo のような場合
-		dot = NULL;
-
-	if (!slash) {
-		if (drive) {
-			if (*drive)
-				if (dir) strcpy(dir, "\\");
-		} else
-			if (dir) strcpy(dir, "");
-		if (fname) strcpy(fname, path);
-		if (dot) {
-			if (fname) *(fname + (dot - path)) = '\0';
-			if (ext) strcpy(ext, dot + 1);
-        } else
-			if (ext) strcpy(ext, "");
-    } else {
-		if (*drive && *path != '\\' && *path != '/')
-			if (dir) {
-				strcpy(dir, "\\");
-				strcat(dir, path);
-				*(dir + (slash - path) + 1) = 0;
-			}
-			else
-				if (dir) {
-					strcpy (dir, path);
-					if (slash - path == 0)
-						*(dir + 1) = 0;
-					else
-						*(dir + (slash - path)) = 0;
-				}
-
-		if (fname) strcpy(fname, slash + 1);
-		if (dot) {
-			if (fname) *(fname + (dot - slash) - 1) = 0;
-			if (ext) strcpy (ext, dot + 1);
-		}
-		else
-			if (ext) strcpy (ext, "");
-	}
-}
-
-static void _makepath (char *path, const char *drive, const char *dir,
-				const char *fname, const char *ext)
-{
-  sprintf (path, "%s%s%s%s", drive, dir, fname, ext);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 //	コンストラクタ・デストラクタ
@@ -168,13 +99,14 @@ void PMDWIN::mmain(void)
 
 	pmdwork.loop_work = 3;
 
+
 	if(open_work.x68_flg == 0) {
 		for(i = 0; i < 3; i++) {	
 			pmdwork.partb = i + 1;
 			psgmain(&SSGPart[i]);
 		}
 	}
-	
+  
 	pmdwork.fmsel = 0x100;
 	for(i = 0; i < 3; i++) {
 		pmdwork.partb = i + 1;
@@ -201,11 +133,13 @@ void PMDWIN::mmain(void)
 		}
 	}
 
-	for(i = 0; i < 8; i++) {
-		pmdwork.partb = i;
-		ppz8main(&PPZ8Part[i]);
+	if(open_work.x68_flg != 0xff) {
+		for(i = 0; i < 8; i++) {
+			pmdwork.partb = i;
+			ppz8main(&PPZ8Part[i]);
+		}
 	}
-	
+
 	if(pmdwork.loop_work == 0) return;
 
 	for(i = 0; i < 6; i++) {
@@ -291,7 +225,6 @@ void PMDWIN::fmmain(QQ *qq)
 					//  TONE SET
 					lfoinit(qq, *si);
 					fnumset(qq, oshift(qq, *si++));
-					// printf("fnum = %d\n",qq->fnum);
 					
 					qq->leng = *si++;
 					si = calc_q(qq, si);
@@ -432,7 +365,7 @@ void PMDWIN::keyon(QQ *qq)
 {
 	int	al;
 	
-	if(qq->onkai == 255) return;		// キュウフ ノ トキ
+	if(qq->onkai == 255) return;		// ｷｭｳﾌ ﾉ ﾄｷ
 	
 	if(pmdwork.fmsel == 0) {
 		al = pmdwork.omote_key[pmdwork.partb-1] | qq->slotmask;
@@ -506,7 +439,7 @@ void PMDWIN::fm_block_calc(int *cx, int *ax)
 		*cx += 0x800;			// oct.up
 		if(*cx != 0x4000) {
 			*ax -= 0x26a;		// 4d2h-26ah
-		} else {				// モウ コレイジョウ アガンナイヨン
+		} else {				// ﾓｳ ｺﾚｲｼﾞｮｳ ｱｶﾞﾝﾅｲﾖﾝ
 			*cx = 0x3800;
 			if(*ax >= 0x800) 
 				*ax = 0x7ff;	// 4d2h
@@ -518,7 +451,7 @@ void PMDWIN::fm_block_calc(int *cx, int *ax)
 		*cx -= 0x800;			// oct.down
 		if(*cx >= 0) {
 			*ax += 0x26a;		// 4d2h-26ah
-		} else {				// モウ コレイジョウ サガンナイヨン
+		} else {				// ﾓｳ ｺﾚｲｼﾞｮｳ ｻｶﾞﾝﾅｲﾖﾝ
 			*cx = 0;
 			if(*ax < 8) {
 				*ax = 8;
@@ -735,7 +668,7 @@ void PMDWIN::panset_main(QQ *qq, int al)
 
 
 //=============================================================================
-//	0b4h〜に設定するデータを取得 out.dl
+//	0b4h～に設定するデータを取得 out.dl
 //=============================================================================
 uchar PMDWIN::calc_panout(QQ *qq)
 {
@@ -754,7 +687,7 @@ uchar * PMDWIN::panset_ex(QQ *qq, uchar *si)
 {
 	int		al;
 	
-	al = read_char(si++);
+	al = *(char *)si++;
 	si++;		// 逆走flagは読み飛ばす
 	
 	if(al > 0) {
@@ -817,7 +750,7 @@ void PMDWIN::lfoinit(QQ *qq, int al)
 
 	qq->onkai_def = al;
 
-	if(ah == 0x0f) {				// キューフ ノ トキ ハ INIT シナイヨ
+	if(ah == 0x0f) {				// ｷｭｰﾌ ﾉ ﾄｷ ﾊ INIT ｼﾅｲﾖ
 		lfo_exit(qq);
 		return;
 	}
@@ -922,7 +855,7 @@ void PMDWIN::volset(QQ *qq)
 		}
 		
 		if(qq->lfoswi & 0x20) {
-			bl = qq->volmask;
+			bl = qq->_volmask;
 			bl &= qq->slotmask;
 			bh |= bl;
 			fmlfo_sub(qq, qq->_lfodat, bl, vol_tbl);
@@ -978,13 +911,12 @@ void PMDWIN::psgmain(QQ *qq)
 	qq->leng--;
 
 	// KEYOFF CHECK & Keyoff
-
 	if(qq == &SSGPart[2] && pmdwork.ppsdrv_flag &&
 					open_work.kshot_dat && qq->leng <= qq->qdat) {
 					// PPS 使用時 & SSG 3ch & SSG 効果音鳴らしている場合
 		keyoffp(qq);
 		opna.SetReg(pmdwork.partb+8-1, 0);		// 強制的に音を止める
-		qq->keyoff_flag = -1;			
+		qq->keyoff_flag = -1;
 	}
 	
 	if(qq->partmask) {
@@ -1084,6 +1016,7 @@ void PMDWIN::psgmain(QQ *qq)
 	}
 	
 	pmdwork.lfo_switch = (qq->lfoswi & 8);
+
 	if(qq->lfoswi) {
 		if(qq->lfoswi & 3) {
 			if(lfop(qq)) {
@@ -1105,13 +1038,20 @@ void PMDWIN::psgmain(QQ *qq)
 			if(pmdwork.lfo_switch & 0x08) {
 				porta_calc(qq);
 			}
-			otodasip(qq);
+
+			// SSG 3ch で休符かつ SSG Drum 発音中は操作しない
+			if(!(qq == &SSGPart[2] && qq->onkai == 255 && open_work.kshot_dat && !pmdwork.ppsdrv_flag)) {
+				otodasip(qq);
+			}
 		}
 	}
 	
 	temp = soft_env(qq);
 	if(temp || pmdwork.lfo_switch & 0x22 || open_work.fadeout_speed) {
-		volsetp(qq);
+		// SSG 3ch で休符かつ SSG Drum 発音中は volume set しない
+		if(!(qq == &SSGPart[2] && qq->onkai == 255 && open_work.kshot_dat && !pmdwork.ppsdrv_flag)) {
+			volsetp(qq);
+		}
 	}
 	
 	pmdwork.loop_work &= qq->loopcheck;
@@ -1120,7 +1060,7 @@ void PMDWIN::psgmain(QQ *qq)
 
 void PMDWIN::keyoffp(QQ *qq)
 {
-	if(qq->onkai == 255) return;		// キュウフ ノ トキ
+	if(qq->onkai == 255) return;		// ｷｭｳﾌ ﾉ ﾄｷ
 	if(qq->envf != -1) {
 		qq->envf = 2;
 	} else {
@@ -1136,7 +1076,6 @@ void PMDWIN::rhythmmain(QQ *qq)
 {
 	uchar	*si, *bx;
 	int		al, result;
-	ushort addr;
 	
 	if(qq->address == NULL) return;
 	
@@ -1175,8 +1114,7 @@ void PMDWIN::rhythmmain(QQ *qq)
 
 //					bx = (ushort *)&open_work.radtbl[al];
 //					bx = open_work.rhyadr = &open_work.mmlbuf[*bx];
-					addr = read_word(&open_work.radtbl[al]);
-					bx = open_work.rhyadr = &open_work.mmlbuf[addr];
+					bx = open_work.rhyadr = &open_work.mmlbuf[open_work.radtbl[al]];
 					goto rhyms00;
 				}
 				
@@ -1205,7 +1143,7 @@ void PMDWIN::rhythmmain(QQ *qq)
 
 
 //=============================================================================
-//	PSGリズム ON
+//	PSGﾘｽﾞﾑ ON
 //=============================================================================
 uchar * PMDWIN::rhythmon(QQ *qq, uchar *bx, int al, int *result)
 {
@@ -1233,7 +1171,7 @@ uchar * PMDWIN::rhythmon(QQ *qq, uchar *bx, int al, int *result)
 		for(cl = 0; cl < 11; cl++) {
 			if(al & (1 << cl)) {
 				opna.SetReg(rhydat[cl][0], rhydat[cl][1]);
-				if((dl = (rhydat[cl][2] & open_work.rhythmmask))) { // no check yet
+				if(dl = rhydat[cl][2] & open_work.rhythmmask) {
 					if(dl < 0x80) {
 						opna.SetReg(0x10, dl);
 					} else {
@@ -1318,7 +1256,7 @@ void PMDWIN::eff_main(QQ *qq, int al)
 		
 		SSGPart[2].partmask |= 2;		// Part Mask
 		effwork.effon = 1;				// 優先度１(ppsdrv)
-		effwork.psgefcnum = al;			// 音色番号設定 (80H〜)
+		effwork.psgefcnum = al;			// 音色番号設定 (80H～)
 		
 		bh = 0;
 		bl = 15;
@@ -1329,7 +1267,7 @@ void PMDWIN::eff_main(QQ *qq, int al)
 		
 		if(ah & 2) {
 			if(qq->volume < 15) {
-				bl = qq->volume;		// BL = volume値 (0〜15)
+				bl = qq->volume;		// BL = volume値 (0～15)
 			}
 			
 			if(open_work.fadeout_volume) {
@@ -1926,9 +1864,9 @@ void PMDWIN::keyonz(QQ *qq)
 	if(qq->onkai == 255) return;
 	
 	if((qq->voicenum & 0x80) == 0) {
-		ppz8.Play(pmdwork.partb, 0, qq->voicenum);
+		ppz8.Play(pmdwork.partb, 0, qq->voicenum, 0, 0);
 	} else {
-		ppz8.Play(pmdwork.partb, 1, qq->voicenum & 0x7f);
+		ppz8.Play(pmdwork.partb, 1, qq->voicenum & 0x7f, 0, 0);
 	}
 }
 
@@ -1955,7 +1893,7 @@ void PMDWIN::otodasim(QQ *qq)
 	if(qq->lfoswi & 0x10) {
 		dx += qq->_lfodat;
 	}
-	dx *= 4;	// PCM ハ LFO ガ カカリニクイ ノデ depth ヲ 4バイ スル
+	dx *= 4;	// PCM ﾊ LFO ｶﾞ ｶｶﾘﾆｸｲ ﾉﾃﾞ depth ｦ 4ﾊﾞｲ ｽﾙ
 	
 	dx += qq->detune;
 	if(dx >= 0) {
@@ -2656,7 +2594,7 @@ uchar * PMDWIN::pcmrepeat_set(QQ *qq, uchar * si)
 {
 	int		ax;
 	
-	ax = read_short(si);
+	ax = *(short *)si;
 	si += 2;
 	
 	if(ax >= 0) {
@@ -2667,7 +2605,7 @@ uchar * PMDWIN::pcmrepeat_set(QQ *qq, uchar * si)
 	
 	pmdwork.pcmrepeat1 = ax;
 	
-	ax = read_short(si);
+	ax = *(short *)si;
 	si += 2;
 	if(ax > 0) {
 		ax += open_work.pcmstart;
@@ -2677,7 +2615,7 @@ uchar * PMDWIN::pcmrepeat_set(QQ *qq, uchar * si)
 	
 	pmdwork.pcmrepeat2 = ax;
 	
-	ax = read_word(si);
+	ax = *(ushort *)si;
 	si += 2;
 	if(ax < 0x8000) {
 		ax += open_work.pcmstart;
@@ -2697,11 +2635,11 @@ uchar * PMDWIN::pcmrepeat_set8(QQ *qq, uchar * si)
 {
 	short loop_start, loop_end, release_start;
 
-	loop_start = read_short(si);
+	loop_start = *(short *)si;
 	si += 2;
-	loop_end = read_short(si);
+	loop_end = *(short *)si;
 	si += 2;
-	release_start = read_short(si);
+	release_start = *(short *)si;
 
 	if(open_work.pcm86_vol) {
 		p86drv.SetLoop(loop_start, loop_end, release_start, true);
@@ -2721,28 +2659,28 @@ uchar * PMDWIN::ppzrepeat_set(QQ *qq, uchar * si)
 	int		ax, ax2;
 	
 	if((qq->voicenum & 0x80) == 0) {
-		ax = read_short(si);
+		ax = *(short *)si;
 		si += 2;
 		if(ax < 0) {
-			ax = (int)ppz8.PCME_WORK[0].pcmnum[qq->voicenum].size - ax;
+			ax = ppz8.PCME_WORK[0].pcmnum[qq->voicenum].size - ax;
 		}
 		
-		ax2 = read_short(si);
+		ax2 = *(short *)si;
 		si += 2;
 		if(ax2 < 0) {
-			ax2 = (int)ppz8.PCME_WORK[0].pcmnum[qq->voicenum].size - ax;
+			ax2 = ppz8.PCME_WORK[0].pcmnum[qq->voicenum].size - ax;
 		}
 	} else {
-		ax = read_short(si);
+		ax = *(short *)si;
 		si += 2;
 		if(ax < 0) {
-			ax = (int)ppz8.PCME_WORK[1].pcmnum[qq->voicenum&0x7f].size - ax;
+			ax = ppz8.PCME_WORK[1].pcmnum[qq->voicenum&0x7f].size - ax;
 		}
 		
-		ax2 = read_short(si);
+		ax2 = *(short *)si;
 		si += 2;
 		if(ax2 < 0) {
-			ax2 = (int)ppz8.PCME_WORK[1].pcmnum[qq->voicenum&0x7f].size - ax2;
+			ax2 = ppz8.PCME_WORK[1].pcmnum[qq->voicenum&0x7f].size - ax2;
 		}
 	}
 	
@@ -2830,13 +2768,13 @@ uchar * PMDWIN::pansetz(QQ *qq, uchar *si)
 
 //=============================================================================
 //	Pan setting Extend
-//		px -4〜+4
+//		px -4～+4
 //=============================================================================
 uchar * PMDWIN::pansetz_ex(QQ *qq, uchar *si)
 {
 	int		al;
 	
-	al = read_char(si++);
+	al = *(char *)si++;
 	si++;		// 逆相flagは読み飛ばす
 	
 	if(al >= 5) {
@@ -2877,14 +2815,14 @@ uchar *PMDWIN::comatz(QQ *qq, uchar *si)
 	
 	if((qq->voicenum & 0x80) == 0) {
 		ppz8.SetLoop(pmdwork.partb, 
-				(uint)ppz8.PCME_WORK[0].pcmnum[qq->voicenum].loop_start,
-				(uint)ppz8.PCME_WORK[0].pcmnum[qq->voicenum].loop_end);
+				ppz8.PCME_WORK[0].pcmnum[qq->voicenum].loop_start,
+				ppz8.PCME_WORK[0].pcmnum[qq->voicenum].loop_end);
 		ppz8.SetSourceRate(pmdwork.partb, 
 				ppz8.PCME_WORK[0].pcmnum[qq->voicenum].rate);
 	} else {
 		ppz8.SetLoop(pmdwork.partb, 
-				(uint)ppz8.PCME_WORK[1].pcmnum[qq->voicenum & 0x7f].loop_start,
-				(uint)ppz8.PCME_WORK[1].pcmnum[qq->voicenum & 0x7f].loop_end);
+				ppz8.PCME_WORK[1].pcmnum[qq->voicenum & 0x7f].loop_start,
+				ppz8.PCME_WORK[1].pcmnum[qq->voicenum & 0x7f].loop_end);
 		ppz8.SetSourceRate(pmdwork.partb, 
 				ppz8.PCME_WORK[1].pcmnum[qq->voicenum & 0x7f].rate);
 	}
@@ -2936,12 +2874,12 @@ uchar * PMDWIN::commands(QQ *qq, uchar *si)
 		case 0xfc : si = comt(si); break;
 		
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
 		case 0xf6 : qq->partloop = si; break;
-		case 0xf5 : qq->shift = read_char(si++); break;
+		case 0xf5 : qq->shift = *(char *)si++; break;
 		case 0xf4 : if((qq->volume+=4) > 127) qq->volume = 127; break;
 		case 0xf3 : if(qq->volume < 4) qq->volume=0; else qq->volume-=4; break;
 		case 0xf2 : si = lfoset(qq, si); break;
@@ -2957,7 +2895,7 @@ uchar * PMDWIN::commands(QQ *qq, uchar *si)
 		case 0xe9 : si = rpnset(si); break;
 		case 0xe8 : si = rmsvs(si); break;
 		//
-		case 0xe7 : qq->shift += read_char(si++); break;
+		case 0xe7 : qq->shift += *(char *)si++; break;
 		case 0xe6 : si = rmsvs_sft(si); break;
 		case 0xe5 : si = rhyvs_sft(si); break;
 		//
@@ -2986,8 +2924,8 @@ uchar * PMDWIN::commands(QQ *qq, uchar *si)
 		case 0xd8 : si++; break;
 		case 0xd7 : si++; break;
 		//
-		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = read_char(si++); break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = *(char *)si++; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3023,7 +2961,7 @@ uchar * PMDWIN::commands(QQ *qq, uchar *si)
 		case 0xbd :
 			lfo_change(qq);
 			qq->mdspd = qq->mdspd2 = *si++;
-			qq->mdepth = read_char(si++);
+			qq->mdepth = *(char *)si++;
 			lfo_change(qq);
 			break;
 		
@@ -3051,7 +2989,7 @@ uchar * PMDWIN::commands(QQ *qq, uchar *si)
 		
 		case 0xb4 : si+=16; break;
 		case 0xb3 : qq->qdat2 = *si++; break;
-		case 0xb2 : qq->shift_def = read_char(si++); break;
+		case 0xb2 : qq->shift_def = *(char *)si++; break;
 		case 0xb1 : qq->qdat3 = *si++; break;
 		
 		default : 
@@ -3075,12 +3013,12 @@ uchar * PMDWIN::commandsp(QQ *qq, uchar *si)
 		case 0xfc : si = comt(si); break;
 		
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
 		case 0xf6 : qq->partloop = si; break;
-		case 0xf5 : qq->shift = read_char(si++); break;
+		case 0xf5 : qq->shift = *(char *)si++; break;
 		case 0xf4 : if(qq->volume < 15) qq->volume++; break;
 		case 0xf3 : if(qq->volume > 0) qq->volume--; break;
 		case 0xf2 : si = lfoset(qq, si); break;
@@ -3097,7 +3035,7 @@ uchar * PMDWIN::commandsp(QQ *qq, uchar *si)
 		case 0xe9 : si = rpnset(si); break;
 		case 0xe8 : si = rmsvs(si); break;
 		//
-		case 0xe7 : qq->shift += read_char(si++); break;
+		case 0xe7 : qq->shift += *(char *)si++; break;
 		case 0xe6 : si = rmsvs_sft(si); break;
 		case 0xe5 : si = rhyvs_sft(si); break;
 		//
@@ -3123,8 +3061,8 @@ uchar * PMDWIN::commandsp(QQ *qq, uchar *si)
 		case 0xd8 : si++; break;
 		case 0xd7 : si++; break;
 		//
-		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = read_char(si++); break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = *(char *)si++; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3170,7 +3108,7 @@ uchar * PMDWIN::commandsp(QQ *qq, uchar *si)
 		case 0xbd :
 			lfo_change(qq);
 			qq->mdspd = qq->mdspd2 = *si++;
-			qq->mdepth = read_char(si++);
+			qq->mdepth = *(char *)si++;
 			lfo_change(qq);
 			break;
 		
@@ -3194,7 +3132,7 @@ uchar * PMDWIN::commandsp(QQ *qq, uchar *si)
 		case 0xb5 : si+= 2; break;
 		case 0xb4 : si+=16; break;
 		case 0xb3 : qq->qdat2 = *si++; break;
-		case 0xb2 : qq->shift_def = read_char(si++); break;
+		case 0xb2 : qq->shift_def = *(char *)si++; break;
 		case 0xb1 : qq->qdat3 = *si++; break;
 	
 		default : 
@@ -3218,7 +3156,7 @@ uchar * PMDWIN::commandsr(QQ *qq, uchar *si)
 		case 0xfc : si = comt(si); break;
 		
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
@@ -3267,7 +3205,7 @@ uchar * PMDWIN::commandsr(QQ *qq, uchar *si)
 		case 0xd7 : si++; break;
 		//
 		case 0xd6 : si+=2; break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3331,12 +3269,12 @@ uchar * PMDWIN::commandsm(QQ *qq, uchar *si)
 		case 0xfd : qq->volume = *si++; break;
 		case 0xfc : si = comt(si); break;
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
 		case 0xf6 : qq->partloop = si; break;
-		case 0xf5 : qq->shift = read_char(si++); break;
+		case 0xf5 : qq->shift = *(char *)si++; break;
 		case 0xf4 : if((qq->volume+=16) < qq->volume) qq->volume = 255; break;
 		case 0xf3 : if(qq->volume < 16) qq->volume=0; else qq->volume-=16; break;
 		case 0xf2 : si = lfoset(qq, si); break;
@@ -3352,7 +3290,7 @@ uchar * PMDWIN::commandsm(QQ *qq, uchar *si)
 		case 0xe9 : si = rpnset(si); break;
 		case 0xe8 : si = rmsvs(si); break;
 		//
-		case 0xe7 : qq->shift += read_char(si++); break;
+		case 0xe7 : qq->shift += *(char *)si++; break;
 		case 0xe6 : si = rmsvs_sft(si); break;
 		case 0xe5 : si = rhyvs_sft(si); break;
 		//
@@ -3381,8 +3319,8 @@ uchar * PMDWIN::commandsm(QQ *qq, uchar *si)
 		case 0xd8 : si++; break;
 		case 0xd7 : si++; break;
 		//
-		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = read_char(si++); break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = *(char *)si++; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3421,7 +3359,7 @@ uchar * PMDWIN::commandsm(QQ *qq, uchar *si)
 		case 0xbd :
 			lfo_change(qq);
 			qq->mdspd = qq->mdspd2 = *si++;
-			qq->mdepth = read_char(si++);
+			qq->mdepth = *(char *)si++;
 			lfo_change(qq);
 			break;
 		
@@ -3445,7 +3383,7 @@ uchar * PMDWIN::commandsm(QQ *qq, uchar *si)
 		case 0xb5 : si += 2; break;
 		case 0xb4 : si = ppz_extpartset(qq, si); break;
 		case 0xb3 : qq->qdat2 = *si++; break;
-		case 0xb2 : qq->shift_def = read_char(si++); break;
+		case 0xb2 : qq->shift_def = *(char *)si++; break;
 		case 0xb1 : qq->qdat3 = *si++; break;
 	
 		default : 
@@ -3468,12 +3406,12 @@ uchar * PMDWIN::commands8(QQ *qq, uchar *si)
 		case 0xfd : qq->volume = *si++; break;
 		case 0xfc : si = comt(si); break;
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
 		case 0xf6 : qq->partloop = si; break;
-		case 0xf5 : qq->shift = read_char(si++); break;
+		case 0xf5 : qq->shift = *(char *)si++; break;
 		case 0xf4 : if((qq->volume+=16) < qq->volume) qq->volume = 255; break;
 		case 0xf3 : if(qq->volume < 16) qq->volume=0; else qq->volume-=16; break;
 		case 0xf2 : si = lfoset(qq, si); break;
@@ -3489,7 +3427,7 @@ uchar * PMDWIN::commands8(QQ *qq, uchar *si)
 		case 0xe9 : si = rpnset(si); break;
 		case 0xe8 : si = rmsvs(si); break;
 		//
-		case 0xe7 : qq->shift += read_char(si++); break;
+		case 0xe7 : qq->shift += *(char *)si++; break;
 		case 0xe6 : si = rmsvs_sft(si); break;
 		case 0xe5 : si = rhyvs_sft(si); break;
 		//
@@ -3518,8 +3456,8 @@ uchar * PMDWIN::commands8(QQ *qq, uchar *si)
 		case 0xd8 : si++; break;
 		case 0xd7 : si++; break;
 		//
-		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = read_char(si++); break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = *(char *)si++; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3566,7 +3504,7 @@ uchar * PMDWIN::commands8(QQ *qq, uchar *si)
 		case 0xb5 : si+=2; break;
 		case 0xb4 : si = ppz_extpartset(qq, si); break;
 		case 0xb3 : qq->qdat2 = *si++; break;
-		case 0xb2 : qq->shift_def = read_char(si++); break;
+		case 0xb2 : qq->shift_def = *(char *)si++; break;
 		case 0xb1 : qq->qdat3 = *si++; break;
 	
 		default : 
@@ -3590,12 +3528,12 @@ uchar * PMDWIN::commandsz(QQ *qq, uchar *si)
 		case 0xfc : si = comt(si); break;
 		
 		case 0xfb : pmdwork.tieflag |= 1; break;
-		case 0xfa : qq->detune = read_short(si); si+=2; break;
+		case 0xfa : qq->detune = *(short *)si; si+=2; break;
 		case 0xf9 : si = comstloop(qq, si); break;
 		case 0xf8 : si = comedloop(qq, si); break;
 		case 0xf7 : si = comexloop(qq, si); break;
 		case 0xf6 : qq->partloop = si; break;
-		case 0xf5 : qq->shift = read_char(si++); break;
+		case 0xf5 : qq->shift = *(char *)si++; break;
 		case 0xf4 : if((qq->volume+=16) < qq->volume) qq->volume = 255; break;
 		case 0xf3 : if(qq->volume < 16) qq->volume=0; else qq->volume-=16; break;
 		case 0xf2 : si = lfoset(qq, si); break;
@@ -3611,7 +3549,7 @@ uchar * PMDWIN::commandsz(QQ *qq, uchar *si)
 		case 0xe9 : si = rpnset(si); break;
 		case 0xe8 : si = rmsvs(si); break;
 		//
-		case 0xe7 : qq->shift += read_char(si++); break;
+		case 0xe7 : qq->shift += *(char *)si++; break;
 		case 0xe6 : si = rmsvs_sft(si); break;
 		case 0xe5 : si = rhyvs_sft(si); break;
 		//
@@ -3640,8 +3578,8 @@ uchar * PMDWIN::commandsz(QQ *qq, uchar *si)
 		case 0xd8 : si++; break;
 		case 0xd7 : si++; break;
 		//
-		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = read_char(si++); break;
-		case 0xd5 : qq->detune += read_short(si); si+=2; break;
+		case 0xd6 : qq->mdspd = qq->mdspd2 = *si++; qq->mdepth = *(char *)si++; break;
+		case 0xd5 : qq->detune += *(short *)si; si+=2; break;
 		//
 		case 0xd4 : si = ssg_efct_set(qq, si); break;
 		case 0xd3 : si = fm_efct_set(qq, si); break;
@@ -3680,7 +3618,7 @@ uchar * PMDWIN::commandsz(QQ *qq, uchar *si)
 		case 0xbd :
 			lfo_change(qq);
 			qq->mdspd = qq->mdspd2 = *si++;
-			qq->mdepth = read_char(si++);
+			qq->mdepth = *(char *)si++;
 			lfo_change(qq);
 			break;
 		
@@ -3704,7 +3642,7 @@ uchar * PMDWIN::commandsz(QQ *qq, uchar *si)
 		case 0xb5 : si += 2; break;
 		case 0xb4 : si += 16; break;
 		case 0xb3 : qq->qdat2 = *si++; break;
-		case 0xb2 : qq->shift_def = read_char(si++); break;
+		case 0xb2 : qq->shift_def = *(char *)si++; break;
 		case 0xb1 : qq->qdat3 = *si++; break;
 	
 		default : 
@@ -3964,7 +3902,7 @@ void PMDWIN::neiroset(QQ *qq, int dl)
 
 //=============================================================================
 //	[PartB]のパートの音を完璧に消す (TL=127 and RR=15 and KEY-OFF)
-//		cy=1 ・・・ 全スロットneiromaskされている
+//		cy=1 ･･･ 全スロットneiromaskされている
 //=============================================================================
 int PMDWIN::silence_fmpart(QQ *qq)
 {
@@ -4225,7 +4163,7 @@ uchar * PMDWIN::slotdetune_set(QQ *qq, uchar *si)
 	}
 	
 	bl = *si++;
-	ax = read_short(si);
+	ax = *(short *)si;
 	si+=2;
 	
 	if(bl & 1) {
@@ -4268,7 +4206,7 @@ uchar * PMDWIN::slotdetune_set2(QQ *qq, uchar *si)
 	}
 	
 	bl = *si++;
-	ax = read_short(si);
+	ax = *(short *)si;
 	si+=2;
 	
 	if(bl & 1) {
@@ -4302,7 +4240,7 @@ uchar * PMDWIN::slotdetune_set2(QQ *qq, uchar *si)
 void PMDWIN::fm3_partinit(QQ *qq, uchar *ax)
 {
 	qq->address = ax;
-	qq->leng = 1;					// アト 1カウント デ エンソウ カイシ
+	qq->leng = 1;					// ｱﾄ 1ｶｳﾝﾄ ﾃﾞ ｴﾝｿｳ ｶｲｼ
 	qq->keyoff_flag = -1;			// 現在keyoff中
 	qq->mdc = -1;					// MDepth Counter (無限)
 	qq->mdc2 = -1;					//
@@ -4323,15 +4261,15 @@ uchar * PMDWIN::fm3_extpartset(QQ *qq, uchar *si)
 {
 	short ax;
 	
-	ax = read_short(si);
+	ax = *(short *)si;
 	si+=2;
 	if(ax) fm3_partinit(&ExtPart[0], &open_work.mmlbuf[ax]);
 	
-	ax = read_short(si);
+	ax = *(short *)si;
 	si+=2;
 	if(ax) fm3_partinit(&ExtPart[1], &open_work.mmlbuf[ax]);
 	
-	ax = read_short(si);
+	ax = *(short *)si;
 	si+=2;
 	if(ax) fm3_partinit(&ExtPart[2], &open_work.mmlbuf[ax]);
 	return si;
@@ -4347,11 +4285,11 @@ uchar * PMDWIN::ppz_extpartset(QQ *qq, uchar *si)
 	int		i;
 
 	for(i = 0; i < 8; i++) {
-		ax = read_short(si);
+		ax = *(short *)si;
 		si+=2;
 		if(ax) {
 			PPZ8Part[i].address = &open_work.mmlbuf[ax];
-			PPZ8Part[i].leng = 1;					// アト 1カウント デ エンソウ カイシ
+			PPZ8Part[i].leng = 1;					// ｱﾄ 1ｶｳﾝﾄ ﾃﾞ ｴﾝｿｳ ｶｲｼ
 			PPZ8Part[i].keyoff_flag = -1;			// 現在keyoff中
 			PPZ8Part[i].mdc = -1;					// MDepth Counter (無限)
 			PPZ8Part[i].mdc2 = -1;					//
@@ -4415,7 +4353,7 @@ uchar * PMDWIN::_vd_fm(QQ *qq, uchar *si)
 {
 	int		al;
 
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al) {
 		open_work.fm_voldown = Limit(al + open_work.fm_voldown, 255, 0);
 	} else {
@@ -4429,7 +4367,7 @@ uchar * PMDWIN::_vd_ssg(QQ *qq, uchar *si)
 {
 	int		al;
 
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al) {
 		open_work.ssg_voldown = Limit(al + open_work.ssg_voldown, 255, 0);
 	} else {
@@ -4443,7 +4381,7 @@ uchar * PMDWIN::_vd_pcm(QQ *qq, uchar *si)
 {
 	int		al;
 
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al) {
 		open_work.pcm_voldown = Limit(al + open_work.pcm_voldown, 255, 0);
 	} else {
@@ -4457,7 +4395,7 @@ uchar * PMDWIN::_vd_rhythm(QQ *qq, uchar *si)
 {
 	int		al;
 
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al) {
 		open_work.rhythm_voldown = Limit(al + open_work.rhythm_voldown, 255, 0);
 	} else {
@@ -4471,7 +4409,7 @@ uchar * PMDWIN::_vd_ppz(QQ *qq, uchar *si)
 {
 	int		al;
 
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al) {
 		open_work.ppz_voldown = Limit(al + open_work.ppz_voldown, 255, 0);
 	} else {
@@ -4675,11 +4613,11 @@ uchar * PMDWIN::tl_set(QQ *qq, uchar *si)
 	int		ah, al, ch, dh, dl;
 	
 	dh = 0x40 - 1 + pmdwork.partb;		// dh=TL FM Port Address
-	al = read_char(si++);
+	al = *(char *)si++;
 	ah = al & 0x0f;
 	ch = (qq->slotmask >> 4) | ((qq->slotmask << 4) & 0xf0);
 	ah &= ch;							// ah=変化させるslot 00004321
-	dl = *si++;
+	dl = *(char *)si++;
 	
 	if(al >= 0) {
 		dl &= 127;
@@ -4776,7 +4714,7 @@ uchar * PMDWIN::fb_set(QQ *qq, uchar *si)
 	
 	
 	dh = pmdwork.partb + 0xb0 - 1;	// dh=ALG/FB port address
-	al = read_char(si++);
+	al = *(char *)si++;
 	if(al >= 0) {
 		// in	al 00000xxx 設定するFB
 		al = ((al << 3) & 0xff) | (al >> 5);
@@ -4910,7 +4848,7 @@ uchar * PMDWIN::comt(uchar *si)
 
 
 //=============================================================================
-//	COMMAND '[' [ループ スタート]
+//	COMMAND '[' [ﾙｰﾌﾟ ｽﾀｰﾄ]
 //=============================================================================
 uchar * PMDWIN::comstloop(QQ *qq, uchar *si)
 {
@@ -4921,14 +4859,14 @@ uchar * PMDWIN::comstloop(QQ *qq, uchar *si)
 	} else {
 		ax = open_work.mmlbuf;
 	}
-	ax[read_word(si)+1] = 0;
+	ax[*(ushort *)si+1] = 0;
 	si+=2;
 	return si;
 }
 
 
 //=============================================================================
-//	COMMAND	']' [ループ エンド]
+//	COMMAND	']' [ﾙｰﾌﾟ ｴﾝﾄﾞ]
 //=============================================================================
 uchar * PMDWIN::comedloop(QQ *qq, uchar *si)
 {
@@ -4942,12 +4880,12 @@ uchar * PMDWIN::comedloop(QQ *qq, uchar *si)
 			si+=2;
 			return si;
 		}
-	} else {			// 0 ナラ ムジョウケン ループ
+	} else {			// 0 ﾅﾗ ﾑｼﾞｮｳｹﾝ ﾙｰﾌﾟ
 		si++;
 		qq->loopcheck = 1;
 	}
 	
-	ax = read_word(si) + 2;
+	ax = *(ushort *)si + 2;
 	
 	if(qq == &EffPart) {
 		si = open_work.efcdat + ax;
@@ -4959,7 +4897,7 @@ uchar * PMDWIN::comedloop(QQ *qq, uchar *si)
 
 
 //=============================================================================
-//	COMMAND	':' [ループ ダッシュツ]
+//	COMMAND	':' [ﾙｰﾌﾟ ﾀﾞｯｼｭﾂ]
 //=============================================================================
 uchar * PMDWIN::comexloop(QQ *qq, uchar *si)
 {
@@ -4974,7 +4912,7 @@ uchar * PMDWIN::comexloop(QQ *qq, uchar *si)
 	}
 	
 	
-	bx += read_word(si);
+	bx += *(ushort *)si;
 	si+=2;
 	
 	dl = *bx++ - 1;
@@ -4985,7 +4923,7 @@ uchar * PMDWIN::comexloop(QQ *qq, uchar *si)
 
 
 //=============================================================================
-//	LFO パラメータ セット
+//	LFO ﾊﾟﾗﾒｰﾀ ｾｯﾄ
 //=============================================================================
 uchar * PMDWIN::lfoset(QQ *qq, uchar *si)
 {
@@ -4993,8 +4931,8 @@ uchar * PMDWIN::lfoset(QQ *qq, uchar *si)
 	qq->delay2 = *si++;
 	qq->speed = *si;
 	qq->speed2 = *si++;
-	qq->step = read_char(si);
-	qq->step2 = read_char(si++);
+	qq->step = *(char *)si;
+	qq->step2 = *(char *)si++;
 	qq->time = *si;
 	qq->time2 = *si++;
 	lfoinit_main(qq);
@@ -5027,7 +4965,7 @@ uchar * PMDWIN::lfoswitch(QQ *qq, uchar *si)
 uchar * PMDWIN::psgenvset(QQ *qq, uchar *si)
 {
 	qq->eenv_ar = *si; qq->eenv_arc = *si++;
-	qq->eenv_dr = read_char(si++);
+	qq->eenv_dr = *(char *)si++;
 	qq->eenv_sr = *si; qq->eenv_src = *si++;
 	qq->eenv_rr = *si; qq->eenv_rrc = *si++;
 	if(qq->envf == -1) {
@@ -5116,7 +5054,7 @@ uchar * PMDWIN::rhyvs_sft(uchar *si)
 	dh = *si++ + 0x18 - 1;
 	dl = *bx & 0x1f;
 	
-	al = (read_char(si++) + dl);
+	al = (*(char *)si++ + dl);
 	if(al >= 32) {
 		al = 31;
 	} else if(al < 0) {
@@ -5181,7 +5119,7 @@ uchar *PMDWIN::rmsvs_sft(uchar *si)
 {
 	int		dl;
 	
-	dl = open_work.rhyvol + read_char(si++);
+	dl = open_work.rhyvol + *(char *)si++;
 	
 	if(dl >= 64) {
 		if(dl & 0x80) {
@@ -5305,11 +5243,11 @@ uchar * PMDWIN::portap(QQ *qq, uchar *si)
 
 
 //=============================================================================
-//	'w' COMMAND [PSG NOISE ヘイキン シュウハスウ]
+//	'w' COMMAND [PSG NOISE ﾍｲｷﾝ ｼｭｳﾊｽｳ]
 //=============================================================================
 uchar * PMDWIN::psgnoise_move(uchar *si)
 {
-	open_work.psnoi += read_char(si++);
+	open_work.psnoi += *(char *)si++;
 	if(open_work.psnoi < 0) open_work.psnoi = 0;
 	if(open_work.psnoi > 31) open_work.psnoi = 31;
 	return si;
@@ -5373,17 +5311,24 @@ void PMDWIN::lfoinitp(QQ *qq, int al)
 		al = qq->onkai_def;
 		ah = al & 0x0f;
 	}
-
+	
 	qq->onkai_def = al;
-
-	if(ah == 0x0f) {		// キューフ ノ トキ ハ INIT シナイヨ
+	
+	// 4.8r 修正
+	if (ah == 0x0f) {			// ｷｭｰﾌ ﾉ ﾄｷ ﾊ INIT ｼﾅｲﾖ
+		// PMD 4.8r 修正
+		soft_env(qq);
+		
 		lfo_exit(qq);
 		return;
 	}
 	
-	qq->porta_num = 0;				// ポルタメントは初期化
+	qq->porta_num = 0;			// ポルタメントは初期化
 	
-	if(pmdwork.tieflag & 1) {
+	if (pmdwork.tieflag & 1) {	// ﾏｴ ｶﾞ & ﾉ ﾄｷ ﾓ INIT ｼﾅｲ｡
+		// PMD 4.8r 修正
+		soft_env(qq);			// 前が & の場合 -> 1回 SofeEnv処理
+		
 		lfo_exit(qq);
 		return;
 	}
@@ -5397,7 +5342,7 @@ void PMDWIN::lfoinitp(QQ *qq, int al)
 		qq->eenv_ar = qq->eenv_arc;
 		
 		if(qq->eenv_ar == 0) {
-			qq->envf = 1;	// ATTACK=0 ... スグ Decay ニ
+			qq->envf = 1;	// ATTACK=0 ... ｽｸﾞ Decay ﾆ
 			qq->eenv_volume = qq->eenv_dr;
 		}
 		
@@ -5525,7 +5470,7 @@ int PMDWIN::oshift(QQ *qq, int al)
 	bh = (al & 0xf0) >> 4;	// bh = OCT
 
 	if(dl < 0) {
-		// - ホウコウ シフト
+		// - ﾎｳｺｳ ｼﾌﾄ
 		if((bl += dl) < 0) {
 			do {
 				bh--;
@@ -5535,7 +5480,7 @@ int PMDWIN::oshift(QQ *qq, int al)
 		return (bh << 4) | bl;
 
 	} else {
-		// + ホウコウ シフト
+		// + ﾎｳｺｳ ｼﾌﾄ
 		bl += dl;
 		while(bl >= 0x0c) {
 			bh++;
@@ -5555,7 +5500,7 @@ void PMDWIN::fnumsetp(QQ *qq, int al)
 {
 	int	ax, bx, cl;
 	
-	if((al & 0x0f) == 0x0f) {		// キュウフ ナラ FNUM ニ 0 ヲ セット
+	if((al & 0x0f) == 0x0f) {		// ｷｭｳﾌ ﾅﾗ FNUM ﾆ 0 ｦ ｾｯﾄ
 		qq->onkai = 255;
 		if(qq->lfoswi & 0x11) return;
 		qq->fnum = 0;	// 音程LFO未使用
@@ -5785,7 +5730,7 @@ void PMDWIN::keyonp(QQ *qq)
 {
 	int		ah, al;
 	
-	if(qq->onkai == 255) return;		// キュウフ ノ トキ
+	if(qq->onkai == 255) return;		// ｷｭｳﾌ ﾉ ﾄｷ
 
 	ah=(1 << (pmdwork.partb -1)) | (1 << (pmdwork.partb +2));
 	al = opna.GetReg(0x07) | ah;
@@ -5793,7 +5738,7 @@ void PMDWIN::keyonp(QQ *qq)
 	al &= ah;
 	opna.SetReg(7, al);
 	
-	// PSG ノイズ シュウハスウ ノ セット
+	// PSG ﾉｲｽﾞ ｼｭｳﾊｽｳ ﾉ ｾｯﾄ
 	
 	if(open_work.psnoi != open_work.psnoi_last && effwork.effon == 0) {
 		opna.SetReg(6, open_work.psnoi);
@@ -6488,12 +6433,17 @@ void PMDWIN::silence(void)
 	
 	ppsdrv.Stop();
 	p86drv.Stop();
+	p86drv.SetPan(3, 0);
 
-	if(effwork.effon == 0) {
+// 2003.11.30 プチノイズ対策のため
+//@	if(effwork.effon == 0) {
 		opna.SetReg(0x07, 0xbf);
-	} else {
-		opna.SetReg(0x07, (opna.GetReg(0x07) & 0x3f) | 0x9b);
-	}
+		opna.SetReg(0x08, 0);	// 2003.11.30 プチノイズ対策のため
+		opna.SetReg(0x09, 0);	// 2003.11.30 プチノイズ対策のため
+		opna.SetReg(0x0a, 0);	// 2003.11.30 プチノイズ対策のため
+//@	} else {
+//@		opna.SetReg(0x07, (opna.GetReg(0x07) & 0x3f) | 0x9b);
+//@	}
 	
 	opna.SetReg(0x10, 0xff);			// Rhythm dump
 
@@ -6564,62 +6514,19 @@ void PMDWIN::mstart(void)
 }
 
 
-ushort PMDWIN::read_word(void *value)
-{
-	ushort temp;
-	
-	memcpy(&temp,value,sizeof(ushort));
-		
-	return temp;
-}
-short PMDWIN::read_short(void *value)
-{
-	short temp;
-	
-	memcpy(&temp,value,sizeof(short));
-		
-	return temp;
-}
-
-long PMDWIN::read_long(void *value)
-{
-	long temp;
-	
-	memcpy(&temp,value,sizeof(long));
-		
-	return temp;
-}
-
-int PMDWIN::read_char(void *value)
-{
-	int temp;
-	
-	if ((*(uchar *)value) & 0x80)
-		temp = -1;
-	else
-		temp = 0;
-
-	memcpy(&temp,value,sizeof(char));
-		
-	return temp;
-}
-
-
 //=============================================================================
 //	各パートのスタートアドレス及び初期値をセット
 //=============================================================================
 void PMDWIN::play_init(void)
 {
 	int		i;
-	ushort	addr,*p;
-	uchar tmp;
+	ushort	*p;
 	
 	open_work.x68_flg = *(open_work.mmlbuf-1);
 	
 	//２．６追加分
 	if(*open_work.mmlbuf != 2*(max_part2+1)) {
-		addr =  read_word(&open_work.mmlbuf[2*(max_part2+1)]);
-		open_work.prgdat_adr = open_work.mmlbuf + addr;
+		open_work.prgdat_adr = open_work.mmlbuf + *(ushort *)(&open_work.mmlbuf[2*(max_part2+1)]);
 		open_work.prg_flg = 1;
 	} else {
 		open_work.prg_flg = 0;
@@ -6627,14 +6534,12 @@ void PMDWIN::play_init(void)
 	
 	p = (ushort *)open_work.mmlbuf;
 
-	//	Part 0,1,2,3,4,5(FM1〜6)の時
-	for(i = 0; i < 6; i++) { // word境界にバグ
-		addr = read_word(p);
-		tmp = open_work.mmlbuf[addr];
-		if (tmp == 0x80) {		//先頭が80hなら演奏しない
+	//	Part 0,1,2,3,4,5(FM1～6)の時
+	for(i = 0; i < 6; i++) {
+		if(open_work.mmlbuf[*p] == 0x80) {		//先頭が80hなら演奏しない
 			FMPart[i].address = NULL;
 		} else {
-			FMPart[i].address = &open_work.mmlbuf[read_word(p)];
+			FMPart[i].address = &open_work.mmlbuf[*p];
 		}
 		
 		FMPart[i].leng = 1;
@@ -6652,12 +6557,12 @@ void PMDWIN::play_init(void)
 		p++;
 	}
 	
-	//	Part 6,7,8(PSG1〜3)の時
+	//	Part 6,7,8(PSG1～3)の時
 	for(i = 0; i < 3; i++) {
-		if(open_work.mmlbuf[read_word(p)] == 0x80) {		//先頭が80hなら演奏しない
+		if(open_work.mmlbuf[*p] == 0x80) {		//先頭が80hなら演奏しない
 			SSGPart[i].address = NULL;
 		} else {
-			SSGPart[i].address = &open_work.mmlbuf[read_word(p)];
+			SSGPart[i].address = &open_work.mmlbuf[*p];
 		}
 		
 		SSGPart[i].leng = 1;
@@ -6676,10 +6581,10 @@ void PMDWIN::play_init(void)
 }
 	
 	//	Part 9(OPNA/ADPCM)の時
-	if(open_work.mmlbuf[read_word(p)] == 0x80) {		//先頭が80hなら演奏しない
+	if(open_work.mmlbuf[*p] == 0x80) {		//先頭が80hなら演奏しない
 		ADPCMPart.address = NULL;
 	} else {
-		ADPCMPart.address = &open_work.mmlbuf[read_word(p)];
+		ADPCMPart.address = &open_work.mmlbuf[*p];
 	}
 	
 	ADPCMPart.leng = 1;
@@ -6695,10 +6600,10 @@ void PMDWIN::play_init(void)
 	p++;
 
 	//	Part 10(Rhythm)の時
-	if(open_work.mmlbuf[read_word(p)] == 0x80) {		//先頭が80hなら演奏しない
+	if(open_work.mmlbuf[*p] == 0x80) {		//先頭が80hなら演奏しない
 		RhythmPart.address = NULL;
 	} else {
-		RhythmPart.address = &open_work.mmlbuf[read_word(p)];
+		RhythmPart.address = &open_work.mmlbuf[*p];
 	}
 	
 	RhythmPart.leng = 1;
@@ -6716,7 +6621,7 @@ void PMDWIN::play_init(void)
 	//	Rhythm のアドレステーブルをセット
 	//------------------------------------------------------------------------
 	
-	open_work.radtbl = (ushort *)&open_work.mmlbuf[read_word(p)];
+	open_work.radtbl = (ushort *)&open_work.mmlbuf[*p];
 	open_work.rhyadr = (uchar *)&pmdwork.rhydmy;
 }
 
@@ -6877,8 +6782,8 @@ char * PMDWIN::search_pcm(char *dest, const char *filename, const char *current_
 
 	if(current_dir != NULL) {
 		strcpy(fullpcmfilename, current_dir);
-		if((char *)_mbsrchr((uchar *)current_dir, PATH_DELIMIT_CHR) != &current_dir[strlen(current_dir)-1]) {
-			strcat(fullpcmfilename, PATH_DELIMIT_STR);
+		if((char *)_mbsrchr((uchar *)current_dir, '\\') != &current_dir[strlen(current_dir)-1]) {
+			strcat(fullpcmfilename, "\\");
 		}
 		strcat(fullpcmfilename, filename);
 		
@@ -6892,7 +6797,7 @@ char * PMDWIN::search_pcm(char *dest, const char *filename, const char *current_
 	do {
 		i++;
 		if(open_work.pcmdir[i][0] == '\0') {
-			*dest = '\0';
+			*dest = NULL;
 			return dest;
 		}
 
@@ -6912,6 +6817,7 @@ int PMDWIN::music_load3(uchar *musdata, int size, char *current_dir)
 {
 	int		resultppc, resultpps, resultz1, resultz2;
 	char	pcmfilename[_MAX_PATH];
+	char	ppsfilename[_MAX_PATH];
 	char	ppzfilename1[_MAX_PATH];
 	char	ppzfilename2[_MAX_PATH];
 	char	fullfilename[_MAX_PATH];
@@ -6925,20 +6831,21 @@ int PMDWIN::music_load3(uchar *musdata, int size, char *current_dir)
 		return ERR_WRONG_MUSIC_FILE;
 	}
 	
-	if(musdata[0] > 0x0f || (musdata[1] != 0x18 && musdata[1] != 0x1a) || musdata[2]) {
+	// 020120 ヘッダ解析のみ Towns に対応
+	if((musdata[0] > 0x0f && musdata[0] != 0xff) || (musdata[1] != 0x18 && musdata[1] != 0x1a) || musdata[2]) {
 		return ERR_WRONG_MUSIC_FILE;		// not PMD data
 	}
 	
 	mstop_f();
 
-	// メモリを 0x80(終了コード)で初期化する
-	memset(mdataarea, 0x80, sizeof(mdataarea));
+	// メモリを 0x00 で初期化する
+	memset(mdataarea, 0x00, sizeof(mdataarea));
 
 	memcpy(mdataarea, musdata, size);
 	memset(open_work.mus_filename, 0x0, sizeof(open_work.mus_filename));
 
 	// PPC/P86 読み込み
-	getmemo(pcmfilename, musdata, size, 0);
+	_getmemo(pcmfilename, musdata, size, 0);
 	resultppc = PMDWIN_OK;
 
 	if(*pcmfilename != '\0') {
@@ -6992,71 +6899,99 @@ int PMDWIN::music_load3(uchar *musdata, int size, char *current_dir)
 	}
 	
 	// PPS 読み込み
-	getmemo(pcmfilename, musdata, size, -1);
+	_getmemo(pcmfilename, musdata, size, -1);
 	resultpps = PMDWIN_OK;
 	if(*pcmfilename != '\0') {
+		// 拡張子を .PPS に変換する
+		strcpy(ppsfilename, pcmfilename);
+		_splitpath(pcmfilename, drive, dir, fname, ext);
+		strcpy(ext, ".PPS");
+		_makepath(pcmfilename, drive, dir, fname, ext);
+
 		search_pcm(fullfilename, pcmfilename, current_dir);
 		resultpps = ppsdrv.Load(fullfilename);
 		switch(resultpps) {
 			case _PPSDRV_OK:
-			case _WARNING_PPS_ALREADY_LOAD:	break;
-			case _ERR_OPEN_PPS_FILE:		return ERR_OPEN_PPS_FILE;
+			case _WARNING_PPS_ALREADY_LOAD:
+			case _ERR_OPEN_PPS_FILE:		break;
 			case _ERR_WRONG_PPS_FILE:		return ERR_WRONG_PPS_FILE;
 			case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
 			default:						return ERR_OTHER;
 		}
+
+		if(resultpps == _ERR_OPEN_PPS_FILE) {
+			// ファイルが読めなかった場合、拡張子を元に戻して再オープンする
+			search_pcm(fullfilename, ppsfilename, current_dir);
+			resultpps = ppsdrv.Load(fullfilename);
+
+			switch(resultpps) {
+				case _PPSDRV_OK:
+				case _WARNING_PPS_ALREADY_LOAD:	break;
+				case _ERR_OPEN_PPS_FILE:		return ERR_OPEN_PPS_FILE;
+				case _ERR_WRONG_PPS_FILE:		return ERR_WRONG_PPS_FILE;
+				case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
+				default:						return ERR_OTHER;
+			}
+		}
 	}
 
-	// PPZ 読み込み
-	getmemo(ppzfilename1, musdata, size, -2);
+	// 20010120 TOWNS の場合は無視する
+	_getmemo(ppzfilename1, musdata, size, -2);
 	if(*ppzfilename1 != '\0') {
-		if((p = strchr(ppzfilename1, ',')) == NULL) {	// １つのみ
-			if((p = strchr(ppzfilename1, '.')) == NULL) {
-				strcat(ppzfilename1, ".PZI");			// とりあえず pzi にする
-			}
+		_splitpath(ppzfilename1, drive, dir, fname, ext);
+		if(strcmp(ext, ".PMB") != 0 && strcmp(ext, ".pmb") != 0 && musdata[0] != 0xff) {
+
+			// PPZ 読み込み
+			if(*ppzfilename1 != '\0') {
+				if((p = strchr(ppzfilename1, ',')) == NULL) {	// １つのみ
+					if((p = strchr(ppzfilename1, '.')) == NULL) {
+						strcat(ppzfilename1, ".PZI");			// とりあえず pzi にする
+					}
 			
-			search_pcm(fullfilename, ppzfilename1, current_dir); 
-			resultz1 = ppz8.Load(fullfilename, 0);
-			switch(resultz1) {
-				case _PPZ8_OK:					return resultppc;
-				case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ1_FILE;
-				case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ1_FILE;
-				case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ1_ALREADY_LOAD;
-				case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
-				default:						return ERR_OTHER;
-			}
-		} else {
-			*p = '\0';
-			strcpy(ppzfilename2, p + 1);
+					search_pcm(fullfilename, ppzfilename1, current_dir); 
+					resultz1 = ppz8.Load(fullfilename, 0);
+					switch(resultz1) {
+						case _PPZ8_OK:					return resultppc;
+						case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ1_FILE;
+						case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ1_FILE;
+						case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ1_ALREADY_LOAD;
+						case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
+						default:						return ERR_OTHER;
+					}
+				} else {
+					*p = '\0';
+					strcpy(ppzfilename2, p + 1);
 
-			if((p = strchr(ppzfilename1, '.')) == NULL)
-			strcat(ppzfilename1, ".PZI");				// とりあえず pzi にする
+					if((p = strchr(ppzfilename1, '.')) == NULL)
+					strcat(ppzfilename1, ".PZI");				// とりあえず pzi にする
 
-			if((p = strchr(ppzfilename2, '.')) == NULL)
-			strcat(ppzfilename2, ".PZI");				// とりあえず pzi にする
-
-			search_pcm(fullfilename, ppzfilename1, current_dir); 
-			resultz1 = ppz8.Load(fullfilename, 0);
-
-			search_pcm(fullfilename, ppzfilename2, current_dir); 
-			resultz2 = ppz8.Load(fullfilename, 1);
-			if(resultz1 != PMDWIN_OK) {
-				switch(resultz1) {
-					case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ1_FILE;
-					case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
-					case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ1_FILE;
-					case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ1_ALREADY_LOAD;
-					default:						return ERR_OTHER;
+					if((p = strchr(ppzfilename2, '.')) == NULL)
+					strcat(ppzfilename2, ".PZI");				// とりあえず pzi にする
+	
+					search_pcm(fullfilename, ppzfilename1, current_dir); 
+					resultz1 = ppz8.Load(fullfilename, 0);
+	
+					search_pcm(fullfilename, ppzfilename2, current_dir); 
+					resultz2 = ppz8.Load(fullfilename, 1);
+					if(resultz1 != PMDWIN_OK) {
+						switch(resultz1) {
+							case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ1_FILE;
+							case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
+							case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ1_FILE;
+							case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ1_ALREADY_LOAD;
+							default:						return ERR_OTHER;
+						}
+					}
+			
+					switch(resultz2) {
+						case _PPZ8_OK:					return PMDWIN_OK;
+						case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ2_FILE;
+						case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
+						case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ2_FILE;
+						case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ2_ALREADY_LOAD;
+						default:						return ERR_OTHER;
+					}
 				}
-			}
-			
-			switch(resultz2) {
-				case _PPZ8_OK:					return PMDWIN_OK;
-				case _ERR_OPEN_PPZ_FILE:		return ERR_OPEN_PPZ2_FILE;
-				case _ERR_OUT_OF_MEMORY:		return ERR_OUT_OF_MEMORY;
-				case _ERR_WRONG_PPZ_FILE: 		return ERR_WRONG_PPZ2_FILE;
-				case _WARNING_PPZ_ALREADY_LOAD:	return WARNING_PPZ2_ALREADY_LOAD;
-				default:						return ERR_OTHER;
 			}
 		}
 	}
@@ -7120,12 +7055,12 @@ int PMDWIN::ppc_load3(uchar *pcmdata, int size)
 		//--------------------------------------------------------------------
 	
 		 for(i = 0; i < 128; i++) {
-			if(read_word(&pcmdata[18+i*4]) == 0) {
+			if(*((ushort *)&pcmdata[18+i*4]) == 0) {
 				pcmends.pcmadrs[i][0] = pcmdata[16+i*4];
 				pcmends.pcmadrs[i][1] = 0;
 			} else {
-				pcmends.pcmadrs[i][0] = read_word(&pcmdata[16+i*4])+0x26;
-				pcmends.pcmadrs[i][1] = read_word(&pcmdata[18+i*4])+0x26;
+				pcmends.pcmadrs[i][0] = *(ushort *)&pcmdata[16+i*4]+0x26;
+				pcmends.pcmadrs[i][1] = *(ushort *)&pcmdata[18+i*4]+0x26;
 			}
 
 			if(bx < pcmends.pcmadrs[i][1]) {
@@ -7162,7 +7097,7 @@ int PMDWIN::ppc_load3(uchar *pcmdata, int size)
 	//------------------------------------------------------------------------
 		
 	pcmread(0, 0x25, tempbuf);
-	// "ADPCM〜"ヘッダを飛ばす
+	// "ADPCM～"ヘッダを飛ばす
 	//	ファイル名無視(PMDWin 仕様)
 	if(memcmp(&tempbuf[30], &pcmends, sizeof(pcmends)) == 0) {
 		return WARNING_PPC_ALREADY_LOAD;		// 一致した
@@ -7276,8 +7211,8 @@ bool WINAPI PMDWIN::init(char *path)
 		strcpy(path2, path);
 	}
 
-	if((char *)_mbsrchr((uchar *)path2, PATH_DELIMIT_CHR) != &path2[strlen(path2)-1]) {
-		strcat(path2, PATH_DELIMIT_STR);
+	if((char *)_mbsrchr((uchar *)path2, '\\') != &path2[strlen(path2)-1]) {
+		strcat(path2, "\\");
 	}
 
 	open_work.rate = SOUND_44K;
@@ -7297,9 +7232,35 @@ bool WINAPI PMDWIN::init(char *path)
 	open_work.use_p86 = false;
 	
 	if(opna.Init(OPNAClock, SOUND_44K, false, path2) == false) return false;
-	
+
+	// ADPCM RAM の初期化
+	{
+		uchar	buf[0x400];		// 0x400 * 0x100 = 0x40000(256K)
+		int		i;
+
+		opna.SetFMWait(0);
+		opna.SetSSGWait(0);
+		opna.SetRhythmWait(0);
+		opna.SetADPCMWait(0);
+
+		memset(buf, 0x08, sizeof(buf));
+		
+		for(i = 0; i < 0x100; i++) {
+			pcmstore(i * sizeof(buf) / 32,(i + 1) * sizeof(buf) / 32, buf);
+		}
+	}
+
+/*
+	opna.SetVolumeFM(10);
+	opna.SetVolumePSG(0);
+	opna.SetVolumeADPCM(10);
+	opna.SetVolumeRhythmTotal(10);
+	ppz8.SetVolume(10);
+	ppsdrv.SetVolume(10);
+	p86drv.SetVolume(10);
+*/
 	opna.SetVolumeFM(0);
-	opna.SetVolumePSG(-10);
+	opna.SetVolumePSG(-18);
 	opna.SetVolumeADPCM(0);
 	opna.SetVolumeRhythmTotal(0);
 	ppz8.SetVolume(0);
@@ -7438,8 +7399,8 @@ bool WINAPI PMDWIN::loadrhythmsample(char *path)
 	char	path2[_MAX_PATH];
 
 	strcpy(path2, path);
-	if((char *)_mbsrchr((uchar *)path2, PATH_DELIMIT_CHR) != &path2[strlen(path2)-1]) {
-		strcat(path2, PATH_DELIMIT_STR);
+	if((char *)_mbsrchr((uchar *)path2, '\\') != &path2[strlen(path2)-1]) {
+		strcat(path2, "\\");
 	}
 	
 	mstop_f();
@@ -7464,22 +7425,22 @@ bool WINAPI PMDWIN::setpcmdir(char **path)
 {
 	int		i = 0;
 
-	while(path[i] != '\0' && i < MAX_PCMDIR) {
-		if(*path[i] == '\0') break;
+	while(path[i] != NULL && i < MAX_PCMDIR) {
+		if(*path[i] == NULL) break;
 		strcpy(open_work.pcmdir[i], path[i]);
 
-		if((char *)_mbsrchr((uchar *)open_work.pcmdir[i], PATH_DELIMIT_CHR) !=
+		if((char *)_mbsrchr((uchar *)open_work.pcmdir[i], '\\') !=
 										&open_work.pcmdir[i][strlen(open_work.pcmdir[i])-1]) {
-			strcat(open_work.pcmdir[i], PATH_DELIMIT_STR);
+			strcat(open_work.pcmdir[i], "\\");
 		}
 
 		if(++i == MAX_PCMDIR) {
-			open_work.pcmdir[i][0]= '\0';
+			open_work.pcmdir[i][0]= NULL;
 			return false;
 		}
 	}
 
-	open_work.pcmdir[i][0]= '\0';
+	open_work.pcmdir[i][0]= NULL;
 	return true;
 }
 
@@ -7489,7 +7450,7 @@ bool WINAPI PMDWIN::setpcmdir(char **path)
 //=============================================================================
 void WINAPI PMDWIN::setpcmrate(int rate)
 {
-	if(rate == SOUND_55K) {
+	if(rate == SOUND_55K || rate == SOUND_55K_2) {
 		open_work.rate = open_work.ppzrate = SOUND_44K;
 		open_work.fmcalc55k = true;
 	} else {
@@ -7576,13 +7537,26 @@ int WINAPI PMDWIN::music_load(char *filename)
 	strcpy(current_dir, drive);
 	strcat(current_dir, dir);
 	
-	size = (int)fread(musbuf, 1, sizeof(musbuf), fp);
+	size = fread(musbuf, 1, sizeof(musbuf), fp);
 	result = music_load3(musbuf, size, current_dir);
 	fclose(fp);
-	if(result == PMDWIN_OK || result == WARNING_PPC_ALREADY_LOAD ||
+	if(result == PMDWIN_OK ||
+			result == ERR_OPEN_PPC_FILE ||
+			result == ERR_OPEN_P86_FILE ||
+			result == ERR_OPEN_PPS_FILE ||
+			result == ERR_OPEN_PPZ1_FILE ||
+			result == ERR_OPEN_PPZ2_FILE ||
+			result == ERR_WRONG_PPC_FILE ||
+			result == ERR_WRONG_P86_FILE ||
+			result == ERR_WRONG_PPS_FILE ||
+			result == ERR_WRONG_PPZ1_FILE ||
+			result == ERR_WRONG_PPZ2_FILE ||
+			result == WARNING_PPC_ALREADY_LOAD ||
+			result == WARNING_P86_ALREADY_LOAD ||
 			result == WARNING_PPS_ALREADY_LOAD ||
 			result == WARNING_PPZ1_ALREADY_LOAD ||
-			result == WARNING_PPZ2_ALREADY_LOAD) {
+			result == WARNING_PPZ2_ALREADY_LOAD
+			) {
 		strcpy(open_work.mus_filename, filename);
 	} else {
 		open_work.mus_filename[0] = '\0';
@@ -7775,14 +7749,14 @@ void WINAPI PMDWIN::setppzinterpolation(bool ip)
 
 
 //=============================================================================
-//	メモの取得
+//	メモの取得（内部動作）
 //=============================================================================
-char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
+char* WINAPI PMDWIN::_getmemo(char *dest, uchar *musdata, int size, int al)
 {
 	uchar	*si, *mmlbuf;
 	int		i, dx;
 	int		maxsize;
-
+	
 	if(musdata == NULL || size == 0) {
 		mmlbuf = open_work.mmlbuf;
 		maxsize = sizeof(mdataarea) - 1;
@@ -7805,12 +7779,12 @@ char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
 		return NULL;
 	}
 	
-	if(maxsize < read_word(&mmlbuf[0x18]) - 4 + 3) {
+	if(maxsize < *(ushort *)&mmlbuf[0x18] - 4 + 3) {
 		*dest = '\0';			// 	曲データが不正
 		return NULL;
 	}
-	
-	si = &mmlbuf[read_word(&mmlbuf[0x18]) - 4];
+
+	si = &mmlbuf[*(ushort *)&mmlbuf[0x18] - 4];
 	if(*(si + 2) != 0x40) {
 		if(*(si + 3) != 0xfe || *(si + 2) < 0x41) {
 			*dest = '\0';			// 	音色がないfile=メモのアドレス取得不能
@@ -7831,7 +7805,7 @@ char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
 		return dest;
 	}
 	
-	si = &mmlbuf[read_word(si)];
+	si = &mmlbuf[*(ushort *)si];
 	
 	for(i = 0; i <= al; i++) {
 		if(maxsize < si - mmlbuf + 1) {
@@ -7839,7 +7813,7 @@ char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
 			return NULL;
 		}
 		
-		dx = read_word(si);
+		dx = *(ushort *)si;
 		if(dx == 0) {
 			*dest = '\0';
 			return dest;
@@ -7874,9 +7848,9 @@ char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
 
 
 //=============================================================================
-//	メモの取得（２バイト半角→半角文字に変換）
+//	メモの取得（内部動作、２バイト半角→半角文字に変換）
 //=============================================================================
-char* WINAPI PMDWIN::getmemo2(char *dest, uchar *musdata, int size, int al)
+char* WINAPI PMDWIN::_getmemo2(char *dest, uchar *musdata, int size, int al)
 {
 	char	*buf;
 	char	*rslt;
@@ -7885,7 +7859,7 @@ char* WINAPI PMDWIN::getmemo2(char *dest, uchar *musdata, int size, int al)
 		*dest = '\0';		// メモリ不足
 		return NULL;
 	}
-	getmemo(buf, musdata, size, al);
+	_getmemo(buf, musdata, size, al);
 	rslt = zen2tohan(dest, buf);
 	free(buf);
 	return rslt;
@@ -7893,9 +7867,9 @@ char* WINAPI PMDWIN::getmemo2(char *dest, uchar *musdata, int size, int al)
 
 
 //=============================================================================
-//	メモの取得（２バイト半角→半角文字に変換＋ESCシーケンスの除去）
+//	メモの取得（内部動作、２バイト半角→半角文字に変換＋ESCシーケンスの除去）
 //=============================================================================
-char* WINAPI PMDWIN::getmemo3(char *dest, uchar *musdata, int size, int al)
+char* WINAPI PMDWIN::_getmemo3(char *dest, uchar *musdata, int size, int al)
 {
 	char	*buf;
 	char	*rslt;
@@ -7904,7 +7878,7 @@ char* WINAPI PMDWIN::getmemo3(char *dest, uchar *musdata, int size, int al)
 		*dest = '\0';		// メモリ不足
 		return NULL;
 	}
-	getmemo2((char *)buf, musdata, size, al);
+	_getmemo2((char *)buf, musdata, size, al);
 	rslt = delesc(dest, buf);
 	free(buf);
 	return rslt;
@@ -7912,16 +7886,16 @@ char* WINAPI PMDWIN::getmemo3(char *dest, uchar *musdata, int size, int al)
 
 
 //=============================================================================
-//	メモの取得（ファイル名から）
+//	メモの取得（内部動作、ファイル名から）
 //=============================================================================
-int WINAPI PMDWIN::fgetmemo(char *dest, char *filename, int al)
+int WINAPI PMDWIN::_fgetmemo(char *dest, char *filename, int al)
 {
 	FILE	*fp;
 	uchar	*mmlbuf;
 	int		size;
 
 	if(filename != NULL) {
-		if(*filename != '\0') {
+		if(*filename != NULL) {
 			// ファイルから
 			if((fp = fopen(filename, "rb")) == NULL) {
 				return ERR_OPEN_MUSIC_FILE;
@@ -7932,8 +7906,8 @@ int WINAPI PMDWIN::fgetmemo(char *dest, char *filename, int al)
 				return ERR_OUT_OF_MEMORY;
 			}
 
-			size = (int)fread(mmlbuf, 1, mdata_def*1024, fp);
-			getmemo(dest, mmlbuf, size, al);
+			size = fread(mmlbuf, 1, mdata_def*1024, fp);
+			_getmemo(dest, mmlbuf, size, al);
 			free(mmlbuf);
 			fclose(fp);
 			return PMDWIN_OK;
@@ -7941,15 +7915,15 @@ int WINAPI PMDWIN::fgetmemo(char *dest, char *filename, int al)
 	}
 
 	// 内部データから
-	getmemo(dest, NULL, 0, al);
+	_getmemo(dest, NULL, 0, al);
 	return PMDWIN_OK;
 }
 
 
 //=============================================================================
-//	メモの取得（ファイル名から／２バイト半角→半角文字に変換）
+//	メモの取得（内部動作、ファイル名から／２バイト半角→半角文字に変換）
 //=============================================================================
-int WINAPI PMDWIN::fgetmemo2(char *dest, char *filename, int al)
+int WINAPI PMDWIN::_fgetmemo2(char *dest, char *filename, int al)
 {
 	char	*buf;
 	int		rslt;
@@ -7958,7 +7932,7 @@ int WINAPI PMDWIN::fgetmemo2(char *dest, char *filename, int al)
 		*dest = '\0';		// メモリ不足
 		return ERR_OUT_OF_MEMORY;
 	}
-	if((rslt = fgetmemo(buf, filename, al)) == PMDWIN_OK) {
+	if((rslt = _fgetmemo(buf, filename, al)) == PMDWIN_OK) {
 		zen2tohan(dest, buf);
 	}  else {
 		*dest = '\0';
@@ -7971,7 +7945,7 @@ int WINAPI PMDWIN::fgetmemo2(char *dest, char *filename, int al)
 //=============================================================================
 //	メモの取得（ファイル名から／半角文字に変換＋ESCシーケンスの除去）
 //=============================================================================
-int WINAPI PMDWIN::fgetmemo3(char *dest, char *filename, int al)
+int WINAPI PMDWIN::_fgetmemo3(char *dest, char *filename, int al)
 {
 	char	*buf;
 	int		rslt;
@@ -7982,6 +7956,169 @@ int WINAPI PMDWIN::fgetmemo3(char *dest, char *filename, int al)
 	}
 	if((rslt = fgetmemo2(buf, filename, al)) == PMDWIN_OK) {
 		delesc(dest, buf);
+	} else {
+		*dest = '\0';
+	}
+	free(buf);
+	return rslt;
+}
+
+
+//=============================================================================
+//	メモの取得
+//=============================================================================
+char* WINAPI PMDWIN::getmemo(char *dest, uchar *musdata, int size, int al)
+{
+	char	*buf;
+	
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return NULL;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+
+
+	if(_getmemo(buf, musdata, size, al) != NULL) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}
+	} else {
+		*dest = '\0';
+		return NULL;
+	}
+	free(buf);
+	return dest;
+}
+
+
+//=============================================================================
+//	メモの取得（２バイト半角→半角文字に変換）
+//=============================================================================
+char* WINAPI PMDWIN::getmemo2(char *dest, uchar *musdata, int size, int al)
+{
+	char	*buf;
+	
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return NULL;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+
+	if(_getmemo2(buf, musdata, size, al) != NULL) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}		
+	} else {
+		*dest = '\0';
+		return NULL;
+	}
+	free(buf);
+	return dest;
+}
+
+
+//=============================================================================
+//	メモの取得（２バイト半角→半角文字に変換＋ESCシーケンスの除去）
+//=============================================================================
+char* WINAPI PMDWIN::getmemo3(char *dest, uchar *musdata, int size, int al)
+{
+	char	*buf;
+	
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return NULL;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+	
+	if(_getmemo3(buf, musdata, size, al) != NULL) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}		
+	} else {
+		*dest = '\0';
+		return NULL;
+	}
+	free(buf);
+	return dest;
+}
+
+
+//=============================================================================
+//	メモの取得（ファイル名から）
+//=============================================================================
+int	WINAPI PMDWIN::fgetmemo(char *dest, char *filename, int al)
+{
+	char	*buf;
+	int		rslt;
+
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return ERR_OUT_OF_MEMORY;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+
+	if((rslt = _fgetmemo(buf, filename, al)) == PMDWIN_OK) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}		
+	} else {
+		*dest = '\0';
+	}
+	free(buf);
+	return rslt;
+}
+
+
+//=============================================================================
+//	メモの取得（ファイル名から／２バイト半角→半角文字に変換）
+//=============================================================================
+int	WINAPI PMDWIN::fgetmemo2(char *dest, char *filename, int al)
+{
+	char	*buf;
+	int		rslt;
+
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return ERR_OUT_OF_MEMORY;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+
+	if((rslt = _fgetmemo2(buf, filename, al)) == PMDWIN_OK) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}		
+	} else {
+		*dest = '\0';
+	}
+	free(buf);
+	return rslt;
+}
+
+
+//=============================================================================
+//	メモの取得（ファイル名から／半角文字に変換＋ESCシーケンスの除去）
+//=============================================================================
+int	WINAPI PMDWIN::fgetmemo3(char *dest, char *filename, int al)
+{
+	char	*buf;
+	int		rslt;
+	
+	if((buf = (char *)malloc(mdata_def*1024 + 64)) == NULL) {
+		*dest = '\0';		// メモリ不足
+		return ERR_OUT_OF_MEMORY;
+	}
+	memset(buf, 0, mdata_def*1024 + 64);
+
+	if((rslt = _fgetmemo3(buf, filename, al)) == PMDWIN_OK) {
+		strncpy(dest, buf, MAX_MEMOBUF);
+		if(strlen(buf) >= MAX_MEMOBUF) {
+			dest[MAX_MEMOBUF-1] = '\0';
+		}		
 	} else {
 		*dest = '\0';
 	}
@@ -8671,7 +8808,6 @@ QQ* WINAPI PMDWIN::getpartwork(int ch)
 //=============================================================================
 //	IUnknown Interface(QueryInterface)
 //=============================================================================
-#ifdef ENABLE_COM_INTERFACE
 HRESULT WINAPI PMDWIN::QueryInterface(
            /* [in] */ REFIID riid,
            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject)
@@ -8712,7 +8848,7 @@ ULONG WINAPI PMDWIN::Release(void)
 	}
 	return ref;
 }
-#endif // ENABLE_COM_INTERFACE
+
 
 //=============================================================================
 //	DLL Export Functions
@@ -8721,8 +8857,7 @@ PMDWIN* pmdwin;
 PMDWIN* pmdwin2;
 
 
-#ifdef _WINDOWS
-BOOL WINAPI DllMain( HANDLE hModule, 
+BOOL WINAPI DllMain(HINSTANCE hModule, 
                        DWORD  ul_reason_for_call, 
                        LPVOID lpReserved
 					 )
@@ -8730,6 +8865,7 @@ BOOL WINAPI DllMain( HANDLE hModule,
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
+			DisableThreadLibraryCalls(hModule); 
 			pmdwin = pmdwin2 = NULL;
 			break;
 
@@ -8746,7 +8882,7 @@ BOOL WINAPI DllMain( HANDLE hModule,
     }
     return TRUE;
 }
-#endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -8774,7 +8910,6 @@ __declspec(dllexport) int WINAPI getinterfaceversion(void)
 //=============================================================================
 //	COM 風インターフェイス(PMDWIN インスタンスの取得)	
 //=============================================================================
-#ifdef ENABLE_COM_INTERFACE
 __declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
   REFCLSID rclsid,     //Class identifier (CLSID) of the object
   LPUNKNOWN pUnkOuter, //Pointer to whether object is or isn't part 
@@ -8798,7 +8933,7 @@ __declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
 		return S_OK;
 	}
 }
-#endif
+
 
 //=============================================================================
 //	初期化

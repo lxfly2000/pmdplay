@@ -8,12 +8,9 @@
 #ifndef PPSDRV_H
 #define PPSDRV_H
 
-#ifdef HAVE_WINDOWS_H
 #include <windows.h>
-#endif
-#include "types.h"
+//#include "types.h"
 //#include "psg.h"
-#include "compat.h"
 
 //	DLL の 戻り値
 #define	_PPSDRV_OK					  0		// 正常終了
@@ -37,10 +34,8 @@ typedef	unsigned char	uchar;
 typedef	unsigned int	uint;
 
 
-#ifdef _WINDOWS
 #pragma pack( push, enter_include1 )
 #pragma pack(1)
-#endif
 
 typedef struct ppsheadertag
 {
@@ -49,13 +44,11 @@ typedef struct ppsheadertag
 		WORD	leng;					// データ量
 		BYTE	toneofs;				// 音階
 		BYTE	volumeofs;				// 音量
-	} __PACKED__ pcmnum[MAX_PPS];
-} __PACKED__ PPSHEADER;
+	} pcmnum[MAX_PPS];
+} PPSHEADER;
 
 
-#ifdef _WINDOWS
 #pragma pack( pop, enter_include1 )
-#endif
 
 
 class PPSDRV

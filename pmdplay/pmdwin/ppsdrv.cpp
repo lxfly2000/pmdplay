@@ -6,7 +6,6 @@
 //=============================================================================
 
 #include	<stdio.h>
-#include	<stdlib.h>
 #include	<string.h>
 #include	<math.h>
 #include	"ppsdrv.h"
@@ -58,6 +57,12 @@ PPSDRV::~PPSDRV()
 //-----------------------------------------------------------------------------
 bool PPSDRV::Init(uint r, bool ip)
 {
+	// 一旦開放する	
+	if(dataarea1 != NULL) {
+		free(dataarea1);		// メモリ開放
+		dataarea1 = NULL;
+	}
+
 	SetRate(r, ip);
 	return true;
 }
@@ -168,6 +173,7 @@ int PPSDRV::Load(char *filename)
 		return _ERR_OPEN_PPS_FILE;						//	ファイルが開けない
 	}
 	
+	_try{
 		size = (int)GetFileSize_s(filename);		// ファイルサイズ
 		fread(&ppsheader2, 1, sizeof(ppsheader2), fp);
 		
@@ -224,7 +230,9 @@ int PPSDRV::Load(char *filename)
 		//	ファイル名登録
 		strcpy(pps_file, filename);
 	
+	} _finally {
 		fclose(fp);
+	}
 
 	data_offset1 = data_offset2 = NULL;
 

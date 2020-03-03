@@ -7,11 +7,8 @@
 #ifndef PPZ8L_H
 #define PPZ8L_H
 
-#ifdef HAVE_WINDOWS_H
-# include	<windows.h>
-#endif
+#include	<windows.h>
 //#include	"types.h"
-#include "compat.h"
 
 
 #define	SOUND_44K		 44100
@@ -57,10 +54,8 @@ typedef struct channelworktag
 	bool	pviflag;				// PVI なら true
 } CHANNELWORK;
 
-#ifdef _WINDOWS
 #pragma pack( push, enter_include1 )
 #pragma pack(1)
-#endif
 
 typedef struct pziheadertag
 {
@@ -74,8 +69,8 @@ typedef struct pziheadertag
 		DWORD	loop_start;			// ループ開始ポインタ
 		DWORD	loop_end;			// ループ終了ポインタ
 		WORD	rate;				// 再生周波数
-	} __PACKED__ pcmnum[128];
-} __PACKED__ PZIHEADER;
+	} pcmnum[128];
+} PZIHEADER;
 
 typedef struct pviheadertag
 {
@@ -86,12 +81,10 @@ typedef struct pviheadertag
 	struct	{
 		WORD	startaddress;		// 先頭アドレス
 		WORD	endaddress;			// データ量
-	} __PACKED__ pcmnum[128];
-} __PACKED__ PVIHEADER;
+	} pcmnum[128];
+} PVIHEADER;
 
-#ifdef _WINDOWS
 #pragma pack( pop, enter_include1 )
-#endif
 
 
 class PPZ8
@@ -101,24 +94,25 @@ public:
 	~PPZ8();
 	
 	bool Init(uint rate, bool ip);				// 00H 初期化
-	bool Play(int ch, int bufnum, int num);		// 01H PCM 発音
+	bool Play(int ch, int bufnum, int num, WORD start, WORD stop);
+												// 01H PCM 発音
 	bool Stop(int ch);							// 02H PCM 停止
-	int Load(char *filename, int bufnum);		// 03H PVI/PZIファイルの読み込み
-	bool SetVol(int ch, int vol);				// 07H ボリューム設定
+	int Load(char *filename, int bufnum);		// 03H PVI/PZIﾌｧｲﾙの読み込み
+	bool SetVol(int ch, int vol);				// 07H ﾎﾞﾘｭｰﾑ設定
 	bool SetOntei(int ch, uint ontei);			// 0BH 音程周波数の設定
 	bool SetLoop(int ch, uint loop_start, uint loop_end);
-												// 0EH ループポインタの設定
+												// 0EH ﾙｰﾌﾟﾎﾟｲﾝﾀの設定
 	void AllStop(void);							// 12H (PPZ8)全停止
 	bool SetPan(int ch, int pan);				// 13H (PPZ8)PAN指定
-	bool SetRate(uint rate, bool ip);			// 14H (PPZ8)レート設定
-	bool SetSourceRate(int ch, int rate);		// 15H (PPZ8)元データ周波数設定
-	void SetAllVolume(int vol);					// 16H (PPZ8)全体ボリユームの設定（86B Mixer)
+	bool SetRate(uint rate, bool ip);			// 14H (PPZ8)ﾚｰﾄ設定
+	bool SetSourceRate(int ch, int rate);		// 15H (PPZ8)元ﾃﾞｰﾀ周波数設定
+	void SetAllVolume(int vol);					// 16H (PPZ8)全体ﾎﾞﾘﾕｰﾑの設定（86B Mixer)
 	void SetVolume(int vol);
-	//PCMTMP_SET		;17H PCMテンポラリ設定
-	//ADPCM_EM_SET		;18H (PPZ8)ADPCMエミュレート
-	//REMOVE_FSET		;19H (PPZ8)常駐解除フラグ設定
-	//FIFOBUFF_SET		;1AH (PPZ8)FIFOバッファの変更
-	//RATE_SET		;1BH (PPZ8)WSS詳細レート設定
+	//PCMTMP_SET		;17H PCMﾃﾝﾎﾟﾗﾘ設定
+	void ADPCM_EM_SET(bool flag);				// 18H (PPZ8)ADPCMエミュレート
+	//REMOVE_FSET		;19H (PPZ8)常駐解除ﾌﾗｸﾞ設定
+	//FIFOBUFF_SET		;1AH (PPZ8)FIFOﾊﾞｯﾌｧの変更
+	//RATE_SET		;1BH (PPZ8)WSS詳細ﾚｰﾄ設定
 
 	void Mix(Sample* dest, int nsamples);
 
@@ -127,11 +121,13 @@ public:
 	char	PVI_FILE[2][_MAX_PATH];				// ファイル名
 
 private:
-	void	WORK_INIT(void);					// ワーク初期化
+	void	WORK_INIT(void);					// ﾜｰｸ初期化
+	bool	ADPCM_EM_FLG;						// CH8 でADPCM エミュレートするか？
 	bool	interpolation;						// 補完するか？
 	int		AVolume;
 	CHANNELWORK	channelwork[PCM_CNL_MAX];		// 各チャンネルのワーク
 	uchar	*XMS_FRAME_ADR[2];					// XMSで確保したメモリアドレス（リニア）
+	int		XMS_FRAME_SIZE[2];					// PZI or PVI 内部データサイズ
 	int		PCM_VOLUME;							// 86B Mixer全体ボリューム
 												// (DEF=12)
 	int		volume;								// 全体ボリューム

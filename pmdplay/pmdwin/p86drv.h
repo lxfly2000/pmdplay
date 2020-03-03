@@ -7,11 +7,8 @@
 #ifndef P86DRV_H
 #define P86DRV_H
 
-#ifdef HAVE_WINDOWS_H
-# include <windows.h>
-#endif
-#include "types.h"
-#include "compat.h"
+#include <windows.h>
+//#include "types.h"
 
 //	DLL の 戻り値
 #define	_P86DRV_OK					  0		// 正常終了
@@ -35,10 +32,8 @@ typedef	unsigned char	uchar;
 typedef	unsigned int	uint;
 
 
-#ifdef _WINDOWS
 #pragma pack( push, enter_include1 )
 #pragma pack(1)
-#endif
 
 typedef struct p86headertag		// header(original)
 {
@@ -48,12 +43,10 @@ typedef struct p86headertag		// header(original)
 	struct {
 		uchar	start[3];
 		uchar	size[3];
-	} __PACKED__ pcmnum[MAX_P86];
-} __PACKED__ P86HEADER;
+	} pcmnum[MAX_P86];
+} P86HEADER;
 
-#ifdef _WINDOWS
 #pragma pack( pop, enter_include1 )
-#endif
 
 typedef struct p86headertag2	// header(for PMDWin, int alignment)
 {
@@ -125,7 +118,6 @@ private:
 //	static	Sample VolumeTable[16][256];			// 音量テーブル
 	Sample VolumeTable[16][256];					// 音量テーブル
 
-	int     read_char(void *value);
 	void	MakeVolumeTable(int volume);
 	void	double_trans(Sample* dest, int nsamples);
 	void	double_trans_g(Sample* dest, int nsamples);

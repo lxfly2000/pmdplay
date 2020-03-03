@@ -12,18 +12,15 @@
 #include "ppz8l.h"
 #include "ppsdrv.h"
 #include "p86drv.h"
-#ifdef ENABLE_COM_INTERFACE
 #include "PCMMusDriver.h"
-#endif
 
 //#include "types.h"
-#include "compat.h"
 
 
 //=============================================================================
 //	バージョン情報
 //=============================================================================
-#define	DLLVersion			 19		// 上１桁：major, 下２桁：minor version
+#define	DLLVersion			 37		// 上１桁：major, 下２桁：minor version
 #define	InterfaceVersion	117		// 上１桁：major, 下２桁：minor version
 
 
@@ -63,6 +60,7 @@
 //	ＰＭＤＷｉｎ専用の定義
 //----------------------------------------------------------------------------
 #define	SOUND_55K			  55555
+#define	SOUND_55K_2			  55466
 #define	SOUND_48K			  48000
 #define	SOUND_44K			  44100
 #define	SOUND_22K			  22050
@@ -115,26 +113,22 @@ typedef struct stereosampletag
 	Sample right;
 } StereoSample;
 
-#ifdef _WINDOWS
 #pragma pack( push, enter_include1 )
 #pragma pack(2)
-#endif
 
 typedef struct stereo16bittag
 {
 	short left;
 	short right;
-} __PACKED__ Stereo16bit;
+} Stereo16bit;
 
 typedef struct pcmendstag
 {
 	ushort pcmends;
 	ushort pcmadrs[256][2];
-} __PACKED__ PCMEnds;
+} PCMEnds;
 
-#ifdef _WINDOWS
 #pragma pack( pop, enter_include1 )
-#endif
 
 
 #define	PVIHeader	"PVI2"
@@ -197,18 +191,18 @@ typedef struct effworktag {
 
 //	演奏中のデータエリア
 typedef struct qqtag {
-	uchar	*address;			//	2 エンソウチュウ ノ アドレス
-	uchar	*partloop;			//	2 エンソウ ガ オワッタトキ ノ モドリサキ
-	int		leng;				//	1 ノコリ LENGTH
+	uchar	*address;			//	2 ｴﾝｿｳﾁｭｳ ﾉ ｱﾄﾞﾚｽ
+	uchar	*partloop;			//	2 ｴﾝｿｳ ｶﾞ ｵﾜｯﾀﾄｷ ﾉ ﾓﾄﾞﾘｻｷ
+	int		leng;				//	1 ﾉｺﾘ LENGTH
 	int		qdat;				//	1 gatetime (q/Q値を計算した値)
-	uint	fnum;				//	2 エンソウチュウ ノ BLOCK/FNUM
-	int		detune;				//	2 デチューン
+	uint	fnum;				//	2 ｴﾝｿｳﾁｭｳ ﾉ BLOCK/FNUM
+	int		detune;				//	2 ﾃﾞﾁｭｰﾝ
 	int		lfodat;				//	2 LFO DATA
 	int		porta_num;			//	2 ポルタメントの加減値（全体）
 	int		porta_num2;			//	2 ポルタメントの加減値（一回）
 	int		porta_num3;			//	2 ポルタメントの加減値（余り）
 	int		volume;				//	1 VOLUME
-	int		shift;				//	1 オンカイ シフト ノ アタイ
+	int		shift;				//	1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
 	int		delay;				//	1 LFO	[DELAY] 
 	int		speed;				//	1	[SPEED]
 	int		step;				//	1	[STEP]
@@ -235,17 +229,17 @@ typedef struct qqtag {
 	int		eenv_drc;			//	1	/DRのカウンタ
 	int		eenv_src;			//	1	/SRのカウンタ	/旧pr1b
 	int		eenv_rrc;			//	1	/RRのカウンタ	/旧pr2b
-	int		eenv_volume;		//	1	/Volume値(0〜15)/旧penv
+	int		eenv_volume;		//	1	/Volume値(0～15)/旧penv
 	int		extendmode;			//	1 B1/Detune B2/LFO B3/Env Normal/Extend
 	int		fmpan;				//	1 FM Panning + AMD + PMD
 	int		psgpat;				//	1 PSG PATTERN [TONE/NOISE/MIX]
 	int		voicenum;			//	1 音色番号
 	int		loopcheck;			//	1 ループしたら１ 終了したら３
 	int		carrier;			//	1 FM Carrier
-	int		slot1;				//	1 SLOT 1 ノ TL
-	int		slot3;				//	1 SLOT 3 ノ TL
-	int		slot2;				//	1 SLOT 2 ノ TL
-	int		slot4;				//	1 SLOT 4 ノ TL
+	int		slot1;				//	1 SLOT 1 ﾉ TL
+	int		slot3;				//	1 SLOT 3 ﾉ TL
+	int		slot2;				//	1 SLOT 2 ﾉ TL
+	int		slot4;				//	1 SLOT 4 ﾉ TL
 	int		slotmask;			//	1 FM slotmask
 	int		neiromask;			//	1 FM 音色定義用maskdata
 	int		lfo_wave;			//	1 LFOの波形
@@ -378,7 +372,6 @@ typedef struct OpenWorktag {
 //=============================================================================
 //	COM 風 interface class
 //=============================================================================
-#ifdef ENABLE_COM_INTERFACE
 interface IPMDWIN : public IFMPMD {
 	virtual void WINAPI setppsuse(bool value) = 0;
 	virtual void WINAPI setrhythmwithssgeffect(bool value) = 0;
@@ -419,26 +412,24 @@ interface IPMDWIN : public IFMPMD {
 	virtual OPEN_WORK* WINAPI getopenwork(void) = 0;
 	virtual QQ* WINAPI getpartwork(int ch) = 0;
 };
-#endif /* ENABLE_COM_INTERFACE */
+
 
 //=============================================================================
 //	PMDWin class
 //=============================================================================
 
-class PMDWIN /*  : public IPMDWIN */
+class PMDWIN : public IPMDWIN
 {
 public:
 	PMDWIN();
 	~PMDWIN();
 	
 	// IUnknown
-#ifdef ENABLE_COM_INTERFACE
 	HRESULT WINAPI QueryInterface(
            /* [in] */ REFIID riid,
            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
 	ULONG WINAPI AddRef(void);
 	ULONG WINAPI Release(void);
-#endif
 	
 	// IPCMMUSICDRIVER
 	bool WINAPI init(char *path);
@@ -497,7 +488,6 @@ public:
 	int WINAPI getadpcmvoldown2(void);
 	int WINAPI getppzvoldown(void);
 	int WINAPI getppzvoldown2(void);
-	
 	char* WINAPI getmemo(char *dest, uchar *musdata, int size, int al);
 	char* WINAPI getmemo2(char *dest, uchar *musdata, int size, int al);
 	char* WINAPI getmemo3(char *dest, uchar *musdata, int size, int al);
@@ -543,11 +533,6 @@ private:
 
 protected:
 	int uRefCount;		// 参照カウンタ
-	short read_short(void *value);
-	ushort read_word(void *value);
-	long read_long(void *value);
-	int  read_char(void *value);
-
 	void opnint_start(void);
 	void data_init(void);
 	void opn_init(void);
@@ -581,6 +566,12 @@ protected:
 	void effend(void);
 	void effsweep(void);
 	uchar *pdrswitch(QQ *qq, uchar *si);
+	char* WINAPI _getmemo(char *dest, uchar *musdata, int size, int al);
+	char* WINAPI _getmemo2(char *dest, uchar *musdata, int size, int al);
+	char* WINAPI _getmemo3(char *dest, uchar *musdata, int size, int al);
+	int	WINAPI _fgetmemo(char *dest, char *filename, int al);
+	int	WINAPI _fgetmemo2(char *dest, char *filename, int al);
+	int	WINAPI _fgetmemo3(char *dest, char *filename, int al);
 
 	int silence_fmpart(QQ *qq);
 	void keyoff(QQ *qq);
@@ -731,7 +722,7 @@ protected:
 //=============================================================================
 //	Interface ID(IID) & Class ID(CLSID)
 //=============================================================================
-#ifdef ENABLE_COM_INTERFACE
+
 // GUID of IPMDWIN Interface ID
 interface	__declspec(uuid("C07008F4-CAE0-421C-B08F-D8B319AFA4B4")) IPMDWIN;	
 
@@ -740,7 +731,7 @@ class		__declspec(uuid("97C7C3F0-35D8-4304-8C1B-AA926E7AEC5C")) PMDWIN;
 
 const IID	IID_IPMDWIN		= _uuidof(IPMDWIN);	// IPMDWIN Interface ID
 const CLSID	CLSID_PMDWIN	= _uuidof(PMDWIN);	// PMDWIN Class ID
-#endif
+
 
 //============================================================================
 //	DLL Export Functions
@@ -819,7 +810,6 @@ __declspec(dllexport) void WINAPI setadpcmwait(int nsec);
 __declspec(dllexport) OPEN_WORK * WINAPI getopenwork(void);
 __declspec(dllexport) QQ * WINAPI getpartwork(int ch);
 
-#ifdef ENABLE_COM_INTERFACE
 __declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
   REFCLSID rclsid,     //Class identifier (CLSID) of the object
   LPUNKNOWN pUnkOuter, //Pointer to whether object is or isn't part 
@@ -829,7 +819,7 @@ __declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
   LPVOID * ppv         //Address of output variable that receives 
                        // the interface pointer requested in riid
 );
-#endif
+
 
 #ifdef __cplusplus
 }

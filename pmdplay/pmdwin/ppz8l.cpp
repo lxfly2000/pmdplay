@@ -4,16 +4,46 @@
 //			Windows Converted by C60
 //=============================================================================
 
-#ifdef HAVE_WINDOWS_H
-# include	<windows.h>
-#endif
+#include	<windows.h>
 #include	<stdio.h>
-#include	<stdlib.h>
 #include	<string.h>
 #include	<math.h>
 #include	"ppz8l.h"
 #include	"util.h"
 #include	"misc.h"
+
+
+//-----------------------------------------------------------------------------
+//	定数テーブル(ADPCM Volume → PPZ8 Volume)
+//-----------------------------------------------------------------------------
+const int ADPCM_EM_VOL[256] = {
+	 0, 0, 0, 0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4,
+	 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6,
+	 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+	 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+	10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+	10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+	10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,
+	11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
+	11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
+	11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
+	12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	
+};
+
+
+//-----------------------------------------------------------------------------
+//	定数テーブル(ADPCM Pan → PPZ8 Pan)
+//-----------------------------------------------------------------------------
+const int ADPCM_EM_PAN[4] = {
+	0,9,1,5
+};
+
 
 //-----------------------------------------------------------------------------
 //	コンストラクタ・デストラクタ
@@ -23,6 +53,8 @@ PPZ8::PPZ8()
 	DIST_F = RATE_DEF;	 		// 再生周波数
 	XMS_FRAME_ADR[0] = NULL;	// XMSで確保したメモリアドレス（リニア）
 	XMS_FRAME_ADR[1] = NULL;	// XMSで確保したメモリアドレス（リニア）
+	XMS_FRAME_SIZE[0] = 0;
+	XMS_FRAME_SIZE[1] = 0;
 	pviflag[0] = false;
 	pviflag[1] = false;
 	memset(PCME_WORK, 0, sizeof(PCME_WORK));
@@ -31,6 +63,7 @@ PPZ8::PPZ8()
 	PCM_VOLUME = 0;		
 	SetAllVolume(VNUM_DEF);		// 全体ボリューム(DEF=12)
 	interpolation = false;
+	ADPCM_EM_FLG = false;
 }
 
 PPZ8::~PPZ8()
@@ -50,7 +83,20 @@ PPZ8::~PPZ8()
 //-----------------------------------------------------------------------------
 bool PPZ8::Init(uint rate, bool ip)
 {	
-	WORK_INIT();		// ワーク初期化
+	// 一旦開放する
+	if(XMS_FRAME_ADR[0] != NULL) {
+		free(XMS_FRAME_ADR[0]);
+		XMS_FRAME_ADR[0] = NULL;
+	}
+	XMS_FRAME_SIZE[0] = 0;
+
+	if(XMS_FRAME_ADR[1] != NULL) {
+		free(XMS_FRAME_ADR[1]);
+		XMS_FRAME_ADR[1] = NULL;
+	}
+	XMS_FRAME_SIZE[1] = 0;
+
+	WORK_INIT();		// ﾜｰｸ初期化
 	SetVolume(volume);
 	return SetRate(rate, ip);
 }
@@ -59,10 +105,10 @@ bool PPZ8::Init(uint rate, bool ip)
 //-----------------------------------------------------------------------------
 //	01H PCM 発音
 //-----------------------------------------------------------------------------
-bool PPZ8::Play(int ch, int bufnum, int num)
+bool PPZ8::Play(int ch, int bufnum, int num, WORD start, WORD stop)
 {
 	if(ch >= PCM_CNL_MAX) return false;
-	if(XMS_FRAME_ADR[bufnum] == NULL) return false;
+	if(XMS_FRAME_ADR[bufnum] == NULL || XMS_FRAME_SIZE[bufnum] == 0) return false;
 
 	// PVIの定義数より大きいとスキップ
 	//if(num >= PCME_WORK[bufnum].pzinum) return false;
@@ -72,32 +118,42 @@ bool PPZ8::Play(int ch, int bufnum, int num)
 	channelwork[ch].PCM_NOW_XOR = 0;	// 小数点部
 	channelwork[ch].PCM_NUM = num;
 
-	channelwork[ch].PCM_NOW
-			= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress];
-	channelwork[ch].PCM_END_S
-			= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size];
-	if(channelwork[ch].PCM_LOOP_FLG == 0) {
-		// ループなし
+	// ADPCM エミュレート処理
+	if(ch == 7 && ADPCM_EM_FLG && (ch & 0x80) == 0) {
+		channelwork[ch].PCM_NOW	  
+			= &XMS_FRAME_ADR[bufnum][Limit(((int)start) * 64, XMS_FRAME_SIZE[bufnum] - 1, 0)];
+		channelwork[ch].PCM_END_S 
+			= &XMS_FRAME_ADR[bufnum][Limit(((int)stop - 1) * 64, XMS_FRAME_SIZE[bufnum] - 1, 0)];
 		channelwork[ch].PCM_END = channelwork[ch].PCM_END_S;
 	} else {
-		// ループあり
-		if(channelwork[ch].PCM_LOOP_START >= PCME_WORK[bufnum].pcmnum[num].size) {
-			channelwork[ch].PCM_LOOP
-				= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size - 1];
-		} else {
-			channelwork[ch].PCM_LOOP
-				= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + channelwork[ch].PCM_LOOP_START];
-		}
+		channelwork[ch].PCM_NOW
+			= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress];
+		channelwork[ch].PCM_END_S
+			= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size];
 
-		if(channelwork[ch].PCM_LOOP_END >= PCME_WORK[bufnum].pcmnum[num].size) {
-			channelwork[ch].PCM_END
-				= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size];
+		if(channelwork[ch].PCM_LOOP_FLG == 0) {
+			// ループなし
+			channelwork[ch].PCM_END = channelwork[ch].PCM_END_S;
 		} else {
-			channelwork[ch].PCM_END
-				= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + channelwork[ch].PCM_LOOP_END];
+			// ループあり
+			if(channelwork[ch].PCM_LOOP_START >= PCME_WORK[bufnum].pcmnum[num].size) {
+				channelwork[ch].PCM_LOOP
+					= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size - 1];
+			} else {
+				channelwork[ch].PCM_LOOP
+					= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + channelwork[ch].PCM_LOOP_START];
+			}
+
+			if(channelwork[ch].PCM_LOOP_END >= PCME_WORK[bufnum].pcmnum[num].size) {
+				channelwork[ch].PCM_END
+					= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + PCME_WORK[bufnum].pcmnum[num].size];
+			} else {
+				channelwork[ch].PCM_END
+					= &XMS_FRAME_ADR[bufnum][PCME_WORK[bufnum].pcmnum[num].startaddress + channelwork[ch].PCM_LOOP_END];
+			}
 		}
 	}
-	
+
 	return true;
 }
 
@@ -115,7 +171,7 @@ bool PPZ8::Stop(int ch)
 
 
 //-----------------------------------------------------------------------------
-//	03H PVI/PZIファイルの読み込み
+//	03H PVI/PZIﾌｧｲﾙの読み込み
 //-----------------------------------------------------------------------------
 int PPZ8::Load(char *filename, int bufnum)
 {
@@ -129,7 +185,7 @@ int PPZ8::Load(char *filename, int bufnum)
 	};
 
 	FILE	*fp;
-	int		i, j, size;
+	int		i, j, size, size2;
 	uchar	*psrc, *psrc2;
 	uchar	*pdst;
 	char	*p;
@@ -139,10 +195,9 @@ int PPZ8::Load(char *filename, int bufnum)
 	int		X_N;								// Xn     (ADPCM>PCM 変換用)
 	int		DELTA_N;							// DELTA_N(ADPCM>PCM 変換用)
 
-
 	p = strrchr(filename, '.');
 	if(p != NULL) {
-		if(_strnicmp(p+1, "pzi", 3) == 0) {
+		if(strnicmp(p+1, "pzi", 3) == 0) {
 			NOW_PCM_CATE = true;
 		} else {
 			NOW_PCM_CATE = false;
@@ -159,11 +214,13 @@ int PPZ8::Load(char *filename, int bufnum)
 		if(XMS_FRAME_ADR[bufnum] != NULL) {
 			free(XMS_FRAME_ADR[bufnum]);		// 開放
 			XMS_FRAME_ADR[bufnum] = NULL;
+			XMS_FRAME_SIZE[bufnum] = 0;
 			memset(&PCME_WORK[bufnum], 0, sizeof(PZIHEADER));
 		}
 		return _ERR_OPEN_PPZ_FILE;				//	ファイルが開けない
 	}
 
+	_try{
 		size = (int)GetFileSize_s(filename);	// ファイルサイズ
 
 		if(NOW_PCM_CATE) {	// PZI 読み込み
@@ -177,6 +234,7 @@ int PPZ8::Load(char *filename, int bufnum)
 			if(XMS_FRAME_ADR[bufnum] != NULL) {
 				free(XMS_FRAME_ADR[bufnum]);		// いったん開放
 				XMS_FRAME_ADR[bufnum] = NULL;
+				XMS_FRAME_SIZE[bufnum] = 0;
 				memset(&PCME_WORK[bufnum], 0, sizeof(PZIHEADER));
 			}
 
@@ -192,30 +250,42 @@ int PPZ8::Load(char *filename, int bufnum)
 						= (uchar *)malloc(size)) == NULL) {
 				return _ERR_OUT_OF_MEMORY;			// メモリが確保できない
 			}
-			
+
 			//	読み込み
 			fread(pdst, size, 1, fp);
+			XMS_FRAME_SIZE[bufnum] = size;
 
 			//	ファイル名登録
 			strcpy(PVI_FILE[bufnum], filename);
-
 			pviflag[bufnum] = false;
 
 		} else {			// PVI 読み込み
 			fread(&pviheader, 1, sizeof(PVIHEADER), fp);
 
 			strncpy(pziheader.header, "PZI1", 4);
-			for(i = 0; i < 128; i++) {
+			size2 = 0;
+
+//	20020311 修正
+			for(i = 0; i < pviheader.pvinum; i++) {
 				pziheader.pcmnum[i].startaddress = (pviheader.pcmnum[i].startaddress << (5+1));
 				pziheader.pcmnum[i].size
 					= ((pviheader.pcmnum[i].endaddress - pviheader.pcmnum[i].startaddress + 1
 					) << (5+1));
+				size2 += pziheader.pcmnum[i].size;
 
 				pziheader.pcmnum[i].loop_start = 0xffff;
 				pziheader.pcmnum[i].loop_end = 0xffff; 
 				pziheader.pcmnum[i].rate  = 16000;	// 16kHz
 			}
 			
+			for(i = pviheader.pvinum; i < 128; i++) {
+				pziheader.pcmnum[i].startaddress = 0;
+				pziheader.pcmnum[i].size = 0;
+				pziheader.pcmnum[i].loop_start = 0xffff;
+				pziheader.pcmnum[i].loop_end = 0xffff; 
+				pziheader.pcmnum[i].rate  = 16000;	// 16kHz
+			}
+
 			if(memcmp(&PCME_WORK[bufnum]. pcmnum, &pziheader.pcmnum, sizeof(PZIHEADER)-0x20) == 0) {
 				strcpy(PVI_FILE[bufnum], filename);
 				return _WARNING_PPZ_ALREADY_LOAD;		// 同じファイル
@@ -224,6 +294,7 @@ int PPZ8::Load(char *filename, int bufnum)
 			if(XMS_FRAME_ADR[bufnum] != NULL) {
 				free(XMS_FRAME_ADR[bufnum]);		// いったん開放
 				XMS_FRAME_ADR[bufnum] = NULL;
+				XMS_FRAME_SIZE[bufnum] = 0;
 				memset(&PCME_WORK[bufnum], 0, sizeof(PZIHEADER));
 			}
 
@@ -235,12 +306,17 @@ int PPZ8::Load(char *filename, int bufnum)
 
 			size -= sizeof(PVIHEADER);
 
+//	20020922 修正
+//@			size2 = size2 / 2 - sizeof(PVIHEADER);		// PVI換算
+			size2 = size2 / 2;							// PVI換算
+
+
 			if((pdst = XMS_FRAME_ADR[bufnum]
-						= (uchar *)malloc(size * 2)) == NULL) {
+						= (uchar *)malloc(max(size, size2) * 2)) == NULL) {
 				return _ERR_OUT_OF_MEMORY;			// メモリが確保できない
 			}
 
-			if((psrc = psrc2 = (uchar *)malloc(size)) == NULL) {
+			if((psrc = psrc2 = (uchar *)malloc(max(size, size2))) == NULL) {
 				return _ERR_OUT_OF_MEMORY;			// メモリが確保できない（テンポラリ）
 			}
 
@@ -253,6 +329,7 @@ int PPZ8::Load(char *filename, int bufnum)
 				DELTA_N = DELTA_N0;
 
 				for(j = 0; j < (int)pziheader.pcmnum[i].size / 2; j++) {
+
 					X_N = Limit(X_N + table1[(*psrc >> 4) & 0x0f] * DELTA_N / 8, 32767, -32768);
 					DELTA_N = Limit(DELTA_N * table2[(*psrc >> 4) & 0x0f] / 64, 24576, 127);
 					*pdst++ = X_N / (32768 / 128) + 128;
@@ -261,9 +338,9 @@ int PPZ8::Load(char *filename, int bufnum)
 					DELTA_N = Limit(DELTA_N * table2[*psrc++ & 0x0f] / 64, 24576, 127);
 					*pdst++ = X_N / (32768 / 128) + 128;
 				}
-
 			}
-	
+			XMS_FRAME_SIZE[bufnum] = size2 * 2;
+
 			//	バッファ開放
 			free(psrc2);
 			
@@ -271,8 +348,11 @@ int PPZ8::Load(char *filename, int bufnum)
 			strcpy(PVI_FILE[bufnum], filename);
 
 			pviflag[bufnum] = true;
+
 		}
+	} _finally {
 		fclose(fp);
+	}
 	return _PPZ8_OK;
 }
 
@@ -284,7 +364,11 @@ bool PPZ8::SetVol(int ch, int vol)
 {
 	if(ch >= PCM_CNL_MAX) return false;
 	
-	channelwork[ch].PCM_VOL = vol;
+	if(ch != 7 || !ADPCM_EM_FLG) {
+		channelwork[ch].PCM_VOL = vol;
+	} else {
+		channelwork[ch].PCM_VOL = ADPCM_EM_VOL[vol & 0xff];
+	}
 	return true;
 }
 
@@ -295,9 +379,12 @@ bool PPZ8::SetVol(int ch, int vol)
 bool PPZ8::SetOntei(int ch, uint ontei)
 {
 	if(ch >= PCM_CNL_MAX) return false;
-	
+	if(ch == 7 && ADPCM_EM_FLG) {						// ADPCM エミュレート中
+		ontei = (ontei & 0xffff) * 0x8000 / 0x49ba;
+	}
+
 	channelwork[ch].PCM_ADDS_L = ontei & 0xffff;
-	channelwork[ch].PCM_ADDS_H = ontei >> 16;
+	channelwork[ch].PCM_ADDS_H = ontei >> 16;					
 
 	channelwork[ch].PCM_ADD_H = (int)(
 			(_int64)((channelwork[ch].PCM_ADDS_H << 16) + channelwork[ch].PCM_ADDS_L)
@@ -311,7 +398,7 @@ bool PPZ8::SetOntei(int ch, uint ontei)
 
 
 //-----------------------------------------------------------------------------
-//	0EH ループポインタの設定
+//	0EH ﾙｰﾌﾟﾎﾟｲﾝﾀの設定
 //-----------------------------------------------------------------------------
 bool PPZ8::SetLoop(int ch, uint loop_start, uint loop_end)
 {
@@ -356,13 +443,17 @@ bool PPZ8::SetPan(int ch, int pan)
 {
 	if(ch >= PCM_CNL_MAX) return false;
 
-	channelwork[ch].PCM_PAN = pan;	
+	if(ch != 7 || !ADPCM_EM_FLG) {
+		channelwork[ch].PCM_PAN = pan;	
+	} else {
+		channelwork[ch].PCM_PAN = ADPCM_EM_PAN[pan & 3];	
+	}
 	return true;
 }
 
 
 //-----------------------------------------------------------------------------
-//	14H (PPZ8)レート設定
+//	14H (PPZ8)ﾚｰﾄ設定
 //-----------------------------------------------------------------------------
 bool PPZ8::SetRate(uint rate, bool ip)
 {
@@ -373,7 +464,7 @@ bool PPZ8::SetRate(uint rate, bool ip)
 
 
 //-----------------------------------------------------------------------------
-//	15H (PPZ8)元データ周波数設定
+//	15H (PPZ8)元ﾃﾞｰﾀ周波数設定
 //-----------------------------------------------------------------------------
 bool PPZ8::SetSourceRate(int ch, int rate)
 {
@@ -385,7 +476,7 @@ bool PPZ8::SetSourceRate(int ch, int rate)
 
 
 //-----------------------------------------------------------------------------
-//	16H (PPZ8)全体ボリユームの設定（86B Mixer)
+//	16H (PPZ8)全体ﾎﾞﾘﾕｰﾑの設定（86B Mixer)
 //-----------------------------------------------------------------------------
 void PPZ8::SetAllVolume(int vol)
 {
@@ -405,6 +496,16 @@ void PPZ8::SetVolume(int vol)
 		MakeVolumeTable(vol);
 	}
 }
+
+
+//-----------------------------------------------------------------------------
+//	ADPCM エミュレート設定
+//-----------------------------------------------------------------------------
+void PPZ8::ADPCM_EM_SET(bool flag)
+{
+	ADPCM_EM_FLG = flag;
+}
+
 
 //-----------------------------------------------------------------------------
 //	音量テーブル作成
@@ -427,7 +528,7 @@ void PPZ8::MakeVolumeTable(int vol)
 
 
 //-----------------------------------------------------------------------------
-//	ワーク初期化
+//	ﾜｰｸ初期化
 //-----------------------------------------------------------------------------
 void PPZ8::WORK_INIT(void)
 {

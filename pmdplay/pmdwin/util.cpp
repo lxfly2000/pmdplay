@@ -3,13 +3,8 @@
 //				Programmed by C60
 //=============================================================================
 
-#ifdef _WINDOWS
 #include	<windows.h>
 #include	<mbstring.h>
-#endif
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include	"util.h"
 
 
@@ -18,7 +13,6 @@
 //=============================================================================
 _int64 GetFileSize_s(char *filename)
 {
-#ifdef _WINDOWS
 	HANDLE	handle;
 	WIN32_FIND_DATAA	FindFileData;
 
@@ -26,31 +20,8 @@ _int64 GetFileSize_s(char *filename)
 		return -1;		// 取得不可
 	} else {
 		FindClose(handle);
-		return (_int64)((__int64)FindFileData.nFileSizeHigh << 32) + FindFileData.nFileSizeLow; 
+		return (_int64)(FindFileData.nFileSizeHigh << 32) + FindFileData.nFileSizeLow; 
  	}
-#else
-	FILE *fp;
-	int size;
-
-	fp = fopen (filename, "rb");
-	if (!fp)
-	  {
-	    int i;
-	    
-	    for (i = 0; i < strlen (filename); i ++)
-	      filename[i] = tolower (filename[i]);
-
-	    fp = fopen (filename, "rb");
-	    if (!fp)
-		return -1;
-	  }
-
-	fseek (fp, 0, SEEK_END);
-	size = (int)ftell (fp);
-	fclose (fp);
-
-	return size;
-#endif
 }
 
 
@@ -92,7 +63,7 @@ char *delesc(char *dest, const char *src)
 	uchar	*src2;
 	uchar	*src3;
 	size_t	i;
-
+	
 	if((src2 = src3 = (uchar *)malloc(strlen(src) + 32)) == NULL) {
 		return NULL;
 	};
@@ -106,7 +77,7 @@ char *delesc(char *dest, const char *src)
 
 	dest2 = dest;
 
-	do {
+	while(*src2 != '\0') {
 		if(*src2 == 0x1b) {		// エスケープシーケンス
 			if(*(src2 + 1) == '[') {
 				src2 += 2;
@@ -128,7 +99,7 @@ char *delesc(char *dest, const char *src)
 		} else {
 			*dest++ = *src2++;		
 		}
-	}while(*src2 != '\0');
+	}
 
 	free(src3);
 	*dest = '\0';
@@ -240,101 +211,101 @@ char *zen2tohan(char *dest, const char *src)
 		"{",		/*	859b 	*/
 		"|",		/*	859c 	*/
 		"}",		/*	859d 	*/
-		"\x81\x45",		/*	859e 	*/
-		"\xa1",		/*	859f 	*/
-		"\xa2",		/*	85a0 	*/
-		"\xa3",		/*	85a1 	*/
-		"\xa4",		/*	85a2 	*/
-		"\xa5",		/*	85a3 	*/
-		"\xa6",		/*	85a4 	*/
-		"\xa7",		/*	85a5 	*/
-		"\xa8",		/*	85a6 	*/
-		"\xa9",		/*	85a7 	*/
-		"\xaa",		/*	85a8 	*/
-		"\xab",		/*	85a9 	*/
-		"\xac",		/*	85aa 	*/
-		"\xad",		/*	85ab 	*/
-		"\xae",		/*	85ac 	*/
-		"\xaf",		/*	85ad 	*/
-		"\xb0",		/*	85ae 	*/
-		"\xb1",		/*	85af 	*/
-		"\xb2",		/*	85b0 	*/
-		"\xb3",		/*	85b1 	*/
-		"\xb4",		/*	85b2 	*/
-		"\xb5",		/*	85b3 	*/
-		"\xb6",		/*	85b4 	*/
-		"\xb7",		/*	85b5 	*/
-		"\xb8",		/*	85b6 	*/
-		"\xb9",		/*	85b7 	*/
-		"\xba",		/*	85b8 	*/
-		"\xbb",		/*	85b9 	*/
-		"\xbc",		/*	85ba 	*/
-		"\xbd",		/*	85bb 	*/
-		"\xbe",		/*	85bc 	*/
-		"\xbf",		/*	85bd 	*/
-		"\xc0",		/*	85be 	*/
-		"\xc1",		/*	85bf 	*/
-		"\xc2",		/*	85c0 	*/
-		"\xc3",		/*	85c1 	*/
-		"\xc4",		/*	85c2 	*/
-		"\xc5",		/*	85c3 	*/
-		"\xc6",		/*	85c4 	*/
-		"\xc7",		/*	85c5 	*/
-		"\xc8",		/*	85c6 	*/
-		"\xc9",		/*	85c7 	*/
-		"\xca",		/*	85c8 	*/
-		"\xcb",		/*	85c9 	*/
-		"\xcc",		/*	85ca 	*/
-		"\xcd",		/*	85cb 	*/
-		"\xce",		/*	85cc 	*/
-		"\xcf",		/*	85cd 	*/
-		"\xd0",		/*	85ce 	*/
-		"\xd1",		/*	85cf 	*/
-		"\xd2",		/*	85d0 	*/
-		"\xd3",		/*	85d1 	*/
-		"\xd4",		/*	85d2 	*/
-		"\xd5",		/*	85d3 	*/
-		"\xd6",		/*	85d4 	*/
-		"\xd7",		/*	85d5 	*/
-		"\xd8",		/*	85d6 	*/
-		"\xd9",		/*	85d7 	*/
-		"\xda",		/*	85d8 	*/
-		"\xdb",		/*	85d9 	*/
-		"\xdc",		/*	85da 	*/
-		"\xdd",		/*	85db 	*/
-		"\xde",		/*	85dc 	*/
-		"\xdf",		/*	85dd 	*/
-		"\x81\x45",		/*	85de 	*/
-		"\x81\x45",		/*	85df 	*/
-		"\xdc",		/*	85e0 	*/
-		"\xb6",		/*	85e1 	*/
-		"\xb9",		/*	85e2 	*/
-		"\xb3\xde",		/*	85e3 	*/
-		"\xb6\xde",		/*	85e4 	*/
-		"\xb7\xde",		/*	85e5 	*/
-		"\xb8\xde",		/*	85e6 	*/
-		"\xb9\xde",		/*	85e7 	*/
-		"\xba\xde",		/*	85e8 	*/
-		"\xbb\xde",		/*	85e9 	*/
-		"\xbc\xde",		/*	85ea 	*/
-		"\xbd\xde",		/*	85eb 	*/
-		"\xbe\xde",		/*	85ec 	*/
-		"\xbf\xde",		/*	85ed 	*/
-		"\xc0\xde",		/*	85ee 	*/
-		"\xc1\xde",		/*	85ef 	*/
-		"\xc2\xde",		/*	85f0 	*/
-		"\xc3\xde",		/*	85f1 	*/
-		"\xc4\xde",		/*	85f2 	*/
-		"\xca\xde",		/*	85f3 	*/
-		"\xca\xdf",		/*	85f4 	*/
-		"\xcb\xde",		/*	85f5 	*/
-		"\xcb\xdf",		/*	85f6 	*/
-		"\xcc\xde",		/*	85f7 	*/
-		"\xcc\xdf",		/*	85f8 	*/
-		"\xcd\xde",		/*	85f9 	*/
-		"\xcd\xdf",		/*	85fa 	*/
-		"\xce\xde",		/*	85fb 	*/
-		"\xce\xdf"		/*	85fc 	*/
+		"��",		/*	859e 	*/
+		"｡",		/*	859f 	*/
+		"｢",		/*	85a0 	*/
+		"｣",		/*	85a1 	*/
+		"､",		/*	85a2 	*/
+		"･",		/*	85a3 	*/
+		"ｦ",		/*	85a4 	*/
+		"ｧ",		/*	85a5 	*/
+		"ｨ",		/*	85a6 	*/
+		"ｩ",		/*	85a7 	*/
+		"ｪ",		/*	85a8 	*/
+		"ｫ",		/*	85a9 	*/
+		"ｬ",		/*	85aa 	*/
+		"ｭ",		/*	85ab 	*/
+		"ｮ",		/*	85ac 	*/
+		"ｯ",		/*	85ad 	*/
+		"ｰ",		/*	85ae 	*/
+		"ｱ",		/*	85af 	*/
+		"ｲ",		/*	85b0 	*/
+		"ｳ",		/*	85b1 	*/
+		"ｴ",		/*	85b2 	*/
+		"ｵ",		/*	85b3 	*/
+		"ｶ",		/*	85b4 	*/
+		"ｷ",		/*	85b5 	*/
+		"ｸ",		/*	85b6 	*/
+		"ｹ",		/*	85b7 	*/
+		"ｺ",		/*	85b8 	*/
+		"ｻ",		/*	85b9 	*/
+		"ｼ",		/*	85ba 	*/
+		"ｽ",		/*	85bb 	*/
+		"ｾ",		/*	85bc 	*/
+		"ｿ",		/*	85bd 	*/
+		"ﾀ",		/*	85be 	*/
+		"ﾁ",		/*	85bf 	*/
+		"ﾂ",		/*	85c0 	*/
+		"ﾃ",		/*	85c1 	*/
+		"ﾄ",		/*	85c2 	*/
+		"ﾅ",		/*	85c3 	*/
+		"ﾆ",		/*	85c4 	*/
+		"ﾇ",		/*	85c5 	*/
+		"ﾈ",		/*	85c6 	*/
+		"ﾉ",		/*	85c7 	*/
+		"ﾊ",		/*	85c8 	*/
+		"ﾋ",		/*	85c9 	*/
+		"ﾌ",		/*	85ca 	*/
+		"ﾍ",		/*	85cb 	*/
+		"ﾎ",		/*	85cc 	*/
+		"ﾏ",		/*	85cd 	*/
+		"ﾐ",		/*	85ce 	*/
+		"ﾑ",		/*	85cf 	*/
+		"ﾒ",		/*	85d0 	*/
+		"ﾓ",		/*	85d1 	*/
+		"ﾔ",		/*	85d2 	*/
+		"ﾕ",		/*	85d3 	*/
+		"ﾖ",		/*	85d4 	*/
+		"ﾗ",		/*	85d5 	*/
+		"ﾘ",		/*	85d6 	*/
+		"ﾙ",		/*	85d7 	*/
+		"ﾚ",		/*	85d8 	*/
+		"ﾛ",		/*	85d9 	*/
+		"ﾜ",		/*	85da 	*/
+		"ﾝ",		/*	85db 	*/
+		"ﾞ",		/*	85dc 	*/
+		"ﾟ",		/*	85dd 	*/
+		"�ﾞ",		/*	85de 	*/
+		"�ﾟ",		/*	85df 	*/
+		"ﾜ",		/*	85e0 	*/
+		"ｶ",		/*	85e1 	*/
+		"ｹ",		/*	85e2 	*/
+		"ｳﾞ",		/*	85e3 	*/
+		"ｶﾞ",		/*	85e4 	*/
+		"ｷﾞ",		/*	85e5 	*/
+		"ｸﾞ",		/*	85e6 	*/
+		"ｹﾞ",		/*	85e7 	*/
+		"ｺﾞ",		/*	85e8 	*/
+		"ｻﾞ",		/*	85e9 	*/
+		"ｼﾞ",		/*	85ea 	*/
+		"ｽﾞ",		/*	85eb 	*/
+		"ｾﾞ",		/*	85ec 	*/
+		"ｿﾞ",		/*	85ed 	*/
+		"ﾀﾞ",		/*	85ee 	*/
+		"ﾁﾞ",		/*	85ef 	*/
+		"ﾂﾞ",		/*	85f0 	*/
+		"ﾃﾞ",		/*	85f1 	*/
+		"ﾄﾞ",		/*	85f2 	*/
+		"ﾊﾞ",		/*	85f3 	*/
+		"ﾊﾟ",		/*	85f4 	*/
+		"ﾋﾞ",		/*	85f5 	*/
+		"ﾋﾟ",		/*	85f6 	*/
+		"ﾌﾞ",		/*	85f7 	*/
+		"ﾌﾟ",		/*	85f8 	*/
+		"ﾍﾞ",		/*	85f9 	*/
+		"ﾍﾟ",		/*	85fa 	*/
+		"ﾎﾞ",		/*	85fb 	*/
+		"ﾎﾟ"		/*	85fc 	*/
 	};
 
 	if((src2 = src3 = (char *)malloc(strlen(src) + 2)) == NULL) {
@@ -346,10 +317,10 @@ char *zen2tohan(char *dest, const char *src)
 
 	dest2 = dest;
 	do {
-		if(_ismbblead(*(uchar *)src2)) {		// 漢字１バイト目
+		if(_ismbblead(*src2)) {		// 漢字１バイト目
 			if(*(uchar *)src2 == 0x85 &&
 					*(uchar *)(src2+1) >= 0x40 && *(uchar *)(src2+1) <= 0xfc) {	// 2バイト半角
-				len = (int)strlen(codetable[*(uchar *)(src2+1) - 0x40]);
+				len = strlen(codetable[*(uchar *)(src2+1) - 0x40]);
 				strncpy(dest, codetable[*(uchar *)(src2+1) - 0x40], len);
 				src2 += 2;
 				dest += len;

@@ -1,6 +1,6 @@
 ﻿//=============================================================================
 //		opnaw : OPNA unit with wait
-//			ver 0.01
+//			ver 0.03
 //=============================================================================
 
 #ifndef OPNAW_H
@@ -8,9 +8,16 @@
 
 #include	"opna.h"
 
+
+// 一次補間有効時の合成周波数
+#define	SOUND_55K			  55555
+#define	SOUND_55K_2			  55466
+
 // wait で計算した分を代入する buffer size(samples)
 #define		WAIT_PCM_BUFFER_SIZE  65536
 
+// 線形補間時に計算した分を代入する buffer size(samples)
+#define		IP_PCM_BUFFER_SIZE  2048
 
 namespace FM {
 
@@ -19,7 +26,8 @@ namespace FM {
 	public:
 		OPNAW();
 		~OPNAW();
-	
+
+		bool	Init(uint c, uint r, bool ipflag, const char* path);
 		bool	SetRate(uint c, uint r, bool ipflag = false);
 
 		void	SetFMWait(int nsec);				// FM wait(nsec)
@@ -38,7 +46,7 @@ namespace FM {
 	
 	private:
 		Sample	pre_buffer[WAIT_PCM_BUFFER_SIZE * 2];
-												// wait 時の合成音の退避
+													// wait 時の合成音の退避
 		int		fmwait;								// FM Wait(nsec)
 		int		ssgwait;							// SSG Wait(nsec)
 		int		rhythmwait;							// Rhythm Wait(nsec)
@@ -52,8 +60,16 @@ namespace FM {
 		int		read_pos;							// 書き込み位置
 		int		write_pos;							// 読み出し位置
 		int		count2;								// count 小数部分(*1000)	
+
+		Sample	ip_buffer[IP_PCM_BUFFER_SIZE * 2];
+													// 線形補間時のワーク
+		uint	rate2;								// 出力周波数
+		bool	interpolation2;						// 一次補間フラグ
+		int		delta;								// 差分小数部(16384サンプルで分割)
 	
 		void	CalcWaitPCM(int waitcount);			// SetReg() wait 時の PCM を計算
+		void	_Mix(Sample* buffer, int nsamples);	// 合成（一次補間なしVer.)
+
 	};
 }
 

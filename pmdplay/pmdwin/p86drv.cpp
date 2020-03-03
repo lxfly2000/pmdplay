@@ -5,7 +5,6 @@
 //=============================================================================
 
 #include	<stdio.h>
-#include	<stdlib.h>
 #include	<string.h>
 #include	<math.h>
 #include	"p86drv.h"
@@ -62,6 +61,11 @@ P86DRV::~P86DRV()
 //-----------------------------------------------------------------------------
 bool P86DRV::Init(uint r, bool ip)
 {
+	// 一旦開放する
+	if(p86_addr != NULL) {
+		free(p86_addr);			// メモリ開放
+	}
+
 	SetVolume(0);
 	SetRate(r, ip);
 	return true;
@@ -78,7 +82,7 @@ bool P86DRV::SetRate(uint r, bool ip)
 	rate = r;
 	interpolation = ip;
 
-	_ontei = (uint)((unsigned long long)ontei * srcrate / rate);
+	_ontei = (uint)((unsigned _int64)ontei * srcrate / rate);
 	addsize2 = (_ontei & 0xffff) >> 4;
 	addsize1 = _ontei >> 16;
 
@@ -92,20 +96,6 @@ bool P86DRV::SetRate(uint r, bool ip)
 void P86DRV::SetVolume(int volume)
 {
 	MakeVolumeTable(volume);
-}
-
-int P86DRV::read_char(void *value)
-{
-	int temp;
-	
-	if ((*(uchar *)value) & 0x80)
-		temp = -1;
-	else
-		temp = 0;
-
-	memcpy(&temp,value,sizeof(char));
-		
-	return temp;
 }
 
 
@@ -122,9 +112,10 @@ void P86DRV::MakeVolumeTable(int volume)
 	if(AVolume != AVolume_temp) {
 		AVolume = AVolume_temp;
 		for(i = 0; i < 16; i++) {
-			temp = pow(2.0, (i + 15) / 2.0) * AVolume / 0x18000;
+//@			temp = pow(2.0, (i + 15) / 2.0) * AVolume / 0x18000;
+			temp = i * AVolume / 256;
 			for(j = 0; j < 256; j++) {
-				VolumeTable[i][j] = (Sample)(read_char(&j) * temp);
+				VolumeTable[i][j] = (Sample)((char)j * temp);
 			}
 		}
 	}
@@ -153,6 +144,7 @@ int P86DRV::Load(char *filename)
 		return _ERR_OPEN_P86_FILE;						//	ファイルが開けない
 	}
 	
+	_try{
 		size = (int)GetFileSize_s(filename);		// ファイルサイズ
 		fread(&_p86header, 1, sizeof(_p86header), fp);
 		
@@ -193,8 +185,9 @@ int P86DRV::Load(char *filename)
 		//	ファイル名登録
 		strcpy(p86_file, filename);
 	
+	} _finally {
 		fclose(fp);
-
+	}
 	return _P86DRV_OK;
 }
 
@@ -254,7 +247,7 @@ bool P86DRV::SetOntei(int _srcrate, uint _ontei)
 	ontei = _ontei;
 	srcrate = ratetable[_srcrate];
 	
-	_ontei = (uint)((unsigned long long)_ontei * srcrate / rate);
+	_ontei = (uint)((unsigned _int64)_ontei * srcrate / rate);
 
 	addsize2 = (_ontei & 0xffff) >> 4;
 	addsize1 = _ontei >> 16;
