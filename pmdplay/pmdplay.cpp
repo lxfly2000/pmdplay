@@ -546,7 +546,7 @@ void PMDPlay::OnLoop()
 	//I
 	if (KeyReleased(KEY_INPUT_I))
 	{
-		char info[1024] = "", singleinfo[80] = "";
+		char info[1024] = "", singleinfo[1024] = "";
 		for (int i = -2; i < 10; i++)
 		{
 			if (pplayer->GetNotes(singleinfo, i))return;

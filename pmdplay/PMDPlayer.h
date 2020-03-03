@@ -66,6 +66,7 @@ public:
 	// 4	#Memo(1個目)
 	// 5	#Memo(2個目)
 	//……	……
+	//2020-3-3:更新后的PMDWin代码要求outstr必须至少有1024字节。
 	int GetNotes(char* outstr, int al);
 	//获取总时长
 	unsigned GetLengthInMs();
