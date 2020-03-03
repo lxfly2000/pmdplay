@@ -27,7 +27,9 @@
 					" OPNA FM Generator - cisc\n"\
 					" PPZ8 PCM Driver - UKKY\n"\
 					" PMDWin - C60\n"\
-					" pmdmini - BouKiCHi"
+					" pmdmini - BouKiCHi\n\n"\
+					"如需更多帮助请参考：\n"\
+					"https://github.com/lxfly2000/pmdplay"
 #define SAMPLE_RATE	44100//采样率（每秒多少个采样）
 #define BYTES_PER_VAR	2//一个采样点的一个通道所占字节数
 #define CHANNELS	2//通道数

@@ -269,7 +269,7 @@ int PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_ti
 	pmd_init();
 	setppsuse(false);
 	setrhythmwithssgeffect(true);
-	getopenwork()->effflag = 1;
+	getopenwork()->effflag = 0;
 	setfmcalc55k(true);
 	pmd_setrate(sampleRate);
 	playbackspeed = 1.0f;
@@ -318,7 +318,12 @@ void PMDPlayer::OnPlay()
 		voiceState[i] = getpartwork(i)->voicenum;
 		volumeState[i] = getpartwork(i)->volume;
 	}
-	if (!getopenwork()->effflag)keyState[8] = getopenwork()->kshot_dat;// % 128;//SSG¹ÄÉù
+	if (!getopenwork()->effflag)
+	{
+		int tmpk = getopenwork()->kshot_dat;
+		if (tmpk)
+			keyState[8] = tmpk;// % 128;//SSG¹ÄÉù
+	}
 }
 
 void PMDPlayer::OnFadingOut()
