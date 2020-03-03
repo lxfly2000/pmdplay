@@ -87,9 +87,14 @@ int GetItemsInPath(const TCHAR *path, WIN32_FIND_DATA *pdata)
 	FindClose(hf);
 	return c;
 }
+static bool useHighDpi = true;
+void DxShellSetUseHighDpi(bool b)
+{
+	useHighDpi = b;
+}
 template<typename Tnum>Tnum HdpiNum(Tnum n)
 {
-	return (Tnum)(GetDeviceCaps(GetDC(NULL), LOGPIXELSX) * n / USER_DEFAULT_SCREEN_DPI);
+	return useHighDpi ? (Tnum)(GetDeviceCaps(GetDC(NULL), LOGPIXELSX) * n / USER_DEFAULT_SCREEN_DPI) : n;
 }
 int DxShellCreateFontToHandle(const TCHAR *fontname, int fontsize, int fontthick)
 {

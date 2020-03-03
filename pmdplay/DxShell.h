@@ -60,3 +60,5 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL multili
 //缩短路径以使字符串的绘制宽度小于maxWidth
 //返回值为shortend
 TCHAR *ShortenPath(const TCHAR *src, BOOL isDir, TCHAR *shortened, int fontHandle, int maxWidth);
+//设置DxShell是否使用高分辨率，默认为使用
+void DxShellSetUseHighDpi(bool);

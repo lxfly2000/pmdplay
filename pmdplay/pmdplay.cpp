@@ -212,6 +212,7 @@ int PMDPlay::Init(TCHAR* param)
 		displayWinWidth = originalWinWidth;
 		displayWinHeight = originalWinHeight;
 	}
+	DxShellSetUseHighDpi(useHighDpi);
 	SetGraphMode(displayWinWidth, displayWinHeight, 32);
 	ChangeFont(TEXT("SimSun"));
 	if (useHighDpi)
