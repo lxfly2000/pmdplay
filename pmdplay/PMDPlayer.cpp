@@ -269,12 +269,11 @@ int PMDPlayer::Init(int nChannel, int sampleRate, int bytesPerVar, int buffer_ti
 	pmd_init();
 	setppsuse(false);
 	setrhythmwithssgeffect(true);
-	getopenwork()->effflag = 0;
+	getopenwork()->effflag = 1;
 	setfmcalc55k(true);
 	pmd_setrate(sampleRate);
 	playbackspeed = 1.0f;
 	memset(keyState, -1, sizeof keyState);
-	keyState[8] = 0;
 	ZeroMemory(voiceState, sizeof voiceState);
 	ZeroMemory(volumeState, sizeof volumeState);
 	return 0;

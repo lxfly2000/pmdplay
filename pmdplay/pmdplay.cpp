@@ -35,7 +35,6 @@
 #define FADEOUT_TIME_SEC	5
 #define STEPS_PER_BAR	4//默认节拍数
 #define NUM_SHOW_CHANNELS 9
-#define DOUBLECLICK_BETWEEN_MS 500
 
 const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2;*.m26;*.m86;*.mz;*.mp;*.ms\0所有文件\0*\0\0");
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), pplayer->GetPlayerStatus() >= PMDPlayer::playing, filepath)
@@ -129,6 +128,7 @@ private:
 	int retcode = 0;
 	bool fileload_ok = true;
 	int originalWinWidth, originalWinHeight, displayWinWidth, displayWinHeight;
+	int mouseDoubleClickTime;
 };
 
 PMDPlay::PMDPlay() :leftclick(MOUSE_INPUT_LEFT)
@@ -178,33 +178,52 @@ int PMDPlay::Init(TCHAR* param)
 	}
 
 	//程序设定
+	mouseDoubleClickTime = (int)GetDoubleClickTime();
 	originalWinWidth = 800, originalWinHeight = 600;
-	if (__argc > 1)
+	bool paramPlay = true;
+	if (strstrDx(param, TEXT("600p")))
 	{
-		if (stricmpDx(__wargv[1], TEXT("600p")) == 0)
-		{
-			originalWinWidth = 960;
-			originalWinHeight = 600;
-			param[0] = 0;
-		}
-		else if (stricmpDx(__wargv[1], TEXT("720p")) == 0)
-		{
-			originalWinWidth = 1280;
-			originalWinHeight = 720;
-			param[0] = 0;
-		}
-		else if (stricmpDx(__wargv[1], TEXT("-e")) == 0)
-			return 1;
+		originalWinWidth = 960;
+		originalWinHeight = 600;
+		paramPlay = false;
 	}
+	else if (strstrDx(param, TEXT("720p")))
+	{
+		originalWinWidth = 1280;
+		originalWinHeight = 720;
+		paramPlay = false;
+	}
+	else if (strstrDx(param, TEXT("-e")))
+		return 1;
+	bool useHighDpi = strstrDx(param, TEXT("hdpi"));
 	SetOutApplicationLogValidFlag(FALSE);
 	ChangeWindowMode(windowed = TRUE);
 	SetWindowSizeChangeEnableFlag(TRUE);
 	SetAlwaysRunFlag(TRUE);
 	DPIInfo hdpi;
-	SetGraphMode(displayWinWidth = hdpi.X(originalWinWidth), displayWinHeight = hdpi.Y(originalWinHeight), 32);
+	if (useHighDpi)
+	{
+		displayWinWidth = hdpi.X(originalWinWidth);
+		displayWinHeight = hdpi.Y(originalWinHeight);
+		paramPlay = false;
+	}
+	else
+	{
+		displayWinWidth = originalWinWidth;
+		displayWinHeight = originalWinHeight;
+	}
+	SetGraphMode(displayWinWidth, displayWinHeight, 32);
 	ChangeFont(TEXT("SimSun"));
-	SetFontSize(hdpi.X(14));
-	if (hdpi.X(14) > 14)ChangeFontType(DX_FONTTYPE_ANTIALIASING);
+	if (useHighDpi)
+	{
+		SetFontSize(hdpi.X(14));
+		ChangeFontType(DX_FONTTYPE_ANTIALIASING);
+	}
+	else
+	{
+		SetFontSize(14);
+		SetWindowSize(hdpi.X(displayWinWidth), hdpi.Y(displayWinHeight));
+	}
 	SetFontThickness(3);
 	GetDrawScreenSize(&screenWidth, &screenHeight);
 	if (DxLib_Init())return retcode = -1;
@@ -239,7 +258,7 @@ int PMDPlay::Init(TCHAR* param)
 	USTR;
 
 	//参数播放
-	if (param[0])
+	if (paramPlay && param[0])
 	{
 		if (param[0] == '\"')
 		{
@@ -582,12 +601,20 @@ void PMDPlay::OnLoop()
 	if (leftclick.KeyReleased())
 	{
 		thisclicktime = GetNowCount();
-		if (thisclicktime - lastclicktime < DOUBLECLICK_BETWEEN_MS)
-			SetWindowSize(screenWidth, screenHeight);
+		if (thisclicktime - lastclicktime < mouseDoubleClickTime)
+		{
+			DPIInfo hdpi;
+			SetWindowSize(hdpi.X(originalWinWidth), hdpi.Y(originalWinHeight));
+		}
 		lastclicktime = thisclicktime;
 	}
 	if (KeyReleased(KEY_INPUT_M))
 		ViewMemEnable(!ViewMemGetEnabled());
+	if (pplayer->GetPlayerStatus() == PMDPlayer::playing && pplayer->GetLoopedTimes() == -1)
+	{
+		pplayer->Unload();
+		USTR;
+	}
 }
 
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
