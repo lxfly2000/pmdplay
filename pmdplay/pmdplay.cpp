@@ -23,7 +23,7 @@ LPCTSTR GetHelpParam()
 {
 	return LoadLocalString(IDS_HELP_PARAM);
 }
-TCHAR _helpInfo[500];
+TCHAR _helpInfo[700];
 LPCTSTR GetHelpInfo()
 {
 	strcpyDx(_helpInfo, LoadLocalString(IDS_HELP_INFO_FMT));

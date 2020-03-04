@@ -224,7 +224,6 @@
     <ClInclude Include="PMDPlayer_DSound.h" />
     <ClInclude Include="PMDPlayer_XAudio2.h" />
     <ClInclude Include="PMDScreen.h" />
-    <ClInclude Include="pmdwin\compat.h" />
     <ClInclude Include="pmdwin\opnaw.h" />
     <ClInclude Include="pmdwin\p86drv.h" />
     <ClInclude Include="pmdwin\PCMMusDriver.h" />

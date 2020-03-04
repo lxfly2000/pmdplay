@@ -196,9 +196,6 @@
     <ClInclude Include="fmgen\types.h">
       <Filter>fmgen</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\compat.h">
-      <Filter>pmdwin</Filter>
-    </ClInclude>
     <ClInclude Include="pmdwin\opnaw.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
