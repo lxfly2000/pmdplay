@@ -425,7 +425,6 @@ LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDM_BEATS_PER_BAR:_pObj->ChangeBeatsPerBar(); break;
 		}
 		break;
-	case WM_HELP:PMDPlay::_pObj->OnAbout(); break;
 	}
 	return CallWindowProc(dxProcess, hwnd, msg, wp, lp);
 }
@@ -535,6 +534,8 @@ void PMDPlay::OnLoop()
 {
 	//Esc
 	if (KeyReleased(KEY_INPUT_ESCAPE))running = false;
+	//F1
+	if (KeyReleased(KEY_INPUT_F1))OnAbout();
 	//F11
 	if (KeyReleased(KEY_INPUT_F11))ChangeWindowMode(windowed ^= TRUE);
 	//Space
