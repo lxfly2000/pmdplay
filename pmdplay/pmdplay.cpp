@@ -236,8 +236,8 @@ int PMDPlay::Init(TCHAR* param)
 	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
 	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
 	HMENU hSysMenu = GetSystemMenu(hWindowDx, FALSE);
-	AppendMenu(hSysMenu, MF_STRING, IDM_BEATS_PER_BAR, TEXT("节拍数(&B)……"));
-	AppendMenu(hSysMenu, MF_STRING, IDM_CONVERT, TEXT("转换到 Wave(&C)……"));
+	AppendMenu(hSysMenu, MF_STRING, IDM_BEATS_PER_BAR, TEXT("节拍数(&B)……\tB"));
+	AppendMenu(hSysMenu, MF_STRING, IDM_CONVERT, TEXT("转换到 Wave(&C)……\tE"));
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_UPDATE, TEXT("检查更新(&U)……"));
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_HELP, TEXT("关于本程序(&A)……\tF1"));
 	TCHAR ti[400];
@@ -311,7 +311,14 @@ void PMDPlay::ChangeBeatsPerBar()
 	int _spb;
 	do {
 		wsprintf(input, TEXT("%d"), stepsPerBar);
-		if (!InputBox(hWindowDx, input, ARRAYSIZE(input), TEXT("输入节拍数(&B):"), NULL, input))return;
+		if (windowed)
+		{
+			if (!InputBox(hWindowDx, input, ARRAYSIZE(input), TEXT("输入节拍数(&B):"), NULL, input))return;
+		}
+		else
+		{
+			if (DxGetInputString(TEXT("输入节拍数：\n[Enter]确定 [Esc]取消"), input, ARRAYSIZE(input) - 1, FALSE, TRUE) == -1)return;
+		}
 		_spb = _ttoi(input);
 	} while (!_spb);
 	stepsPerBar = _spb;
@@ -378,14 +385,32 @@ void PMDPlay::ConvertDialog()
 	TCHAR srcfile[MAX_PATH] = TEXT(""), pmdppath[MAX_PATH] = TEXT(""), cmd[1024] = TEXT("");
 	strcpyDx(cmd, TEXT("-e "));
 	strcpyDx(srcfile, filepath);//先给一个默认值，使用当前选择的文件
-	if (!ChooseFile(hWindowDx, srcfile, NULL, pcszPMDType, NULL))return;//选择PMD文件
+	if (windowed)
+	{
+		if (!ChooseFile(hWindowDx, srcfile, NULL, pcszPMDType, NULL))//选择PMD文件
+			return;
+	}
+	else
+	{
+		if (!DxChooseFilePath(srcfile, srcfile))
+			return;
+	}
 	strcatDx(cmd, srcfile);
 	strcatDx(cmd, TEXT(" "));
 	sprintfDx(pmdppath, TEXT("%s.WAV"), srcfile);
 	BOOL st;
-	if (!ChooseSaveFileWithCheckBox(hWindowDx, pmdppath, NULL, TEXT("波形音频\0*.wav\0\0"), NULL,
-		&st, TEXT("单独保存每个通道(&P)")))//选择保存文件
-		return;
+	if (windowed)
+	{
+		if (!ChooseSaveFileWithCheckBox(hWindowDx, pmdppath, NULL, TEXT("波形音频\0*.wav\0\0"), NULL,
+			&st, TEXT("单独保存每个通道(&P)")))//选择保存文件
+			return;
+	}
+	else
+	{
+		if (DxGetInputString(TEXT("输入保存位置：\n[Enter]确定 [Esc]取消"), pmdppath, ARRAYSIZE(pmdppath) - 1) == -1)
+			return;
+		st = DxMessageBox(TEXT("是否要单独保存每个通道？\n\n[Y]是 [N]否"), KEY_INPUT_Y, KEY_INPUT_N);
+	}
 	strcatDx(cmd, pmdppath);
 	if (st)strcatDx(cmd, TEXT(" 1 5000 -st"));
 	SHELLEXECUTEINFO se = { 0 };
@@ -405,10 +430,16 @@ void PMDPlay::ConvertDialog()
 	SetWindowText(ti);
 	if (retcode)
 	{
-		MessageBox(hWindowDx, TEXT("转换失败。"), srcfile, MB_ICONERROR);
+		if (windowed)
+			MessageBox(hWindowDx, TEXT("转换失败。"), srcfile, MB_ICONERROR);
+		else
+			DxMessageBox(TEXT("转换失败。\n\n[Enter]确定"));
 		return;
 	}
-	MessageBox(hWindowDx, TEXT("转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。"), srcfile, MB_ICONINFORMATION);
+	if (windowed)
+		MessageBox(hWindowDx, TEXT("转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。"), srcfile, MB_ICONINFORMATION);
+	else
+		DxMessageBox(TEXT("转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。\n\n[Enter]确定"));
 }
 
 LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -458,7 +489,7 @@ void PMDPlay::OnAbout()
 	{
 		TCHAR unicode_str[1024];
 		strcpyDx(unicode_str, TEXT(HELP_INFO));
-		strcatDx(unicode_str, TEXT("\n\n[Enter]继续"));
+		strcatDx(unicode_str, TEXT("\n\n[Enter]确定"));
 		DxMessageBox(unicode_str);
 	}
 }
@@ -581,7 +612,7 @@ void PMDPlay::OnLoop()
 		while (1)
 		{
 			MultiByteToWideChar(codepage, 0, info, ARRAYSIZE(info), unicode_str, ARRAYSIZE(unicode_str));
-			if (!windowed)strcatDx(unicode_str, TEXT("\n[Enter]继续 [Space]切换Shift-JIS编码"));
+			if (!windowed)strcatDx(unicode_str, TEXT("\n[Enter]确定 [Space]切换Shift-JIS编码"));
 			if (windowed ? MessageBox(hWindowDx, unicode_str, TEXT("文件信息（按取消切换 Shift-JIS 编码）"),
 				MB_ICONINFORMATION | MB_OKCANCEL) == IDCANCEL : DxMessageBox(unicode_str, KEY_INPUT_SPACE, KEY_INPUT_RETURN))
 				codepage ^= 932;
@@ -614,6 +645,10 @@ void PMDPlay::OnLoop()
 	}
 	if (KeyReleased(KEY_INPUT_M))
 		ViewMemEnable(!ViewMemGetEnabled());
+	if (KeyReleased(KEY_INPUT_B))
+		ChangeBeatsPerBar();
+	if (KeyReleased(KEY_INPUT_E))
+		ConvertDialog();
 	if (pplayer->GetPlayerStatus() == PMDPlayer::playing && pplayer->GetLoopedTimes() == -1)
 	{
 		pplayer->Unload();
