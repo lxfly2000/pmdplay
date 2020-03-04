@@ -5,13 +5,10 @@
 #define DXGUI_COLOR_BORDER_DEFAULT		0x00FFFFFF
 #define DXGUI_BORDER_WIDTH_DEFAULT		0.0f
 #define DXGUI_FONTSIZE_DEFAULT			-1
-#define DXGUI_FONTNAME_DEFAULT			"宋体"
+#define DXGUI_FONTNAME_DEFAULT			"SimSun"
 #define DXGUI_FONTTHICK_DEFAULT			-1
 #define DXGUI_POSITION_CENTER			0x80000000
 #define DXGUI_PADDING_WIDTH_DEFAULT		20
-#define DXGUI_CHOOSEFILE_MSG_DEFAULT	"选择文件\n[方向键]移动 [Tab]盘符 [Enter]确定 [Esc]取消"
-#define DXGUI_GETINPUT_MSG_DEFAULT		"输入\n[Enter]确定 [Esc]取消"
-#define DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT	"输入\n[Ctrl+Enter]确定 [Esc]取消"
 #define DXGUI_DRAWSTRING_MIN_WIDTH		320
 //显示一段提示信息，可以多行，返回值为键盘上按下的键（任何键均返回）
 //strcolor：文字颜色
@@ -37,7 +34,7 @@ int DxMessageBox(const TCHAR *msg, int keyOk = KEY_INPUT_RETURN, int keyCancel =
 //fontsize：字体大小
 //paddingWidth，paddingHeight：文字与边缘的距离（像素），-1为扩展至屏幕边缘
 //返回值：按下keyOk键返回TRUE，keyCancel返回FALSE
-int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg = TEXT(DXGUI_CHOOSEFILE_MSG_DEFAULT),
+int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg = NULL,
 	int chooseDir = 0, int keyOk = KEY_INPUT_RETURN, int keyCancel = KEY_INPUT_ESCAPE, int strcolor = DXGUI_COLOR_STRING_DEFAULT,
 	int bgcolor = DXGUI_COLOR_BACKGROUND_DEFAULT, int bordercolor = DXGUI_COLOR_BORDER_DEFAULT, float borderwidth = DXGUI_BORDER_WIDTH_DEFAULT,
 	const TCHAR *fontname = TEXT(DXGUI_FONTNAME_DEFAULT),

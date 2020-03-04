@@ -1,0 +1,212 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource1.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 非特定语言(默认值) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(936)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ON                  "ON"
+    IDS_OFF                 "--"
+    IDS_DXMSG_EMPTY_FOLDER  "This folder is empty.\nPress Enter to continue..."
+    IDS_DXGUI_CHOOSEFILE_MSG_DEFAULT 
+                            "Choose File\n[Arrow Keys]Move [Tab]Drive [Enter]OK [Esc]Cancel"
+    IDS_DXGUI_GETINPUT_MSG_DEFAULT "Input\n[Enter]OK [Esc]Cancel"
+    IDS_DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT 
+                            "Input\n[Ctrl+Enter]OK [Esc]Cancel"
+    IDS_HELP_PARAM          "-e <PMD file> [WAV file] [loop] [fadeout(ms)] [-st]"
+    IDS_HELP_INFO_FMT       "%s\nBy lxfly2000\n\n* Press Esc to exit.\n* If you want to use the rhythm sounds, please put the following files\n  2608_bd.wav  2608_sd.wav  2608_top.wav\n  2608_hh.wav  2608_tom.wav 2608_rim.wav\n  on the same directory of this program.(get them by -yr command)\n* Wave Converting Command:\n  %s\n\nReferenced Codes:\n Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n OPNA FM Generator - cisc\n PPZ8 PCM Driver - UKKY\n PMDWin - C60\n pmdmini - BouKiCHi\n\nFor more information please visit:\nhttps://github.com/lxfly2000/pmdplay"
+    IDS_PMD_TYPE            "PMD files|*.m;*.m2;*.m26;*.m86;*.mz;*.mp;*.ms|All files|*||"
+    IDS_MENU_BEATS_PER_BAR  "&Beats per bar...\tB"
+    IDS_MENU_CONVERT        "&Convert to Wave...\tE"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MENU_CHECK_UPDATE   "Check for &update..."
+    IDS_MENU_ABOUT          "&About this program...\tF1"
+    IDS_CHECKING_UPDATE     "Checking for update..."
+    IDS_CHECK_UPDATE_ERROR_NETWORK 
+                            "Cannot check for update.\n\nPossible reasons:\n* No network connection;\n* Unstable network connection;\n* Server changed."
+    IDS_CHECK_UPDATE_ERROR_CONFIGURATION 
+                            "Cannot check for update.\n\nPossible reasons:\n* Invalid URL;\n* Error configuration of update."
+    IDS_CHECK_UPDATE_LATEST "This program is up-to-date."
+    IDS_CHECK_UPDATE_ERROR_MISC "Error occured when checking for update."
+    IDS_CHECK_UPDATE_NEW_VERSION 
+                            "New version available: %d.%d.%d.%d\nCurrent: %s\n\nDo you want to download the new version?"
+    IDS_MSG_BPB             "Enter the number of &Beats per bar:"
+    IDS_DXMSG_BPB           "Enter the number of Beats per bar:\n[Enter]OK [Esc]Cancel"
+    IDS_LOG_ERROR_PARAM     "Wrong arguments."
+    IDS_LOG_COMMAND         "Command: "
+    IDS_LOG_CANNOT_CONVERT  "Cannot convert file: "
+    IDS_WAVE_TYPE           "Wave format|*.wav||"
+    IDS_SPLIT_CHANNEL       "Save each channel to se&perate files"
+    IDS_DXMSG_INPUT_SAVE_PATH "Input save path:\n[Enter]OK [Esc]Cancel"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DXMSG_SPLIT_CHANNEL "Do you wish to save each channel to seperate files?\n\n[Y]Yes [N]No"
+    IDS_CONVERTING          "Converting..."
+    IDS_MSG_CONVERT_FAILED  "Converting failed."
+    IDS_DXMSG_CONVERT_FAILED "Converting failed.\n\n[Enter]OK"
+    IDS_MSG_CONVERT_SUCCEEDED 
+                            "Converting succeeded.\nIf you want to change the converting option such as loop count, please use the command line."
+    IDS_DXMSG_CONVERT_SUCCEEDED 
+                            "Converting succeeded.\nIf you want to change the converting option such as loop count, please use the command line.\n\n[Enter]OK"
+    IDS_DXMSG_APPEND_OK     "\n\n[Enter]OK"
+    IDS_DRAWTIME_FMT        "BPM:%3d Loop: %2d Time: %d:%02d.%03d/%s Tick:%3d:%d:%02d"
+    IDS_DXMSG_APPEND_OK_ENCODING "\n[Enter]OK [Space]Set Shift-JIS encoding"
+    IDS_MSG_FILE_INFO       "File info (Press Cancel to set Shift-JIS encoding)"
+    IDS_STATUS_PLAYING      "Playing: "
+    IDS_STATUS_IDLE         "File   :"
+    IDS_INVALID_FILE        "(Invalid file)"
+    IDS_NO_OPEN_FILE        "No file loaded."
+    IDS_CONTROLS            "Space:Play/Pause S:Stop O:Open F:Fadeout I:Info D:Ch.Info[%s] P:Prog.[%s] V:Vel.[%s] ↑↓:Vol.[%d%%]\n%s%s"
+    IDS_OK                  "OK"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANCEL              "Cancel"
+END
+
+#endif    // 非特定语言(默认值) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource1.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ON                  "开"
+    IDS_OFF                 "关"
+    IDS_DXMSG_EMPTY_FOLDER  "该文件夹是空的。\n按Enter继续……"
+    IDS_DXGUI_CHOOSEFILE_MSG_DEFAULT "选择文件\n[方向键]移动 [Tab]盘符 [Enter]确定 [Esc]取消"
+    IDS_DXGUI_GETINPUT_MSG_DEFAULT "输入\n[Enter]确定 [Esc]取消"
+    IDS_DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT "输入\n[Ctrl+Enter]确定 [Esc]取消"
+    IDS_HELP_PARAM          "-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)] [-st]"
+    IDS_HELP_INFO_FMT       "%s\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件\n  2608_bd.wav  2608_sd.wav  2608_top.wav\n  2608_hh.wav  2608_tom.wav 2608_rim.wav\n  放至此程序目录下。（可由 -yr 命令获得）\n* Wave 转换命令：\n  %s\n\n本程序参考了以下代码：\n Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n OPNA FM Generator - cisc\n PPZ8 PCM Driver - UKKY\n PMDWin - C60\n pmdmini - BouKiCHi\n\n如需更多帮助请参考：\nhttps://github.com/lxfly2000/pmdplay"
+    IDS_PMD_TYPE            "PMD 文件|*.m;*.m2;*.m26;*.m86;*.mz;*.mp;*.ms|所有文件|*||"
+    IDS_MENU_BEATS_PER_BAR  "节拍数(&B)……\tB"
+    IDS_MENU_CONVERT        "转换到 Wave(&C)……\tE"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MENU_CHECK_UPDATE   "检查更新(&U)……"
+    IDS_MENU_ABOUT          "关于本程序(&A)……\tF1"
+    IDS_CHECKING_UPDATE     "检查更新中……"
+    IDS_CHECK_UPDATE_ERROR_NETWORK 
+                            "无法检查更新。\n\n可能的原因：\n* 你没有连接到网络；\n* 网络不稳定；\n* 目标服务器已更改。"
+    IDS_CHECK_UPDATE_ERROR_CONFIGURATION 
+                            "无法检查更新。\n\n可能的原因：\n* URL 路径有误；\n* 更新配置文件不正确。"
+    IDS_CHECK_UPDATE_LATEST "该软件是最新的。"
+    IDS_CHECK_UPDATE_ERROR_MISC "检查更新时出错。"
+    IDS_CHECK_UPDATE_NEW_VERSION "检测到新版本：%d.%d.%d.%d\n当前版本：%s\n\n是否下载新版本？"
+    IDS_MSG_BPB             "输入节拍数(&B):"
+    IDS_DXMSG_BPB           "输入节拍数：\n[Enter]确定 [Esc]取消"
+    IDS_LOG_ERROR_PARAM     "参数错误。"
+    IDS_LOG_COMMAND         "参数格式为："
+    IDS_LOG_CANNOT_CONVERT  "无法转换文件："
+    IDS_WAVE_TYPE           "波形音频|*.wav||"
+    IDS_SPLIT_CHANNEL       "单独保存每个通道(&P)"
+    IDS_DXMSG_INPUT_SAVE_PATH "输入保存位置：\n[Enter]确定 [Esc]取消"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DXMSG_SPLIT_CHANNEL "是否要单独保存每个通道？\n\n[Y]是 [N]否"
+    IDS_CONVERTING          "转换中……"
+    IDS_MSG_CONVERT_FAILED  "转换失败。"
+    IDS_DXMSG_CONVERT_FAILED "转换失败。\n\n[Enter]确定"
+    IDS_MSG_CONVERT_SUCCEEDED "转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。"
+    IDS_DXMSG_CONVERT_SUCCEEDED "转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。\n\n[Enter]确定"
+    IDS_DXMSG_APPEND_OK     "\n\n[Enter]确定"
+    IDS_DRAWTIME_FMT        "BPM:%3d 循环：%2d 时间：%d:%02d.%03d/%s Tick:%3d:%d:%02d"
+    IDS_DXMSG_APPEND_OK_ENCODING "\n[Enter]确定 [Space]切换Shift-JIS编码"
+    IDS_MSG_FILE_INFO       "文件信息（按取消切换 Shift-JIS 编码）"
+    IDS_STATUS_PLAYING      "正在播放："
+    IDS_STATUS_IDLE         "当前文件："
+    IDS_INVALID_FILE        "（无效文件）"
+    IDS_NO_OPEN_FILE        "未选择"
+    IDS_CONTROLS            "Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s%s"
+    IDS_OK                  "确定"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANCEL              "取消"
+END
+
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

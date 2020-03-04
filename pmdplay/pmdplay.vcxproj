@@ -190,6 +190,7 @@
     <ClCompile Include="pmdwin\ppz8l.cpp" />
     <ClCompile Include="pmdwin\table.cpp" />
     <ClCompile Include="pmdwin\util.cpp" />
+    <ClCompile Include="ResLoader.cpp" />
     <ClCompile Include="Update.cpp" />
     <ClCompile Include="viewmem.cpp" />
   </ItemGroup>
@@ -197,6 +198,7 @@
     <ResourceCompile Include="InputBox.rc" />
     <ResourceCompile Include="pmdplay.rc" />
     <ResourceCompile Include="sfn_template.rc" />
+    <ResourceCompile Include="Strings.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChooseFileDialog.h" />
@@ -232,7 +234,9 @@
     <ClInclude Include="pmdwin\ppz8l.h" />
     <ClInclude Include="pmdwin\table.h" />
     <ClInclude Include="pmdwin\util.h" />
+    <ClInclude Include="ResLoader.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="sfn_template_res.h" />
     <ClInclude Include="Update.h" />
     <ClInclude Include="viewmem.h" />

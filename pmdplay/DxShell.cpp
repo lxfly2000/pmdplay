@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include"DxShell.h"
 #include"DxKeyTrigger.h"
+#include"ResLoader.h"
+#include"resource1.h"
 #include<Shlwapi.h>
 #include<deque>
 #pragma comment(lib,"shlwapi.lib")
@@ -155,6 +157,10 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	int bgcolor, int bordercolor, float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth,
 	int paddingHeight)
 {
+	TCHAR msg_def[50];
+	strcpyDx(msg_def, LoadLocalString(IDS_DXGUI_CHOOSEFILE_MSG_DEFAULT));
+	if (msg == nullptr)
+		msg = msg_def;
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
 	int ww, wh;
@@ -202,7 +208,7 @@ tagUpdateDir:
 	if (ci == 0)
 	{
 		findingInitPath[0] = 0;
-		DxMessageBox(TEXT("该文件夹是空的。\n按Enter继续……"));
+		DxMessageBox(LoadLocalString(IDS_DXMSG_EMPTY_FOLDER));
 		if (strlenDx(tempPath) < 4)GetNextLogicalDriveString(tempPath, tempPath);
 		else PathCombine(tempPath, tempPath, TEXT(".."));
 		goto tagUpdateDir;
@@ -349,6 +355,7 @@ tagCursorMove:
 int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL multiline, BOOL onlyNum, int strcolor, int bgcolor, int bordercolor,
 	float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth, int paddingHeight)
 {
+	TCHAR msg_def[50];
 	int hDxFont = DxShellCreateFontToHandle(fontname, fontsize, fontthick);
 	if (hDxFont == -1)return FALSE;
 	int ww, wh;
@@ -359,7 +366,10 @@ int DxGetInputString(const TCHAR *msg, TCHAR *outString, int limit, BOOL multili
 	
 	const int show_lines = 5;
 	if (msg == NULL)
-		msg = multiline ? TEXT(DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT) : TEXT(DXGUI_GETINPUT_MSG_DEFAULT);
+	{
+		strcpyDx(msg_def, multiline ? LoadLocalString(IDS_DXGUI_GETINPUT_MULTILINE_MSG_DEFAULT) : LoadLocalString(IDS_DXGUI_GETINPUT_MSG_DEFAULT));
+		msg = msg_def;
+	}
 	int strw, strh, lc, inputLineH, statusLineH;
 	GetDrawStringSizeToHandle(&strw, &inputLineH, &lc, TEXT("高"), 1, hDxFont);//获取一行字的高度，也可以用singlelineh = strh / lc获取
 	statusLineH = inputLineH;

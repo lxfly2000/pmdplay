@@ -10,6 +10,8 @@
 #include "Update.h"
 #include "InputBox.h"
 #include "viewmem.h"
+#include "ResLoader.h"
+#include "resource1.h"
 
 #define IDM_APP_HELP	0x101
 #define IDM_CONVERT		0x102
@@ -17,19 +19,17 @@
 #define IDM_BEATS_PER_BAR	0x104
 
 #define APP_NAME	"Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) Player"
-#define HELP_PARAM	"-e <PMD文件名> [WAV文件名] [循环次数] [淡出时间(ms)] [-st]"
-#define HELP_INFO	APP_NAME "\nBy lxfly2000\n\n* 播放时按ESC退出。\n* 如果要使用节奏声音，请将下列文件"\
-					"\n  2608_bd.wav  2608_sd.wav  2608_top.wav\n  2608_hh.wav  2608_tom.wav 2608_rim.wav\n"\
-					"  放至此程序目录下。（可由 -yr 命令获得）\n"\
-					"* Wave 转换命令：\n  " HELP_PARAM "\n\n"\
-					"本程序参考了以下代码：\n"\
-					" Ｐrofessional Ｍusic Ｄriver (Ｐ.Ｍ.Ｄ.) - M.Kajihara\n"\
-					" OPNA FM Generator - cisc\n"\
-					" PPZ8 PCM Driver - UKKY\n"\
-					" PMDWin - C60\n"\
-					" pmdmini - BouKiCHi\n\n"\
-					"如需更多帮助请参考：\n"\
-					"https://github.com/lxfly2000/pmdplay"
+LPCTSTR GetHelpParam()
+{
+	return LoadLocalString(IDS_HELP_PARAM);
+}
+TCHAR _helpInfo[500];
+LPCTSTR GetHelpInfo()
+{
+	strcpyDx(_helpInfo, LoadLocalString(IDS_HELP_INFO_FMT));
+	sprintfDx(_helpInfo, _helpInfo, TEXT(APP_NAME), GetHelpParam());
+	return _helpInfo;
+}
 #define SAMPLE_RATE	44100//采样率（每秒多少个采样）
 #define BYTES_PER_VAR	2//一个采样点的一个通道所占字节数
 #define CHANNELS	2//通道数
@@ -38,7 +38,20 @@
 #define STEPS_PER_BAR	4//默认节拍数
 #define NUM_SHOW_CHANNELS 9
 
-const TCHAR pcszPMDType[] = TEXT("PMD 文件\0*.m;*.m2;*.m26;*.m86;*.mz;*.mp;*.ms\0所有文件\0*\0\0");
+LPCTSTR GetTypeString(LPTSTR out, UINT id)
+{
+	strcpyDx(out, LoadLocalString(id));
+	size_t fixedLen = strlenDx(out);
+	for (size_t i = 0; i < fixedLen; i++)
+		if (out[i] == '|')
+			out[i] = 0;
+	return out;
+}
+TCHAR _pcszPMDType[80];
+LPCTSTR GetPMDType()
+{
+	return GetTypeString(_pcszPMDType, IDS_PMD_TYPE);
+}
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), pplayer->GetPlayerStatus() >= PMDPlayer::playing, filepath)
 
 char strANSIbuf[MAX_PATH] = "";
@@ -119,6 +132,7 @@ private:
 	TCHAR filepath[MAX_PATH] = TEXT("");
 	TCHAR szStr[380] = TEXT("");
 	TCHAR szTimeInfo[80] = TEXT("");
+	TCHAR szTimeInfo_fmt[60];
 	TCHAR szLastTime[10] = TEXT("0:00.000");
 	bool channelOn[PMDPLAYER_CHANNELS_NUM];
 	bool showVoiceAndVolume = false;
@@ -236,10 +250,10 @@ int PMDPlay::Init(TCHAR* param)
 	SetWindowLongPtr(hWindowDx, GWL_EXSTYLE, WS_EX_ACCEPTFILES | GetWindowLongPtr(hWindowDx, GWL_EXSTYLE));
 	SetWindowLongPtr(hWindowDx, GWLP_WNDPROC, (LONG_PTR)ExtraProcess);
 	HMENU hSysMenu = GetSystemMenu(hWindowDx, FALSE);
-	AppendMenu(hSysMenu, MF_STRING, IDM_BEATS_PER_BAR, TEXT("节拍数(&B)……\tB"));
-	AppendMenu(hSysMenu, MF_STRING, IDM_CONVERT, TEXT("转换到 Wave(&C)……\tE"));
-	AppendMenu(hSysMenu, MF_STRING, IDM_APP_UPDATE, TEXT("检查更新(&U)……"));
-	AppendMenu(hSysMenu, MF_STRING, IDM_APP_HELP, TEXT("关于本程序(&A)……\tF1"));
+	AppendMenu(hSysMenu, MF_STRING, IDM_BEATS_PER_BAR, LoadLocalString(IDS_MENU_BEATS_PER_BAR));
+	AppendMenu(hSysMenu, MF_STRING, IDM_CONVERT, LoadLocalString(IDS_MENU_CONVERT));
+	AppendMenu(hSysMenu, MF_STRING, IDM_APP_UPDATE, LoadLocalString(IDS_MENU_CHECK_UPDATE));
+	AppendMenu(hSysMenu, MF_STRING, IDM_APP_HELP, LoadLocalString(IDS_MENU_ABOUT));
 	TCHAR ti[400];
 	strcpyDx(ti, TEXT(APP_NAME));
 	if (isXAudio2)
@@ -258,6 +272,7 @@ int PMDPlay::Init(TCHAR* param)
 	keydisp_h = posYLowerText - keydisp_y;
 	keydisp_onechannel_h = keydisp_h / NUM_SHOW_CHANNELS;
 	pmdscreen.SetRectangle(keydisp_x, keydisp_y, keydisp_w, keydisp_h);
+	strcpyDx(szTimeInfo_fmt, LoadLocalString(IDS_DRAWTIME_FMT));
 	USTR;
 
 	//参数播放
@@ -283,22 +298,20 @@ void PMDPlay::CheckUpdate(bool showError)
 		int a;
 		TCHAR ti[400];
 		GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
-		SetWindowText(TEXT("检查更新中……"));
+		SetWindowText(LoadLocalString(IDS_CHECKING_UPDATE));
 		int r = CheckForUpdate(TEXT(UPDATE_FILE_URL), &a);
 		SetWindowText(ti);
 		if (showError)switch (r)
 		{
-		case -2:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
-			"* 你没有连接到网络；\n* 网络有问题；\n* 目标服务器已更改。"), NULL, MB_ICONERROR); break;
-		case -1:MessageBox(hWindowDx, TEXT("无法检查更新。\n\n可能的原因：\n"
-			"* URL 路径有误；\n* 更新配置文件不正确。"), NULL, MB_ICONERROR); break;
-		case 0:MessageBox(hWindowDx, TEXT("该软件是最新的。"), TEXT(APP_NAME), MB_ICONINFORMATION); break;
+		case -2:MessageBox(hWindowDx, LoadLocalString(IDS_CHECK_UPDATE_ERROR_NETWORK), NULL, MB_ICONERROR); break;
+		case -1:MessageBox(hWindowDx, LoadLocalString(IDS_CHECK_UPDATE_ERROR_CONFIGURATION), NULL, MB_ICONERROR); break;
+		case 0:MessageBox(hWindowDx, LoadLocalString(IDS_CHECK_UPDATE_LATEST), TEXT(APP_NAME), MB_ICONINFORMATION); break;
 		case 1:break;
-		default:MessageBox(hWindowDx, TEXT("检查更新时出错。"), NULL, MB_ICONERROR); break;
+		default:MessageBox(hWindowDx, LoadLocalString(IDS_CHECK_UPDATE_ERROR_MISC), NULL, MB_ICONERROR); break;
 		}
 		if (r != 1)return;
 		TCHAR msg[100] = TEXT("");
-		wsprintf(msg, TEXT("检测到新版本：%d.%d.%d.%d\n当前版本：%s\n\n是否下载新版本？"),
+		wsprintf(msg, LoadLocalString(IDS_CHECK_UPDATE_NEW_VERSION),
 			(a >> 24) & 0xFF, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF, TEXT(APP_VERSION_STRING));
 		if (MessageBox(hWindowDx, msg, TEXT(APP_NAME), MB_ICONQUESTION | MB_YESNO) == IDYES)
 			ShellExecute(hWindowDx, TEXT("open"), TEXT(PROJECT_URL), NULL, NULL, SW_SHOWNORMAL);
@@ -313,11 +326,14 @@ void PMDPlay::ChangeBeatsPerBar()
 		wsprintf(input, TEXT("%d"), stepsPerBar);
 		if (windowed)
 		{
-			if (!InputBox(hWindowDx, input, ARRAYSIZE(input), TEXT("输入节拍数(&B):"), NULL, input))return;
+			TCHAR strOK[16], strCancel[16];
+			strcpyDx(strOK, LoadLocalString(IDS_OK));
+			strcpyDx(strCancel, LoadLocalString(IDS_CANCEL));
+			if (!InputBox(hWindowDx, input, ARRAYSIZE(input), LoadLocalString(IDS_MSG_BPB), NULL, input, NULL, strOK, strCancel))return;
 		}
 		else
 		{
-			if (DxGetInputString(TEXT("输入节拍数：\n[Enter]确定 [Esc]取消"), input, ARRAYSIZE(input) - 1, FALSE, TRUE) == -1)return;
+			if (DxGetInputString(LoadLocalString(IDS_DXMSG_BPB), input, ARRAYSIZE(input) - 1, FALSE, TRUE) == -1)return;
 		}
 		_spb = _ttoi(input);
 	} while (!_spb);
@@ -356,8 +372,16 @@ void PMDPlay::Convert()
 	case 4:strcpy(outfile, A(__wargv[3]));
 	case 3:strcpy(srcfile, A(__wargv[2])); break;
 	default:
-		AppLogAdd(TEXT("参数错误。\n"));
-		AppLogAdd(TEXT("参数格式为：" HELP_PARAM "\n"));
+	{
+		TCHAR logmsg[120];
+		strcpyDx(logmsg, LoadLocalString(IDS_LOG_ERROR_PARAM));
+		strcatDx(logmsg, TEXT("\n"));
+		AppLogAdd(logmsg);
+		strcpyDx(logmsg, LoadLocalString(IDS_LOG_COMMAND));
+		strcatDx(logmsg, GetHelpParam());
+		strcatDx(logmsg, TEXT("\n"));
+		AppLogAdd(logmsg);
+	}
 		return;
 	}
 	if (strcmp(outfile, "") == 0)
@@ -376,7 +400,11 @@ void PMDPlay::Convert()
 	if (!pplayer->Convert(asrcfile, aoutfile, loopcount, fadetime, split))
 	{
 		retcode = -1;
-		AppLogAdd(TEXT("无法转换文件：%s\n"), __wargv[2]);
+		TCHAR logmsg[300];
+		strcpyDx(logmsg, LoadLocalString(IDS_LOG_CANNOT_CONVERT));
+		strcatDx(logmsg, __wargv[2]);
+		strcatDx(logmsg, TEXT("\n"));
+		AppLogAdd(logmsg);
 	}
 }
 
@@ -387,7 +415,7 @@ void PMDPlay::ConvertDialog()
 	strcpyDx(srcfile, filepath);//先给一个默认值，使用当前选择的文件
 	if (windowed)
 	{
-		if (!ChooseFile(hWindowDx, srcfile, NULL, pcszPMDType, NULL))//选择PMD文件
+		if (!ChooseFile(hWindowDx, srcfile, NULL, GetPMDType(), NULL))//选择PMD文件
 			return;
 	}
 	else
@@ -401,15 +429,16 @@ void PMDPlay::ConvertDialog()
 	BOOL st;
 	if (windowed)
 	{
-		if (!ChooseSaveFileWithCheckBox(hWindowDx, pmdppath, NULL, TEXT("波形音频\0*.wav\0\0"), NULL,
-			&st, TEXT("单独保存每个通道(&P)")))//选择保存文件
+		TCHAR ts[20];
+		GetTypeString(ts, IDS_WAVE_TYPE);
+		if (!ChooseSaveFileWithCheckBox(hWindowDx, pmdppath, NULL, ts, NULL, &st, LoadLocalString(IDS_SPLIT_CHANNEL)))//选择保存文件
 			return;
 	}
 	else
 	{
-		if (DxGetInputString(TEXT("输入保存位置：\n[Enter]确定 [Esc]取消"), pmdppath, ARRAYSIZE(pmdppath) - 1) == -1)
+		if (DxGetInputString(LoadLocalString(IDS_DXMSG_INPUT_SAVE_PATH), pmdppath, ARRAYSIZE(pmdppath) - 1) == -1)
 			return;
-		st = DxMessageBox(TEXT("是否要单独保存每个通道？\n\n[Y]是 [N]否"), KEY_INPUT_Y, KEY_INPUT_N);
+		st = DxMessageBox(LoadLocalString(IDS_DXMSG_SPLIT_CHANNEL), KEY_INPUT_Y, KEY_INPUT_N);
 	}
 	strcatDx(cmd, pmdppath);
 	if (st)strcatDx(cmd, TEXT(" 1 5000 -st"));
@@ -422,7 +451,7 @@ void PMDPlay::ConvertDialog()
 	se.fMask = SEE_MASK_NOCLOSEPROCESS;
 	TCHAR ti[400];
 	GetWindowText(GetMainWindowHandle(), ti, ARRAYSIZE(ti) - 1);
-	SetWindowText(TEXT("转换中……"));
+	SetWindowText(LoadLocalString(IDS_CONVERTING));
 	ShellExecuteEx(&se);
 	WaitForSingleObject(se.hProcess, INFINITE);
 	GetExitCodeProcess(se.hProcess, (DWORD*)&retcode);
@@ -431,15 +460,15 @@ void PMDPlay::ConvertDialog()
 	if (retcode)
 	{
 		if (windowed)
-			MessageBox(hWindowDx, TEXT("转换失败。"), srcfile, MB_ICONERROR);
+			MessageBox(hWindowDx, LoadLocalString(IDS_MSG_CONVERT_FAILED), srcfile, MB_ICONERROR);
 		else
-			DxMessageBox(TEXT("转换失败。\n\n[Enter]确定"));
+			DxMessageBox(LoadLocalString(IDS_DXMSG_CONVERT_FAILED));
 		return;
 	}
 	if (windowed)
-		MessageBox(hWindowDx, TEXT("转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。"), srcfile, MB_ICONINFORMATION);
+		MessageBox(hWindowDx, LoadLocalString(IDS_MSG_CONVERT_SUCCEEDED), srcfile, MB_ICONINFORMATION);
 	else
-		DxMessageBox(TEXT("转换成功。\n如果需要调整循环次数等设置，请使用命令行转换。\n\n[Enter]确定"));
+		DxMessageBox(LoadLocalString(IDS_DXMSG_CONVERT_SUCCEEDED));
 }
 
 LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -450,7 +479,7 @@ LRESULT CALLBACK PMDPlay::ExtraProcess(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 	case WM_SYSCOMMAND:
 		switch (LOWORD(wp))
 		{
-		case IDM_APP_HELP:SendMessage(hwnd, WM_HELP, 0, 0); break;
+		case IDM_APP_HELP:_pObj->OnAbout(); break;
 		case IDM_CONVERT:_pObj->ConvertDialog(); break;
 		case IDM_APP_UPDATE:_pObj->CheckUpdate(true); break;
 		case IDM_BEATS_PER_BAR:_pObj->ChangeBeatsPerBar(); break;
@@ -483,13 +512,13 @@ void PMDPlay::OnAbout()
 {
 	if (windowed)
 	{
-		MessageBox(hWindowDx, TEXT(HELP_INFO), TEXT(APP_NAME), MB_ICONINFORMATION);
+		MessageBox(hWindowDx, GetHelpInfo(), TEXT(APP_NAME), MB_ICONINFORMATION);
 	}
 	else
 	{
 		TCHAR unicode_str[1024];
-		strcpyDx(unicode_str, TEXT(HELP_INFO));
-		strcatDx(unicode_str, TEXT("\n\n[Enter]确定"));
+		strcpyDx(unicode_str, GetHelpInfo());
+		strcatDx(unicode_str, LoadLocalString(IDS_DXMSG_APPEND_OK));
 		DxMessageBox(unicode_str);
 	}
 }
@@ -533,7 +562,7 @@ void PMDPlay::DrawTime()
 	tick %= ticksPerStep;
 	xiaojie = step / stepsPerBar;
 	step %= stepsPerBar;
-	sprintfDx(szTimeInfo, TEXT("BPM:%3d 循环：%2d 时间：%d:%02d.%03d/%s Tick:%3d:%d:%02d"), pplayer->GetTempo(),
+	sprintfDx(szTimeInfo, szTimeInfo_fmt, pplayer->GetTempo(),
 		pplayer->GetLoopedTimes(), minute, second, millisecond, szLastTime, xiaojie, step, tick);
 	DrawString(0, 0, szTimeInfo, 0x00FFFFFF);
 }
@@ -578,7 +607,7 @@ void PMDPlay::OnLoop()
 	//O
 	if (KeyReleased(KEY_INPUT_O))
 	{
-		if (windowed ? ChooseFile(hWindowDx, filepath, NULL, pcszPMDType, NULL) : DxChooseFilePath(filepath, filepath))
+		if (windowed ? ChooseFile(hWindowDx, filepath, NULL, GetPMDType(), NULL) : DxChooseFilePath(filepath, filepath))
 		{
 			OnLoadFile(filepath);
 		}
@@ -612,8 +641,8 @@ void PMDPlay::OnLoop()
 		while (1)
 		{
 			MultiByteToWideChar(codepage, 0, info, ARRAYSIZE(info), unicode_str, ARRAYSIZE(unicode_str));
-			if (!windowed)strcatDx(unicode_str, TEXT("\n[Enter]确定 [Space]切换Shift-JIS编码"));
-			if (windowed ? MessageBox(hWindowDx, unicode_str, TEXT("文件信息（按取消切换 Shift-JIS 编码）"),
+			if (!windowed)strcatDx(unicode_str, LoadLocalString(IDS_DXMSG_APPEND_OK_ENCODING));
+			if (windowed ? MessageBox(hWindowDx, unicode_str, LoadLocalString(IDS_MSG_FILE_INFO),
 				MB_ICONINFORMATION | MB_OKCANCEL) == IDCANCEL : DxMessageBox(unicode_str, KEY_INPUT_SPACE, KEY_INPUT_RETURN))
 				codepage ^= 932;
 			else break;
@@ -659,15 +688,21 @@ void PMDPlay::OnLoop()
 void PMDPlay::UpdateString(TCHAR *str, int strsize, bool isplaying, const TCHAR *path)
 {
 	TCHAR displayPath[MAX_PATH];
-	const TCHAR *strPlayStat = isplaying ? TEXT("正在播放：") : TEXT("当前文件：");
+	const TCHAR *_strPlayStat = isplaying ? LoadLocalString(IDS_STATUS_PLAYING) : LoadLocalString(IDS_STATUS_IDLE);
+	TCHAR strPlayStat[10];
+	strcpyDx(strPlayStat, _strPlayStat);
 	int mw = displayWinWidth - GetDrawStringWidth(strPlayStat, (int)strlenDx(strPlayStat));
 	if (!fileload_ok)
-		mw -= GetDrawStringWidth(TEXT("（无效文件）"), 6);
-	snprintfDx(str, strsize, TEXT("Space:播放/暂停 S:停止 O:打开 F:淡出 I:文件信息 D:通道信息[%s] P:音色[%s] V:力度[%s] ↑↓:音量[%d%%]\n%s%s"),
-		showVoiceAndVolume ? TEXT("开") : TEXT("关"), pmdscreen.showVoice ? TEXT("开") : TEXT("关"),
-		pmdscreen.showVolume ? TEXT("开") : TEXT("关"), pplayer->GetVolume(), strPlayStat,
-		path[0] ? ShortenPath(path, FALSE, displayPath, GetDefaultFontHandle(), mw) : TEXT("未选择"));
-	if (!fileload_ok)strcatDx(str, TEXT("（无效文件）"));
+		mw -= GetDrawStringWidth(LoadLocalString(IDS_INVALID_FILE), 6);
+	TCHAR strOn[3], strOff[3], strNoLoad[16];
+	strcpyDx(strOn, LoadLocalString(IDS_ON));
+	strcpyDx(strOff, LoadLocalString(IDS_OFF));
+	strcpyDx(strNoLoad, LoadLocalString(IDS_NO_OPEN_FILE));
+	snprintfDx(str, strsize, LoadLocalString(IDS_CONTROLS),
+		showVoiceAndVolume ? strOn : strOff, pmdscreen.showVoice ? strOn : strOff,
+		pmdscreen.showVolume ? strOn : strOff, pplayer->GetVolume(), strPlayStat,
+		path[0] ? ShortenPath(path, FALSE, displayPath, GetDefaultFontHandle(), mw) : strNoLoad);
+	if (!fileload_ok)strcatDx(str, LoadLocalString(IDS_INVALID_FILE));
 }
 
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int iShowWindow)
@@ -675,7 +710,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	SetThreadUILanguage(GetUserDefaultUILanguage());
 	if (lstrcmpi(TEXT("-yr"), lpCmdLine) == 0)
 	{
-		MessageBox(NULL, TEXT("本程序已经可以自动加载节奏声音了，无须释放文件。"), lpCmdLine, MB_ICONINFORMATION);
+		MessageBox(NULL, TEXT("本程序已经内置节奏声音了，无须释放文件。\nThe rhythm sounds are intergrated to this program, not necessary to do this."), lpCmdLine, MB_ICONINFORMATION);
 		return 0;
 	}
 
