@@ -287,7 +287,6 @@ int PMDPlay::Init(TCHAR* param)
 		if (OnLoadFile(filepath))OnCommandPlay();
 	}
 
-	CheckUpdate(false);
 	return 0;
 }
 

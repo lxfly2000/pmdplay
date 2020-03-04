@@ -157,7 +157,7 @@ int DxChooseFilePath(const TCHAR *initPath, TCHAR *choosedPath, const TCHAR *msg
 	int bgcolor, int bordercolor, float borderwidth, const TCHAR *fontname, int fontsize, int fontthick, int cx, int cy, int paddingWidth,
 	int paddingHeight)
 {
-	TCHAR msg_def[60];
+	TCHAR msg_def[70];
 	strcpyDx(msg_def, LoadLocalString(IDS_DXGUI_CHOOSEFILE_MSG_DEFAULT));
 	if (msg == nullptr)
 		msg = msg_def;
