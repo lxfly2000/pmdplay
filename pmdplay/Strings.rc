@@ -79,7 +79,7 @@ BEGIN
     IDS_DXMSG_APPEND_OK_ENCODING "\n[Enter]OK [Space]Set Shift-JIS encoding"
     IDS_MSG_FILE_INFO       "File info (Press Cancel to set Shift-JIS encoding)"
     IDS_STATUS_PLAYING      "Playing: "
-    IDS_STATUS_IDLE         "File   :"
+    IDS_STATUS_IDLE         "File   : "
     IDS_INVALID_FILE        "(Invalid file)"
     IDS_NO_OPEN_FILE        "No file loaded."
     IDS_CONTROLS            "Space:Play/Pause S:Stop O:Open F:Fadeout I:Info D:Ch.Info[%s] P:Prog.[%s] V:Vel.[%s] ¡ü¡ý:Vol.[%d%%]\n%s%s"
