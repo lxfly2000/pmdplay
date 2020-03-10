@@ -234,7 +234,8 @@ int PMDPlay::Init(TCHAR* param)
 	if (useHighDpi)
 	{
 		SetFontSize(hdpi.X(14));
-		ChangeFontType(DX_FONTTYPE_ANTIALIASING);
+		if (hdpi.X(14) > 14)
+			ChangeFontType(DX_FONTTYPE_ANTIALIASING);
 	}
 	else
 	{
