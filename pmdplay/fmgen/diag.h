@@ -1,4 +1,4 @@
-﻿#ifndef incl_diag_h
+#ifndef incl_diag_h
 #define incl_diag_h
 
 #define LOG0(m)		void (0)

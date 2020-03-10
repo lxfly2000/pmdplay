@@ -2,7 +2,7 @@
 //	PSG-like sound generator
 //	Copyright (C) cisc 1997, 1999.
 // ---------------------------------------------------------------------------
-//	$Id: psg.h,v 1.1 2001/04/23 22:25:35 kaoru-k Exp $
+//	$Id: psg.h,v 1.8 2003/04/22 13:12:53 cisc Exp $
 
 #ifndef PSG_H
 #define PSG_H
@@ -48,7 +48,7 @@ public:
 	
 	enum
 	{
-		noisetablesize = 1 << 10,	// ←メモリ使用量を減らしたいなら減らして
+		noisetablesize = 1 << 11,	// ←メモリ使用量を減らしたいなら減らして
 		toneshift = 24,
 		envshift = 22,
 		noiseshift = 14,

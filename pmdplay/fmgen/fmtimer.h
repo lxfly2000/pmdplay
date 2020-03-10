@@ -2,7 +2,7 @@
 //	FM sound generator common timer module
 //	Copyright (C) cisc 1998, 2000.
 // ---------------------------------------------------------------------------
-//	$Id: fmtimer.h,v 1.1 2001/04/23 22:25:34 kaoru-k Exp $
+//	$Id: fmtimer.h,v 1.2 2003/04/22 13:12:53 cisc Exp $
 
 #ifndef FM_TIMER_H
 #define FM_TIMER_H

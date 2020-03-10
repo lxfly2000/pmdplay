@@ -2,15 +2,12 @@
 //	FM Sound Generator
 //	Copyright (C) cisc 1998, 2001.
 // ---------------------------------------------------------------------------
-//	$Id: fmgen.h,v 1.1 2001/04/23 22:25:34 kaoru-k Exp $
+//	$Id: fmgen.h,v 1.37 2003/08/25 13:33:11 cisc Exp $
 
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
 #include "types.h"
-#ifndef _WINDOWS
-# define __stdcall
-#endif
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
@@ -30,6 +27,9 @@
 #define FM_LFOENTS		(1 << FM_LFOBITS)
 #define FM_TLPOS		(FM_TLENTS/4)
 
+//	サイン波の精度は 2^(1/256)
+#define FM_CLENTS		(0x1000 * 2)	// sin + TL + LFO
+
 // ---------------------------------------------------------------------------
 
 namespace FM
@@ -39,26 +39,18 @@ namespace FM
 	typedef int32 			ISample;
 
 	enum OpType { typeN=0, typeM=1 };
-	
-	//	Tables (グローバルなものや asm から参照されるもの等) -----------------
-	void MakeTable();
-	void MakeTimeTable(uint ratio);
-	extern uint32 tltable[];
-	extern int32  cltable[];
-	extern uint32 dltable[];
-	extern int    pmtable[2][8][FM_LFOENTS];
-	extern uint   amtable[2][4][FM_LFOENTS];
-	extern uint   aml, pml;
-	extern int    pmv;		// LFO 変化レベル
 
 	void StoreSample(ISample& dest, int data);
+
+	class Chip;
 
 	//	Operator -------------------------------------------------------------
 	class Operator
 	{
 	public:
 		Operator();
-		static void MakeTable();
+		void	SetChip(Chip* chip) { chip_ = chip; }
+
 		static void	MakeTimeTable(uint ratio);
 		
 		ISample	Calc(ISample in);
@@ -91,78 +83,111 @@ namespace FM
 		void	SetMS(uint ms);
 		void	Mute(bool);
 		
-		static void SetAML(uint l);
-		static void SetPML(uint l);
+//		static void SetAML(uint l);
+//		static void SetPML(uint l);
+
+		int		Out() { return out_; }
+
+		int		dbgGetIn2() { return in2_; } 
+		void	dbgStopPG() { pg_diff_ = 0; pg_diff_lfo_ = 0; }
 		
 	private:
 		typedef uint32 Counter;
 		
-		ISample	out, out2;
+		Chip*	chip_;
+		ISample	out_, out2_;
+		ISample in2_;
 
 	//	Phase Generator ------------------------------------------------------
 		uint32	PGCalc();
 		uint32	PGCalcL();
 
-		uint	dp;			// ΔP
-		uint	detune;		// Detune
-		uint	detune2;	// DT2
-		uint	multiple;	// Multiple
-		uint32	pgcount;	// Phase 現在値
-		uint32	pgdcount;	// Phase 差分値
-		int32	pgdcountl;	// Phase 差分値 >> x
+		uint	dp_;		// ΔP
+		uint	detune_;		// Detune
+		uint	detune2_;	// DT2
+		uint	multiple_;	// Multiple
+		uint32	pg_count_;	// Phase 現在値
+		uint32	pg_diff_;	// Phase 差分値
+		int32	pg_diff_lfo_;	// Phase 差分値 >> x
 
-	//	Envelope Generator ---------------------------------------------------
+	//	Envelop Generator ---------------------------------------------------
 		enum	EGPhase { next, attack, decay, sustain, release, off };
 		
 		void	EGCalc();
+		void	EGStep();
 		void	ShiftPhase(EGPhase nextphase);
-		void	ShiftPhase2();
+		void	SSGShiftPhase(int mode);
 		void	SetEGRate(uint);
 		void	EGUpdate();
+		int		FBCalc(int fb);
+		ISample LogToLin(uint a);
+
 		
-		OpType	type;		// OP の種類 (M, N...)
-		uint	bn;			// Block/Note
-		int		eglevel;	// EG の出力値
-		int		eglvnext;	// 次の phase に移る値
-		int32	egstep;		// EG の次の変移までの時間
-		int32	egstepd;	// egstep の時間差分
-		int		egtransa;	// EG 変化の割合 (for attack)
-		int		egtransd;	// EG 変化の割合 (for decay)
-		int		egout;		// EG+TL を合わせた出力値
-		int		tlout;		// TL 分の出力値
-		int		pmd;		// PM depth
-		int		amd;		// AM depth
+		OpType	type_;		// OP の種類 (M, N...)
+		uint	bn_;		// Block/Note
+		int		eg_level_;	// EG の出力値
+		int		eg_level_on_next_phase_;	// 次の eg_phase_ に移る値
+		int		eg_count_;		// EG の次の変移までの時間
+		int		eg_count_diff_;	// eg_count_ の差分
+		int		eg_out_;		// EG+TL を合わせた出力値
+		int		tl_out_;		// TL 分の出力値
+//		int		pm_depth_;		// PM depth
+//		int		am_depth_;		// AM depth
+		int		eg_rate_;
+		int		eg_curve_count_;
+		int		ssg_offset_;
+		int		ssg_vector_;
+		int		ssg_phase_;
 
-		uint	ksr;		// key scale rate
-		EGPhase	phase;
-		uint*	ams;
-		uint8	ms;
 
-		bool	keyon;		// current key state
+		uint	key_scale_rate_;		// key scale rate
+		EGPhase	eg_phase_;
+		uint*	ams_;
+		uint	ms_;
 		
-		uint8	tl;			// Total Level	 (0-127)
-		uint8	tll;		// Total Level Latch (for CSM mode)
-		uint8	ar;			// Attack Rate   (0-63)
-		uint8	dr;			// Decay Rate    (0-63)
-		uint8	sr;			// Sustain Rate  (0-63)
-		uint8	sl;			// Sustain Level (0-127)
-		uint8	rr;			// Release Rate  (0-63)
-		uint8	ks;			// Keyscale      (0-3)
-		uint8	ssgtype;	// SSG-Type Envelop Control
+		uint	tl_;			// Total Level	 (0-127)
+		uint	tl_latch_;		// Total Level Latch (for CSM mode)
+		uint	ar_;			// Attack Rate   (0-63)
+		uint	dr_;			// Decay Rate    (0-63)
+		uint	sr_;			// Sustain Rate  (0-63)
+		uint	sl_;			// Sustain Level (0-127)
+		uint	rr_;			// Release Rate  (0-63)
+		uint	ks_;			// Keyscale      (0-3)
+		uint	ssg_type_;	// SSG-Type Envelop Control
 
-		bool	amon;		// enable Amplitude Modulation
-		bool	paramchanged;	// パラメータが更新された
-		bool	mute;
+		bool	keyon_;
+		bool	amon_;		// enable Amplitude Modulation
+		bool	param_changed_;	// パラメータが更新された
+		bool	mute_;
 		
 	//	Tables ---------------------------------------------------------------
-		enum TableIndex { dldecay = 0, dlattack = 0x400, };
-		
-		static Counter ratetable[64];
+		static Counter rate_table[16];
 		static uint32 multable[4][16];
+
+		static const uint8 notetable[128];
+		static const int8 dttable[256];
+		static const int8 decaytable1[64][8];
+		static const int decaytable2[16];
+		static const int8 attacktable[64][8];
+		static const int ssgenvtable[8][2][3][2];
+
+		static uint	sinetable[1024];
+		static int32 cltable[FM_CLENTS];
+
+		static bool tablehasmade;
+		static void MakeTable();
+
+
 
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
 		friend void __stdcall FM_NextPhase(Operator* op);
+
+	public:
+		int		dbgopout_;
+		int		dbgpgout_;
+		static const int32* dbgGetClTable() { return cltable; }
+		static const uint* dbgGetSineTable() { return sinetable; }
 	};
 	
 	//	4-op Channel ---------------------------------------------------------
@@ -170,6 +195,7 @@ namespace FM
 	{
 	public:
 		Channel4();
+		void SetChip(Chip* chip);
 		void SetType(OpType type);
 		
 		ISample Calc();
@@ -186,6 +212,8 @@ namespace FM
 		void SetMS(uint ms);
 		void Mute(bool);
 		void Refresh();
+
+		void dbgStopPG() { for (int i=0; i<4; i++) op[i].dbgStopPG(); }
 		
 	private:
 		static const uint8 fbtable[8];
@@ -194,9 +222,44 @@ namespace FM
 		int*	in[3];			// 各 OP の入力ポインタ
 		int*	out[3];			// 各 OP の出力ポインタ
 		int*	pms;
+		int		algo_;
+		Chip*	chip_;
+
+		static void MakeTable();
+
+		static bool tablehasmade;
+		static int 	kftable[64];
+
 
 	public:
 		Operator op[4];
+	};
+
+	//	Chip resource
+	class Chip
+	{
+	public:
+		Chip();
+		void	SetRatio(uint ratio);
+		void	SetAML(uint l);
+		void	SetPML(uint l);
+		void	SetPMV(int pmv) { pmv_ = pmv; }
+
+		uint32	GetMulValue(uint dt2, uint mul) { return multable_[dt2][mul]; }
+		uint	GetAML() { return aml_; }
+		uint	GetPML() { return pml_; }
+		int		GetPMV() { return pmv_; }
+		uint	GetRatio() { return ratio_; }
+
+	private:
+		void	MakeTable();
+
+		uint	ratio_;
+		uint	aml_;
+		uint	pml_;
+		int		pmv_;
+		OpType	optype_;
+		uint32	multable_[4][16];
 	};
 }
 

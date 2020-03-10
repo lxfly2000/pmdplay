@@ -1,5 +1,5 @@
 #include "viewmem.h"
-#include"pmdwin/pmdwinimport.h"
+#include"pmdwin/pmdwin.h"
 #include<DxLib.h>
 #include"DxKeyTrigger.h"
 static int look = 0;
@@ -9,10 +9,10 @@ static TCHAR des[24][8] = {
 	L"SSG1",L"SSG2",L"SSG3",
 	L"ADPCM",
 	L"OPNAR",
-	L"Ext1",L"Ext2",L"Ext3",
+	L"FMExt1",L"FMExt2",L"FMExt3",
 	L"Rhy",
 	L"Eff",
-	L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ",L"PPZ"
+	L"PPZ1",L"PPZ2",L"PPZ3",L"PPZ4",L"PPZ5",L"PPZ6",L"PPZ7",L"PPZ8"
 };
 
 DxKeyTrigger key_prev, key_next;

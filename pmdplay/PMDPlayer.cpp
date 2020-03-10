@@ -1,6 +1,6 @@
 #include "PMDPlayer.h"
 #include "pmdmini.h"
-#include "pmdwin/pmdwinimport.h"
+#include "pmdwin/pmdwin.h"
 #include<fstream>
 #include<string>
 
@@ -80,16 +80,17 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime, b
 	if (splittracks)
 	{
 		char mtname[MAX_PATH];
-		for(int i=0;i<10;i++)
+		const char mtchannels[] = "ABCDEFGHIKR";
+		for(int i=0;i<11;i++)
 		{
 			wavfileheader.subchunk2Size = 0;
-			sprintf(mtname, "%s-%c.wav", outfile, i == 9 ? 'R' : 'A' + i);
-			for (int j = 0; j < 10; j++)
+			sprintf(mtname, "%s-%c.wav", outfile, mtchannels[i]);
+			for (int j = 0; j < 11; j++)
 			{
-				if (j == 9)
-					setrhythmwithssgeffect(i == 9);
-				else if (j == 8)
-					getopenwork()->effflag = (i != 8);
+				if (j == 10)
+					setrhythmwithssgeffect(i == 10);
+				else if (j == 9)
+					getopenwork()->effflag = (i != 9);
 				else
 					j == i ? maskoff(j) : maskon(j);
 			}
@@ -120,6 +121,12 @@ bool PMDPlayer::Convert(char *srcfile, char *outfile, int loops, int fadetime, b
 	else
 	{
 		std::fstream f(outfile, std::ios::out | std::ios::binary);
+		if (!f)
+		{
+			Unload();
+			delete[]soundbuffer;
+			return false;
+		}
 		f.seekp(sizeof wavfileheader);
 		int currentLoops = GetLoopedTimes();
 		while (currentLoops < loops && currentLoops >= 0)

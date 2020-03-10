@@ -2,7 +2,7 @@
 //	FM sound generator common timer module
 //	Copyright (C) cisc 1998, 2000.
 // ---------------------------------------------------------------------------
-//	$Id: fmtimer.cpp,v 1.1 2001/04/23 22:25:34 kaoru-k Exp $
+//	$Id: fmtimer.cpp,v 1.1 2000/09/08 13:45:56 cisc Exp $
 
 #include "headers.h"
 #include "fmtimer.h"

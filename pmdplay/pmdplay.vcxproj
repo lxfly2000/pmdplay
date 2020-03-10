@@ -177,7 +177,7 @@
     <ClCompile Include="fmgen\opna.cpp" />
     <ClCompile Include="fmgen\psg.cpp" />
     <ClCompile Include="InputBox.cpp" />
-    <ClCompile Include="pmdmini.c" />
+    <ClCompile Include="pmdmini.cpp" />
     <ClCompile Include="pmdplay.cpp" />
     <ClCompile Include="PMDPlayer.cpp" />
     <ClCompile Include="PMDPlayer_DSound.cpp" />
@@ -204,12 +204,10 @@
     <ClInclude Include="ChooseFileDialog.h" />
     <ClInclude Include="DxKeyTrigger.h" />
     <ClInclude Include="DxShell.h" />
-    <ClInclude Include="fmgen\compat.h" />
     <ClInclude Include="fmgen\diag.h" />
     <ClInclude Include="fmgen\file.h" />
     <ClInclude Include="fmgen\fmgen.h" />
     <ClInclude Include="fmgen\fmgeninl.h" />
-    <ClInclude Include="fmgen\fmgenx86.h" />
     <ClInclude Include="fmgen\fmtimer.h" />
     <ClInclude Include="fmgen\headers.h" />
     <ClInclude Include="fmgen\misc.h" />
@@ -228,7 +226,6 @@
     <ClInclude Include="pmdwin\p86drv.h" />
     <ClInclude Include="pmdwin\PCMMusDriver.h" />
     <ClInclude Include="pmdwin\pmdwin.h" />
-    <ClInclude Include="pmdwin\pmdwinimport.h" />
     <ClInclude Include="pmdwin\ppsdrv.h" />
     <ClInclude Include="pmdwin\ppz8l.h" />
     <ClInclude Include="pmdwin\table.h" />

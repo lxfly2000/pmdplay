@@ -1,8 +1,7 @@
-﻿//	$Id: file.cpp,v 1.1 2001/04/23 22:25:33 kaoru-k Exp $
+﻿//	$Id: file.cpp,v 1.6 1999/12/28 11:14:05 cisc Exp $
 
-#include <ctype.h>
 #include "headers.h"
-#include "file.h"
+#include "File.h"
 
 // ---------------------------------------------------------------------------
 //	構築/消滅
@@ -28,7 +27,6 @@ FileIO::~FileIO()
 //	ファイルを開く
 // ---------------------------------------------------------------------------
 
-#ifdef _WINDOWS
 bool FileIO::Open(const char* filename, uint flg)
 {
 	Close();
@@ -55,44 +53,11 @@ bool FileIO::Open(const char* filename, uint flg)
 
 	return !!(flags & open);
 }
-#else  // !WINDOWS
-bool FileIO::Open(const char* filename, uint flg)
-{
-	Close();
-
-	strncpy(path, filename, FILENAME_MAX);
-
-	if (!(flg & readonly))
-	    error = unknown;
-
-	hfile = fopen(filename, "rb");
-	if (!hfile) {
-	    int i;
-	    char *lowername;
-
-	    lowername = strdup(filename);
-	    for (i = 0; i < strlen(lowername); i ++)
-			lowername[i] = tolower(lowername[i]);
-
-	    hfile = fopen(lowername, "rb");
-	    free(lowername);
-
-	    if (!hfile)
-			error = file_not_found;
-	    else
-			flags = open;
-	} else
-	  flags = open;
-	      
-	return !!(flags & open);
-}
-#endif // !WINDOWS
 
 // ---------------------------------------------------------------------------
 //	ファイルがない場合は作成
 // ---------------------------------------------------------------------------
 
-#ifdef _WINDOWS
 bool FileIO::CreateNew(const char* filename)
 {
 	Close();
@@ -110,14 +75,6 @@ bool FileIO::CreateNew(const char* filename)
 
 	return !!(flags & open);
 }
-#else  // !WINDOWS
-bool FileIO::CreateNew(const char* filename)
-{
-	Close();
-
-	return !!(flags & open);
-}
-#endif // !WINDOWS
 
 // ---------------------------------------------------------------------------
 //	ファイルを作り直す
@@ -132,7 +89,6 @@ bool FileIO::Reopen(uint flg)
 
 	Close();
 
-#ifdef _WINDOWS
 	DWORD access = (flg & readonly ? 0 : GENERIC_WRITE) | GENERIC_READ;
 	DWORD share = flg & readonly ? FILE_SHARE_READ : 0;
 	DWORD creation = flg & create ? CREATE_ALWAYS : OPEN_EXISTING;
@@ -141,7 +97,6 @@ bool FileIO::Reopen(uint flg)
 	
 	flags = (flg & readonly) | (hfile == INVALID_HANDLE_VALUE ? 0 : open);
 	SetLogicalOrigin(0);
-#endif // WINDOWS
 
 	return !!(flags & open);
 }
@@ -154,11 +109,7 @@ void FileIO::Close()
 {
 	if (GetFlags() & open)
 	{
-#ifdef _WINDOWS
 		CloseHandle(hfile);
-#else  // !WINDOWS
-		fclose(hfile);
-#endif
 		flags = 0;
 	}
 }
@@ -172,15 +123,10 @@ int32 FileIO::Read(void* dest, int32 size)
 	if (!(GetFlags() & open))
 		return -1;
 	
-#ifdef _WINDOWS
 	DWORD readsize;
 	if (!ReadFile(hfile, dest, size, &readsize, 0))
 		return -1;
-#else
-	size_t readsize;
-	readsize = fread (dest, 1, size, hfile);
-#endif
-	return (int32)readsize;
+	return readsize;
 }
 
 // ---------------------------------------------------------------------------
@@ -192,14 +138,10 @@ int32 FileIO::Write(const void* dest, int32 size)
 	if (!(GetFlags() & open) || (GetFlags() & readonly))
 		return -1;
 	
-#ifdef _WINDOWS
 	DWORD writtensize;
 	if (!WriteFile(hfile, dest, size, &writtensize, 0))
 		return -1;
 	return writtensize;
-#else
-	return 0;
-#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +153,6 @@ bool FileIO::Seek(int32 pos, SeekMethod method)
 	if (!(GetFlags() & open))
 		return false;
 	
-#ifdef _WINDOWS
 	DWORD wmethod;
 	switch (method)
 	{
@@ -229,24 +170,6 @@ bool FileIO::Seek(int32 pos, SeekMethod method)
 	}
 
 	return 0xffffffff != SetFilePointer(hfile, pos, 0, wmethod);
-#else
-	int wmethod;
-	switch (method) {
-	case begin:	
-		wmethod = SEEK_SET;
-		break;
-	case current:	
-	    wmethod = SEEK_CUR;
-		break;
-	case end:		
-		wmethod = SEEK_END; 
-		break;
-	default:
-		return false;
-	}
-
-	return fseek(hfile, pos, wmethod) != 0;
-#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -258,11 +181,7 @@ int32 FileIO::Tellp()
 	if (!(GetFlags() & open))
 		return 0;
 
-#ifdef _WINDOWS
 	return SetFilePointer(hfile, 0, 0, FILE_CURRENT) - lorigin;
-#else
-	return (int32)ftell (hfile);
-#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -273,9 +192,5 @@ bool FileIO::SetEndOfFile()
 {
 	if (!(GetFlags() & open))
 		return false;
-#ifdef _WINDOWS
 	return ::SetEndOfFile(hfile) != 0;
-#else
-	return fseek (hfile, 0, SEEK_END) != 0;
-#endif
 }

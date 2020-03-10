@@ -36,9 +36,6 @@
     <ClCompile Include="InputBox.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pmdmini.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="pmdplay.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -99,6 +96,9 @@
     <ClCompile Include="ResLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="pmdmini.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="InputBox.rc">
@@ -157,9 +157,6 @@
     <ClInclude Include="viewmem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="fmgen\compat.h">
-      <Filter>fmgen</Filter>
-    </ClInclude>
     <ClInclude Include="fmgen\diag.h">
       <Filter>fmgen</Filter>
     </ClInclude>
@@ -170,9 +167,6 @@
       <Filter>fmgen</Filter>
     </ClInclude>
     <ClInclude Include="fmgen\fmgeninl.h">
-      <Filter>fmgen</Filter>
-    </ClInclude>
-    <ClInclude Include="fmgen\fmgenx86.h">
       <Filter>fmgen</Filter>
     </ClInclude>
     <ClInclude Include="fmgen\fmtimer.h">
@@ -206,9 +200,6 @@
       <Filter>pmdwin</Filter>
     </ClInclude>
     <ClInclude Include="pmdwin\pmdwin.h">
-      <Filter>pmdwin</Filter>
-    </ClInclude>
-    <ClInclude Include="pmdwin\pmdwinimport.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
     <ClInclude Include="pmdwin\ppsdrv.h">

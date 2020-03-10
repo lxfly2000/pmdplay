@@ -2,7 +2,7 @@
 //	PSG Sound Implementation
 //	Copyright (C) cisc 1997, 1999.
 // ---------------------------------------------------------------------------
-//	$Id: psg.cpp,v 1.1 2001/04/23 22:25:35 kaoru-k Exp $
+//	$Id: psg.cpp,v 1.10 2002/05/15 21:38:01 cisc Exp $
 
 #include "headers.h"
 #include "misc.h"
@@ -118,21 +118,18 @@ void PSG::MakeEnvelopTable()
 		2,2, 2,0, 2,1, 2,3, 1,1, 1,3, 1,2, 1,0,
 	};
 	static uint8 table2[4] = {  0,  0, 31, 31 };
-	static uint8 table3[4] = {  0,  1, 255,  0 };
+	static uint8 table3[4] = {  0,  1, -1,  0 };
 
-	if (!enveloptable[0][0])
+	uint* ptr = enveloptable[0];
+
+	for (int i=0; i<16*2; i++)
 	{
-		uint* ptr = enveloptable[0];
-
-		for (int i=0; i<16*2; i++)
+		uint8 v = table2[table1[i]];
+		
+		for (int j=0; j<32; j++)
 		{
-			uint8 v = table2[table1[i]];
-			
-			for (int j=0; j<32; j++)
-			{
-				*ptr++ = EmitTable[v];
-				v += table3[table1[i]];
-			}
+			*ptr++ = EmitTable[v];
+			v += table3[table1[i]];
 		}
 	}
 }

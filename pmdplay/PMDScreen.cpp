@@ -1,6 +1,6 @@
 #include<DxLib.h>
 #include "PMDScreen.h"
-#include "pmdwin/pmdwinimport.h"
+#include "pmdwin/pmdwin.h"
 
 #define WHITEKEY_LENGTH 146
 #define WHITEKEY_WIDTH 20

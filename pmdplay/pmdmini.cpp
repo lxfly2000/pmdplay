@@ -1,6 +1,7 @@
 ﻿#include <string.h>
+#include <stdio.h>
 
-#include "pmdwin/pmdwinimport.h"
+#include "pmdwin/pmdwin.h"
 #include "pmdmini.h"
 
 int pmd_length = 0;
@@ -18,7 +19,7 @@ OPEN_WORK *pmdwork = NULL;
 
 static int pmd_split_dir( const char *file , char *dir )
 {
-	char *p;
+	const char *p;
 	int len = 0;
 	
 	p = strrchr( file , '/' );

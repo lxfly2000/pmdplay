@@ -1,4 +1,4 @@
-﻿//	$Id: file.h,v 1.1 2001/04/23 22:25:33 kaoru-k Exp $
+//	$Id: file.h,v 1.6 1999/11/26 10:14:09 cisc Exp $
 
 #if !defined(win32_file_h)
 #define win32_file_h
@@ -51,11 +51,7 @@ public:
 	void SetLogicalOrigin(int32 origin) { lorigin = origin; }
 
 private:
-#ifdef _WINDOWS
 	HANDLE hfile;
-#else
-	FILE *hfile;
-#endif
 	uint flags;
 	uint32 lorigin;
 	Error error;
