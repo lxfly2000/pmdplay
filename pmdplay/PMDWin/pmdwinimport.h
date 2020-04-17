@@ -1,27 +1,21 @@
 ﻿//=============================================================================
 //	Professional Music Driver [P.M.D.] version 4.8
+//			DLL Import Header
 //			Programmed By M.Kajihara
 //			Windows Converted by C60
 //=============================================================================
 
-#ifndef PMDWIN_H
-#define PMDWIN_H
+#ifndef PMDWINIMPORT_H
+#define PMDWINIMPORT_H
 
+#include <stdlib.h>
+//#include "types.h"
 #include "pcmmusdriver.h"
 
-//#include "types.h"
 
-
-//=============================================================================
-//	バージョン情報
-//=============================================================================
-#define	DLLVersion			 38		// 上１桁：major, 下２桁：minor version
 #define	InterfaceVersion	117		// 上１桁：major, 下２桁：minor version
 
-
-//=============================================================================
-//	DLL の戻り値
-//=============================================================================
+//	DLL の 戻り値
 #define	PMDWIN_OK				 	  0		// 正常終了
 #define	ERR_OPEN_MUSIC_FILE			  1		// 曲 データを開けなかった
 #define	ERR_WRONG_MUSIC_FILE		  2		// PMD の曲データではなかった
@@ -51,9 +45,6 @@
 #define	ERR_OTHER					999		// その他のエラー
 
 
-//----------------------------------------------------------------------------
-//	ＰＭＤＷｉｎ専用の定義
-//----------------------------------------------------------------------------
 #define	SOUND_55K			  55555
 #define	SOUND_55K_2			  55466
 #define	SOUND_48K			  48000
@@ -70,16 +61,8 @@
 #define	PPZ8_i6				   5513
 #define	PPZ8_i7				   4135
 
-#define	DEFAULT_REG_WAIT	  15000
 #define	MAX_PCMDIR				 64
 #define	MAX_MEMOBUF			   1024
-
-
-//----------------------------------------------------------------------------
-//	その他定義
-//----------------------------------------------------------------------------
-#define	nbufsample			  30000
-#define	OPNAClock		(3993600*2)
 
 #define	NumOfFMPart			      6
 #define	NumOfSSGPart		      3
@@ -94,7 +77,6 @@
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
-typedef unsigned long ulong;
 
 #ifndef __cplusplus
 typedef unsigned char bool;
@@ -104,43 +86,6 @@ typedef unsigned char bool;
 /******************************************************************************
 ;	WORK AREA
 ******************************************************************************/
-typedef struct PMDworktag {
-	int		partb;				//	処理中パート番号
-	int		tieflag;			//	&のフラグ(1 : tie)
-	int		volpush_flag;		//	次の１音音量down用のflag(1 : voldown)
-	int		rhydmy;				//	R part ダミー演奏データ
-	int		fmsel;				//	FM 表(=0)か裏(=0x100)か flag
-	int		omote_key[3];		//	FM keyondata表
-	int		ura_key[3];			//	FM keyondata裏
-	int		loop_work;			//	Loop Work
-	bool	ppsdrv_flag;		//	ppsdrv を使用するか？flag(ユーザーが代入)
-	int		pcmrepeat1;			//	PCMのリピートアドレス1
-	int		pcmrepeat2;			//	PCMのリピートアドレス2
-	int		pcmrelease;			//	PCMのRelease開始アドレス
-	int		lastTimerAtime;		//	一個前の割り込み時のTimerATime値
-	int		music_flag;			//	B0:次でMSTART 1:次でMSTOP のFlag
-	int		slotdetune_flag;	//	FM3 Slot Detuneを使っているか
-	int		slot3_flag;			//	FM3 Slot毎 要効果音モードフラグ
-	int		fm3_alg_fb;			//	FM3chの最後に定義した音色のalg/fb
-	int		af_check;			//	FM3chのalg/fbを設定するかしないかflag
-	int		lfo_switch;			//	局所LFOスイッチ
-} PMDWORK;
-
-
-typedef struct effworktag {
-	int		*effadr;			//	effect address
-	int		eswthz;				//	トーンスゥイープ周波数
-	int		eswtst;				//	トーンスゥイープ増分
-	int		effcnt;				//	effect count
-	int		eswnhz;				//	ノイズスゥイープ周波数
-	int		eswnst;				//	ノイズスゥイープ増分
-	int		eswnct;				//	ノイズスゥイープカウント
-	int		effon;				//	効果音　発音中
-	int		psgefcnum;			//	効果音番号
-	int		hosei_flag;			//	ppsdrv 音量/音程補正をするかどうか
-	int		last_shot_data;		//	最後に発音させたPPSDRV音色
-} EFFWORK;
-
 
 //	演奏中のデータエリア
 typedef struct qqtag {
@@ -156,7 +101,7 @@ typedef struct qqtag {
 	int		porta_num3;			//	2 ポルタメントの加減値（余り）
 	int		volume;				//	1 VOLUME
 	int		shift;				//	1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
-	int		delay;				//	1 LFO	[DELAY]
+	int		delay;				//	1 LFO	[DELAY] 
 	int		speed;				//	1	[SPEED]
 	int		step;				//	1	[STEP]
 	int		time;				//	1	[TIME]
@@ -205,7 +150,7 @@ typedef struct qqtag {
 	int		hldelay;			//	1 HardLFO delay
 	int		hldelay_c;			//	1 HardLFO delay Counter
 	int		_lfodat;			//	2 LFO DATA
-	int		_delay;				//	1 LFO	[DELAY]
+	int		_delay;				//	1 LFO	[DELAY] 
 	int		_speed;				//	1		[SPEED]
 	int		_step;				//	1		[STEP]
 	int		_time;				//	1		[TIME]
@@ -306,7 +251,7 @@ typedef struct OpenWorktag {
 	int		_ppz_voldown;		//	PPZ8 voldown 数値 (保存用)
 	int		TimerAflag;			//	TimerA割り込み中？フラグ（＠不要？）
 	int		TimerBflag;			//	TimerB割り込み中？フラグ（＠不要？）
-	
+
 	// for PMDWin
 	int		rate;				//	PCM 出力周波数(11k, 22k, 44k, 55k)
 	int		ppzrate;			//	PPZ 出力周波数
@@ -372,7 +317,7 @@ interface IPMDWIN : public IFMPMD {
 //=============================================================================
 
 // GUID of IPMDWIN Interface ID
-interface	__declspec(uuid("C07008F4-CAE0-421C-B08F-D8B319AFA4B4")) IPMDWIN;
+interface	__declspec(uuid("C07008F4-CAE0-421C-B08F-D8B319AFA4B4")) IPMDWIN;	
 
 // GUID of PMDWIN Class ID
 class		__declspec(uuid("97C7C3F0-35D8-4304-8C1B-AA926E7AEC5C")) PMDWIN;
@@ -381,85 +326,84 @@ const IID	IID_IPMDWIN		= _uuidof(IPMDWIN);	// IPMDWIN Interface ID
 const CLSID	CLSID_PMDWIN	= _uuidof(PMDWIN);	// PMDWIN Class ID
 
 
-//============================================================================
-//	DLL Export Functions
-//============================================================================
+//=============================================================================
+//	DLL Import Functions
+//=============================================================================
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-__declspec(dllexport) int WINAPI getversion(void);
-__declspec(dllexport) int WINAPI getinterfaceversion(void);
-__declspec(dllexport) bool WINAPI pmdwininit(TCHAR *path);
-__declspec(dllexport) bool WINAPI loadrhythmsample(TCHAR *path);
-__declspec(dllexport) bool WINAPI loadrhythmsample_mem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
-__declspec(dllexport) bool WINAPI setpcmdir(TCHAR **path);
-__declspec(dllexport) void WINAPI setpcmrate(int rate);
-__declspec(dllexport) void WINAPI setppzrate(int rate);
-__declspec(dllexport) void WINAPI setppsuse(bool value);
-__declspec(dllexport) void WINAPI setrhythmwithssgeffect(bool value);
-__declspec(dllexport) void WINAPI setpmd86pcmmode(bool value);
-__declspec(dllexport) bool WINAPI getpmd86pcmmode(void);
-__declspec(dllexport) int WINAPI music_load(TCHAR *filename);
-__declspec(dllexport) int WINAPI music_load2(uchar *musdata, int size);
-__declspec(dllexport) void WINAPI music_start(void);
-__declspec(dllexport) void WINAPI music_stop(void);
-__declspec(dllexport) void WINAPI fadeout(int speed);
-__declspec(dllexport) void WINAPI fadeout2(int speed);
-__declspec(dllexport) void WINAPI getpcmdata(short *buf, int nsamples);
-__declspec(dllexport) void WINAPI setfmcalc55k(bool flag);
-__declspec(dllexport) void WINAPI setppsinterpolation(bool ip);
-__declspec(dllexport) void WINAPI setp86interpolation(bool ip);
-__declspec(dllexport) void WINAPI setppzinterpolation(bool ip);
-__declspec(dllexport) char * WINAPI getmemo(char *dest, uchar *musdata, int size, int al);
-__declspec(dllexport) char * WINAPI getmemo2(char *dest, uchar *musdata, int size, int al);
-__declspec(dllexport) char * WINAPI getmemo3(char *dest, uchar *musdata, int size, int al);
-__declspec(dllexport) int WINAPI fgetmemo(char *dest, TCHAR *filename, int al);
-__declspec(dllexport) int WINAPI fgetmemo2(char *dest, TCHAR *filename, int al);
-__declspec(dllexport) int WINAPI fgetmemo3(char *dest, TCHAR *filename, int al);
-__declspec(dllexport) TCHAR * WINAPI getmusicfilename(TCHAR *dest);
-__declspec(dllexport) TCHAR * WINAPI getpcmfilename(TCHAR *dest);
-__declspec(dllexport) TCHAR * WINAPI getppcfilename(TCHAR *dest);
-__declspec(dllexport) TCHAR * WINAPI getppsfilename(TCHAR *dest);
-__declspec(dllexport) TCHAR * WINAPI getp86filename(TCHAR *dest);
-__declspec(dllexport) TCHAR * WINAPI getppzfilename(TCHAR *dest, int bufnum);
-__declspec(dllexport) int WINAPI ppc_load(TCHAR *filename);
-__declspec(dllexport) int WINAPI pps_load(TCHAR *filename);
-__declspec(dllexport) int WINAPI p86_load(TCHAR *filename);
-__declspec(dllexport) int WINAPI ppz_load(TCHAR *filename, int bufnum);
-__declspec(dllexport) int WINAPI maskon(int ch);
-__declspec(dllexport) int WINAPI maskoff(int ch);
-__declspec(dllexport) void WINAPI setfmvoldown(int voldown);
-__declspec(dllexport) void WINAPI setssgvoldown(int voldown);
-__declspec(dllexport) void WINAPI setrhythmvoldown(int voldown);
-__declspec(dllexport) void WINAPI setadpcmvoldown(int voldown);
-__declspec(dllexport) void WINAPI setppzvoldown(int voldown);
-__declspec(dllexport) int WINAPI getfmvoldown(void);
-__declspec(dllexport) int WINAPI getfmvoldown2(void);
-__declspec(dllexport) int WINAPI getssgvoldown(void);
-__declspec(dllexport) int WINAPI getssgvoldown2(void);
-__declspec(dllexport) int WINAPI getrhythmvoldown(void);
-__declspec(dllexport) int WINAPI getrhythmvoldown2(void);
-__declspec(dllexport) int WINAPI getadpcmvoldown(void);
-__declspec(dllexport) int WINAPI getadpcmvoldown2(void);
-__declspec(dllexport) int WINAPI getppzvoldown(void);
-__declspec(dllexport) int WINAPI getppzvoldown2(void);
-__declspec(dllexport) void WINAPI setpos(int pos);
-__declspec(dllexport) void WINAPI setpos2(int pos);
-__declspec(dllexport) int WINAPI getpos(void);
-__declspec(dllexport) int WINAPI getpos2(void);
-__declspec(dllexport) bool WINAPI getlength(TCHAR *filename, int *length, int *loop);
-__declspec(dllexport) bool WINAPI getlength2(TCHAR *filename, int *length, int *loop);
-__declspec(dllexport) int WINAPI getloopcount(void);
-__declspec(dllexport) void WINAPI setfmwait(int nsec);
-__declspec(dllexport) void WINAPI setssgwait(int nsec);
-__declspec(dllexport) void WINAPI setrhythmwait(int nsec);
-__declspec(dllexport) void WINAPI setadpcmwait(int nsec);
-__declspec(dllexport) OPEN_WORK * WINAPI getopenwork(void);
-__declspec(dllexport) QQ * WINAPI getpartwork(int ch);
+__declspec(dllimport) int WINAPI getversion(void);
+__declspec(dllimport) int WINAPI getinterfaceversion(void);
+__declspec(dllimport) bool WINAPI pmdwininit(TCHAR *path);
+__declspec(dllimport) bool WINAPI loadrhythmsample(TCHAR *path);
+__declspec(dllimport) bool WINAPI setpcmdir(TCHAR **path);
+__declspec(dllimport) void WINAPI setpcmrate(int rate);
+__declspec(dllimport) void WINAPI setppzrate(int rate);
+__declspec(dllimport) void WINAPI setppsuse(bool value);
+__declspec(dllimport) void WINAPI setrhythmwithssgeffect(bool value);
+__declspec(dllimport) void WINAPI setpmd86pcmmode(bool value);
+__declspec(dllimport) bool WINAPI getpmd86pcmmode(void);
+__declspec(dllimport) int WINAPI music_load(TCHAR *filename);
+__declspec(dllimport) int WINAPI music_load2(uchar *musdata, int size);
+__declspec(dllimport) void WINAPI music_start(void);
+__declspec(dllimport) void WINAPI music_stop(void);
+__declspec(dllimport) void WINAPI fadeout(int speed);
+__declspec(dllimport) void WINAPI fadeout2(int speed);
+__declspec(dllimport) void WINAPI getpcmdata(short *buf, int nsamples);
+__declspec(dllimport) void WINAPI setfmcalc55k(bool flag);
+__declspec(dllimport) void WINAPI setppsinterpolation(bool ip);
+__declspec(dllimport) void WINAPI setp86interpolation(bool ip);
+__declspec(dllimport) void WINAPI setppzinterpolation(bool ip);
+__declspec(dllimport) char * WINAPI getmemo(char *dest, uchar *musdata, int size, int al);
+__declspec(dllimport) char * WINAPI getmemo2(char *dest, uchar *musdata, int size, int al);
+__declspec(dllimport) char * WINAPI getmemo3(char *dest, uchar *musdata, int size, int al);
+__declspec(dllimport) int WINAPI fgetmemo(char *dest, TCHAR *filename, int al);
+__declspec(dllimport) int WINAPI fgetmemo2(char *dest, TCHAR *filename, int al);
+__declspec(dllimport) int WINAPI fgetmemo3(char *dest, TCHAR *filename, int al);
+__declspec(dllimport) TCHAR * WINAPI getmusicfilename(TCHAR *dest);
+__declspec(dllimport) TCHAR * WINAPI getpcmfilename(TCHAR *dest);
+__declspec(dllimport) TCHAR * WINAPI getppcfilename(TCHAR *dest);
+__declspec(dllimport) TCHAR * WINAPI getppsfilename(TCHAR *dest);
+__declspec(dllimport) TCHAR * WINAPI getp86filename(TCHAR *dest);
+__declspec(dllimport) TCHAR * WINAPI getppzfilename(TCHAR *dest, int bufnum);
+__declspec(dllimport) int WINAPI ppc_load(TCHAR *filename);
+__declspec(dllimport) int WINAPI pps_load(TCHAR *filename);
+__declspec(dllimport) int WINAPI p86_load(TCHAR *filename);
+__declspec(dllimport) int WINAPI ppz_load(TCHAR *filename, int bufnum);
+__declspec(dllimport) int WINAPI maskon(int ch);
+__declspec(dllimport) int WINAPI maskoff(int ch);
+__declspec(dllimport) void WINAPI setfmvoldown(int voldown);
+__declspec(dllimport) void WINAPI setssgvoldown(int voldown);
+__declspec(dllimport) void WINAPI setrhythmvoldown(int voldown);
+__declspec(dllimport) void WINAPI setadpcmvoldown(int voldown);
+__declspec(dllimport) void WINAPI setppzvoldown(int voldown);
+__declspec(dllimport) int WINAPI getfmvoldown(void);
+__declspec(dllimport) int WINAPI getfmvoldown2(void);
+__declspec(dllimport) int WINAPI getssgvoldown(void);
+__declspec(dllimport) int WINAPI getssgvoldown2(void);
+__declspec(dllimport) int WINAPI getrhythmvoldown(void);
+__declspec(dllimport) int WINAPI getrhythmvoldown2(void);
+__declspec(dllimport) int WINAPI getadpcmvoldown(void);
+__declspec(dllimport) int WINAPI getadpcmvoldown2(void);
+__declspec(dllimport) int WINAPI getppzvoldown(void);
+__declspec(dllimport) int WINAPI getppzvoldown2(void);
+__declspec(dllimport) void WINAPI setpos(int pos);
+__declspec(dllimport) void WINAPI setpos2(int pos);
+__declspec(dllimport) int WINAPI getpos(void);
+__declspec(dllimport) int WINAPI getpos2(void);
+__declspec(dllimport) bool WINAPI getlength(TCHAR *filename, int *length, int *loop);
+__declspec(dllimport) bool WINAPI getlength2(TCHAR *filename, int *length, int *loop);
+__declspec(dllimport) int WINAPI getloopcount(void);
+__declspec(dllimport) void WINAPI setfmwait(int nsec);
+__declspec(dllimport) void WINAPI setssgwait(int nsec);
+__declspec(dllimport) void WINAPI setrhythmwait(int nsec);
+__declspec(dllimport) void WINAPI setadpcmwait(int nsec);
+__declspec(dllimport) OPEN_WORK * WINAPI getopenwork(void);
+__declspec(dllimport) QQ * WINAPI getpartwork(int ch);
 
-__declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
+__declspec(dllimport) HRESULT WINAPI pmd_CoCreateInstance(
   REFCLSID rclsid,     //Class identifier (CLSID) of the object
   LPUNKNOWN pUnkOuter, //Pointer to whether object is or isn't part 
                        // of an aggregate
@@ -475,4 +419,4 @@ __declspec(dllexport) HRESULT WINAPI pmd_CoCreateInstance(
 #endif
 
 
-#endif // PMDWIN_H
+#endif // PMDWINIMPORT_H

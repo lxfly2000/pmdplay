@@ -16,14 +16,17 @@ namespace FM
 	class Timer
 	{
 	public:
+		Timer();
+		virtual ~Timer();
+		
 		void	Reset();
 		bool	Count(int32 us);
 		int32	GetNextEvent();
-	
+		
 	protected:
 		virtual void SetStatus(uint bit) = 0;
 		virtual void ResetStatus(uint bit) = 0;
-
+		
 		void	SetTimerBase(uint clock);
 		void	SetTimerA(uint addr, uint data);
 		void	SetTimerB(uint data);
@@ -31,7 +34,7 @@ namespace FM
 		
 		uint8	status;
 		uint8	regtc;
-	
+		
 	private:
 		virtual void TimerA() {}
 		uint8	regta[2];

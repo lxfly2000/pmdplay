@@ -16,7 +16,7 @@
 //	OPN/OPNA に良く似た音を生成する音源ユニット
 //	
 //	interface:
-//	bool Init(uint clock, uint rate, bool, const char* path);
+//	bool Init(uint clock, uint rate, bool, const TCHAR* path);
 //		初期化．このクラスを使用する前にかならず呼んでおくこと．
 //		OPNA の場合はこの関数でリズムサンプルを読み込む
 //
@@ -30,11 +30,11 @@
 //
 //		返り値	初期化に成功すれば true
 //
-//	bool LoadRhythmSample(const char* path)
+//	bool LoadRhythmSample(const TCHAR* path)
 //		(OPNA ONLY)
 //		Rhythm サンプルを読み直す．
 //		path は Init の path と同じ．
-//		
+//	
 //	bool SetRate(uint clock, uint rate, bool)
 //		クロックや PCM レートを変更する
 //		引数等は Init を参照のこと．
@@ -92,7 +92,7 @@ namespace FM
 		void	SetVolumeFM(int db);
 		void	SetVolumePSG(int db);
 		void	SetLPFCutoff(uint freq) {}	// obsolete
-
+		
 	protected:
 		void	SetParameter(Channel4* ch, uint addr, uint data);
 		void	SetPrescaler(uint p);
@@ -106,9 +106,9 @@ namespace FM
 		uint	status;
 		Channel4* csmch;
 		
-
-		static  uint32 lfotable[8];
-	
+		
+		uint32 lfotable[8];			// OPNA/B 用
+		
 	private:
 		void	TimerA();
 		uint8	prescale;
@@ -117,7 +117,7 @@ namespace FM
 		Chip	chip;
 		PSG		psg;
 	};
-
+	
 	//	OPN2 Base ------------------------------------------------------
 	class OPNABase : public OPNBase
 	{
@@ -128,36 +128,36 @@ namespace FM
 		uint	ReadStatus() { return status & 0x03; }
 		uint	ReadStatusEx();
 		void	SetChannelMask(uint mask);
-	
+		
 	private:
 		virtual void Intr(bool) {}
-
+		
 		void	MakeTable2();
-	
+		
 	protected:
 		bool	Init(uint c, uint r, bool);
 		bool	SetRate(uint c, uint r, bool);
-
+		
 		void	Reset();
 		void 	SetReg(uint addr, uint data);
 		void	SetADPCMBReg(uint reg, uint data);
 		uint	GetReg(uint addr);	
-	
+		
 	protected:
 		void	FMMix(Sample* buffer, int nsamples);
 		void 	Mix6(Sample* buffer, int nsamples, int activech);
 		
 		void	MixSubS(int activech, ISample**);
 		void	MixSubSL(int activech, ISample**);
-
+		
 		void	SetStatus(uint bit);
 		void	ResetStatus(uint bit);
 		void	UpdateStatus();
 		void	LFO();
-
+		
 		void	DecodeADPCMB();
 		void	ADPCMBMix(Sample* dest, uint count);
-
+		
 		void	WriteRAM(uint data);
 		uint	ReadRAM();
 		int		ReadRAMN();
@@ -172,7 +172,7 @@ namespace FM
 		
 		uint	stmask;
 		uint	statusnext;
-
+		
 		uint32	lfocount;
 		uint32	lfodcount;
 		
@@ -199,27 +199,27 @@ namespace FM
 		int		adpcmout;		// ADPCM 合成後の出力
 		int		apout0;			// out(t-2)+out(t-1)
 		int		apout1;			// out(t-1)+out(t)
-
+		
 		uint	adpcmreadbuf;	// ADPCM リード用バッファ
 		bool	adpcmplay;		// ADPCM 再生中
-		int8	granuality;		
+		int8	granuality;
 		bool	adpcmmask_;
-
+		
 		uint8	control1;		// ADPCM コントロールレジスタ１
 		uint8	control2;		// ADPCM コントロールレジスタ２
 		uint8	adpcmreg[8];	// ADPCM レジスタの一部分
-
+		
 		int		rhythmmask_;
-
+		
 		Channel4 ch[6];
-
+		
 		static void	BuildLFOTable();
 		static int amtable[FM_LFOENTS];
 		static int pmtable[FM_LFOENTS];
 		static int32 tltable[FM_TLENTS+FM_TLPOS];
 		static bool	tablehasmade;
 	};
-
+	
 	//	YM2203(OPN) ----------------------------------------------------
 	class OPN : public OPNBase
 	{
@@ -227,7 +227,7 @@ namespace FM
 		OPN();
 		virtual ~OPN() {}
 		
-		bool	Init(uint c, uint r, bool=false, const char* =0);
+		bool	Init(uint c, uint r, bool=false, const TCHAR* =0);
 		bool	SetRate(uint c, uint r, bool=false);
 		
 		void	Reset();
@@ -242,7 +242,7 @@ namespace FM
 		int		dbgGetOpOut(int c, int s) { return ch[c].op[s].dbgopout_; }
 		int		dbgGetPGOut(int c, int s) { return ch[c].op[s].dbgpgout_; }
 		Channel4* dbgGetCh(int c) { return &ch[c]; }
-	
+		
 	private:
 		virtual void Intr(bool) {}
 		
@@ -255,7 +255,7 @@ namespace FM
 		
 		Channel4 ch[3];
 	};
-
+	
 	//	YM2608(OPNA) ---------------------------------------------------
 	class OPNA : public OPNABase
 	{
@@ -263,27 +263,27 @@ namespace FM
 		OPNA();
 		virtual ~OPNA();
 		
-		bool	Init(uint c, uint r, bool  = false, const char* rhythmpath=0);
-		bool	LoadRhythmSample(const char*);
+		bool	Init(uint c, uint r, bool  = false, const TCHAR* rhythmpath=0);
+		bool	LoadRhythmSample(const TCHAR*);
 		bool	LoadRhythmSampleMem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 
 		bool	SetRate(uint c, uint r, bool = false);
 		void 	Mix(Sample* buffer, int nsamples);
-
+		
 		void	Reset();
 		void 	SetReg(uint addr, uint data);
 		uint	GetReg(uint addr);
-
+		
 		void	SetVolumeADPCM(int db);
 		void	SetVolumeRhythmTotal(int db);
 		void	SetVolumeRhythm(int index, int db);
-
+		
 		uint8*	GetADPCMBuffer() { return adpcmbuf; }
-
+		
 		int		dbgGetOpOut(int c, int s) { return ch[c].op[s].dbgopout_; }
 		int		dbgGetPGOut(int c, int s) { return ch[c].op[s].dbgpgout_; }
 		Channel4* dbgGetCh(int c) { return &ch[c]; }
-
+		
 		
 	private:
 		struct Rhythm
@@ -297,16 +297,16 @@ namespace FM
 			uint	step;		// すてっぷち
 			uint	rate;		// さんぷるのれーと
 		};
-	
+		
 		void	RhythmMix(Sample* buffer, uint count);
-
+		
 	// リズム音源関係
 		Rhythm	rhythm[6];
 		int8	rhythmtl;		// リズム全体の音量
-		int		rhythmtvol;		
+		int		rhythmtvol;
 		uint8	rhythmkey;		// リズムのキー
 	};
-
+	
 	//	YM2610/B(OPNB) ---------------------------------------------------
 	class OPNB : public OPNABase
 	{
@@ -317,19 +317,19 @@ namespace FM
 		bool	Init(uint c, uint r, bool = false,
 					 uint8 *_adpcma = 0, int _adpcma_size = 0,
 					 uint8 *_adpcmb = 0, int _adpcmb_size = 0);
-	
+		
 		bool	SetRate(uint c, uint r, bool = false);
 		void 	Mix(Sample* buffer, int nsamples);
-
+		
 		void	Reset();
 		void 	SetReg(uint addr, uint data);
 		uint	GetReg(uint addr);
 		uint	ReadStatusEx();
-
+		
 		void	SetVolumeADPCMATotal(int db);
 		void	SetVolumeADPCMA(int index, int db);
 		void	SetVolumeADPCMB(int db);
-
+		
 //		void	SetChannelMask(uint mask);
 		
 	private:
@@ -340,14 +340,14 @@ namespace FM
 			int		volume;		// おんりょうせってい
 			uint	pos;		// いち
 			uint	step;		// すてっぷち
-
+			
 			uint	start;		// 開始
 			uint	stop;		// 終了
 			uint	nibble;		// 次の 4 bit
 			int		adpcmx;		// 変換用
 			int		adpcmd;		// 変換用
 		};
-	
+		
 		int		DecodeADPCMASample(uint);
 		void	ADPCMAMix(Sample* buffer, uint count);
 		static void InitADPCMATable();
@@ -357,16 +357,16 @@ namespace FM
 		int		adpcmasize;
 		ADPCMA	adpcma[6];
 		int8	adpcmatl;		// ADPCMA 全体の音量
-		int		adpcmatvol;		
+		int		adpcmatvol;
 		uint8	adpcmakey;		// ADPCMA のキー
 		int		adpcmastep;
 		uint8	adpcmareg[32];
- 
+		
 		static int jedi_table[(48+1)*16];
-
+		
 		Channel4 ch[6];
 	};
-
+	
 	//	YM2612/3438(OPN2) ----------------------------------------------------
 	class OPN2 : public OPNBase
 	{
@@ -374,7 +374,7 @@ namespace FM
 		OPN2();
 		virtual ~OPN2() {}
 		
-		bool	Init(uint c, uint r, bool=false, const char* =0);
+		bool	Init(uint c, uint r, bool=false, const TCHAR* =0);
 		bool	SetRate(uint c, uint r, bool);
 		
 		void	Reset();

@@ -34,7 +34,7 @@ void pmd_setrate( int freq );
  * \param file the fully-qualified path to a file on disk.
  * \return 0 if file does not exist or is not valid, 1 otherwise.
  */
-int pmd_is_pmd( const char *file );
+int pmd_is_pmd( const wchar_t*file );
 /**
  * \brief Initiates playback for the specified file.
  *
@@ -42,7 +42,7 @@ int pmd_is_pmd( const char *file );
  * \param dir a fully-qualified path on disk in which PDX samples are located.
  * \return 1 if the file cannot be opened, 0 otherwise.
  */
-int pmd_play ( const char *file , char *pcmdir );
+int pmd_play ( const wchar_t*file , wchar_t*pcmdir );
 /**
  * \brief Returns the length, in seconds, of the currently-open file.
  *

@@ -9,6 +9,7 @@
 #define PPSDRV_H
 
 #include <windows.h>
+#include "file.h"
 //#include "types.h"
 //#include "psg.h"
 
@@ -57,22 +58,24 @@ public:
 	PPSDRV();
 	~PPSDRV();
 	
-	bool Init(uint r, bool ip);						//     初期化
-	bool Stop(void);								// 00H PDR 停止
-	bool Play(int num, int shift, int volshift);	// 01H PDR 再生
-	bool Check(void);								// 02H 再生中かどうかcheck
-	bool SetParam(int paramno, bool data);			// 05H PDRパラメータの設定
-	bool GetParam(int paramno);						// 06H PDRパラメータの取得
+	bool	Init(uint r, bool ip);					//     初期化
+	bool	Stop(void);								// 00H PDR 停止
+	bool	Play(int num, int shift, int volshift);	// 01H PDR 再生
+	bool	Check(void);							// 02H 再生中かどうかcheck
+	bool	SetParam(int paramno, bool data);		// 05H PDRパラメータの設定
+	bool	GetParam(int paramno);					// 06H PDRパラメータの取得
 	
-	int Load(char *filename);						// PPS 読み込み
-	bool SetRate(uint r, bool ip);					// レート設定
-	void SetVolume(int vol);						// 音量設定
-	void Mix(Sample* dest, int nsamples);			// 合成
-
-	PPSHEADER ppsheader;							// PCMの音色ヘッダー
-	char	pps_file[_MAX_PATH];					// ファイル名
-
+	int		Load(TCHAR *filename);					// PPS 読み込み
+	bool	SetRate(uint r, bool ip);				// レート設定
+	void	SetVolume(int vol);						// 音量設定
+	void	Mix(Sample* dest, int nsamples);		// 合成
+	
+	PPSHEADER	ppsheader;							// PCMの音色ヘッダー
+	TCHAR	pps_file[_MAX_PATH];					// ファイル名
+	
 private:
+	FilePath	filepath;							// ファイルパス関連のクラスライブラリ
+	
 	bool	interpolation;							// 補完するか？
 	int		rate;
 	Sample	*dataarea1;								// PPS 保存用メモリポインタ
@@ -94,7 +97,8 @@ private:
 	int		volume2;
 	Sample	keyoff_vol;
 //	PSG		psg;									// @暫定
-
+	
+	void	_Init(void);
 };
 
 #endif	// PPSDRV_H

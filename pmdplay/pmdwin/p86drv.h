@@ -8,13 +8,14 @@
 #define P86DRV_H
 
 #include <windows.h>
+#include "file.h"
 //#include "types.h"
 
 //	DLL の 戻り値
 #define	_P86DRV_OK					  0		// 正常終了
-#define	_ERR_OPEN_P86_FILE			  1		// P86 を開けなかった
-#define	_ERR_WRONG_P86_FILE		 	  2		// P86 の形式が異なっている
-#define	_WARNING_P86_ALREADY_LOAD	  3		// P86 はすでに読み込まれている
+#define	_ERR_OPEN_P86_FILE			 81		// P86 を開けなかった
+#define	_ERR_WRONG_P86_FILE		 	 82		// P86 の形式が異なっている
+#define	_WARNING_P86_ALREADY_LOAD	 83		// P86 はすでに読み込まれている
 #define	_ERR_OUT_OF_MEMORY			 99		// メモリを確保できなかった
 
 #define	SOUND_44K				  44100
@@ -75,7 +76,7 @@ public:
 	bool Stop(void);								// P86 停止
 	bool Play(void);								// P86 再生
 	bool Keyoff(void);								// P86 keyoff
-	int Load(char *filename);						// P86 読み込み
+	int Load(TCHAR *filename);						// P86 読み込み
 	bool SetRate(uint r, bool ip);					// レート設定
 	void SetVolume(int volume);						// 全体音量調節用
 	bool SetVol(int _vol);							// 音量設定
@@ -85,10 +86,12 @@ public:
 	bool SetLoop(int loop_start, int loop_end, int release_start, bool adpcm);
 													// ループ設定
 	void Mix(Sample* dest, int nsamples);			// 合成
-	char	p86_file[_MAX_PATH];					// ファイル名
+	TCHAR	p86_file[_MAX_PATH];					// ファイル名
 	P86HEADER2 p86header;							// P86 の音色ヘッダー
-
+	
 private:
+	FilePath	filepath;							// ファイルパス関連のクラスライブラリ
+	
 	bool	interpolation;							// 補完するか？
 	int		rate;									// 再生周波数
 	int		srcrate;								// 元データの周波数
@@ -109,15 +112,16 @@ private:
 	bool	repeat_flag;							// リピートするかどうかのflag
 	bool	release_flag1;							// リリースするかどうかのflag
 	bool	release_flag2;							// リリースしたかどうかのflag
-
+	
 	int		pcm86_pan_flag;		// パンデータ１(bit0=左/bit1=右/bit2=逆)
 	int		pcm86_pan_dat;		// パンデータ２(音量を下げるサイドの音量値)
 	bool	play86_flag;							// 発音中?flag
-
+	
 	int		AVolume;
 //	static	Sample VolumeTable[16][256];			// 音量テーブル
 	Sample VolumeTable[16][256];					// 音量テーブル
-
+	
+	void	_Init(void);							// 初期化(内部処理)
 	void	MakeVolumeTable(int volume);
 	void	double_trans(Sample* dest, int nsamples);
 	void	double_trans_g(Sample* dest, int nsamples);

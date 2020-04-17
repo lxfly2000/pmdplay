@@ -9,7 +9,7 @@ int pmd_loop = 0;
 
 char pmd_title[1024];
 char pmd_compo[1024];
-char pmd_file[2048];
+TCHAR pmd_file[2048];
 
 OPEN_WORK *pmdwork = NULL;
 
@@ -17,17 +17,17 @@ OPEN_WORK *pmdwork = NULL;
 // path splitter
 //
 
-static int pmd_split_dir( const char *file , char *dir )
+static int pmd_split_dir( const TCHAR *file , TCHAR *dir )
 {
-	const char *p;
+	const TCHAR*p;
 	int len = 0;
 	
-	p = strrchr( file , '/' );
+	p = _tcsrchr( file , '/' );
 
 	if ( p )
 	{
 		len = (int)( p - file );
-		strncpy ( dir , file , len );
+		lstrcpyn ( dir , file , len );
 	}
 	dir[ len ] = 0;
 	
@@ -40,7 +40,7 @@ static int pmd_split_dir( const char *file , char *dir )
 
 void pmd_init(void)
 {
-	char *current_dir = (char *)("./");
+	TCHAR *current_dir = (TCHAR *)_T("./");
 	
 	pmdwininit( current_dir );
 	setpcmrate( SOUND_55K );
@@ -65,14 +65,14 @@ void pmd_setrate( int freq )
 // ファイルチェック
 //
 
-int pmd_is_pmd( const char *file )
+int pmd_is_pmd( const wchar_t*file )
 {
 	int  size;
 	unsigned char header[3];
 
 	FILE *fp;
 
-	fp = fopen(file,"rb");
+	fp = _tfopen(file,_T("rb"));
 	
 	if (!fp)
 		return 0;
@@ -101,17 +101,17 @@ int pmd_is_pmd( const char *file )
 // エラーであれば0以外を返す
 //
 
-int pmd_play ( const char *file , char *pcmdir )
+int pmd_play ( const wchar_t*file , wchar_t*pcmdir )
 {
-	char dir[2048];
+	TCHAR dir[2048];
 
-	char *path[4];
-	char *current_dir = (char *)"./";
+	TCHAR *path[4];
+	TCHAR *current_dir = (TCHAR *)_T("./");
 	
 	if ( ! pmd_is_pmd ( file ) )
 		return 1;
 
-	strcpy ( pmd_file , file );
+	lstrcpy ( pmd_file , file );
 
 	if ( pmd_split_dir( file , dir ) > 0 )
 	{

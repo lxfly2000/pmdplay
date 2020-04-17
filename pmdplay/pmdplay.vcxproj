@@ -173,7 +173,6 @@
     <ClCompile Include="fmgen\file.cpp" />
     <ClCompile Include="fmgen\fmgen.cpp" />
     <ClCompile Include="fmgen\fmtimer.cpp" />
-    <ClCompile Include="fmgen\opm.cpp" />
     <ClCompile Include="fmgen\opna.cpp" />
     <ClCompile Include="fmgen\psg.cpp" />
     <ClCompile Include="InputBox.cpp" />
@@ -183,13 +182,14 @@
     <ClCompile Include="PMDPlayer_DSound.cpp" />
     <ClCompile Include="PMDPlayer_XAudio2.cpp" />
     <ClCompile Include="PMDScreen.cpp" />
-    <ClCompile Include="pmdwin\opnaw.cpp" />
-    <ClCompile Include="pmdwin\p86drv.cpp" />
-    <ClCompile Include="pmdwin\pmdwin.cpp" />
-    <ClCompile Include="pmdwin\ppsdrv.cpp" />
-    <ClCompile Include="pmdwin\ppz8l.cpp" />
-    <ClCompile Include="pmdwin\table.cpp" />
-    <ClCompile Include="pmdwin\util.cpp" />
+    <ClCompile Include="PMDWin\opnaw.cpp" />
+    <ClCompile Include="PMDWin\p86drv.cpp" />
+    <ClCompile Include="PMDWin\pmdwin.cpp" />
+    <ClCompile Include="PMDWin\pmdwincore.cpp" />
+    <ClCompile Include="PMDWin\ppsdrv.cpp" />
+    <ClCompile Include="PMDWin\ppz8l.cpp" />
+    <ClCompile Include="PMDWin\table.cpp" />
+    <ClCompile Include="PMDWin\util.cpp" />
     <ClCompile Include="ResLoader.cpp" />
     <ClCompile Include="Update.cpp" />
     <ClCompile Include="viewmem.cpp" />
@@ -211,8 +211,8 @@
     <ClInclude Include="fmgen\fmtimer.h" />
     <ClInclude Include="fmgen\headers.h" />
     <ClInclude Include="fmgen\misc.h" />
-    <ClInclude Include="fmgen\opm.h" />
     <ClInclude Include="fmgen\opna.h" />
+    <ClInclude Include="fmgen\portability.h" />
     <ClInclude Include="fmgen\psg.h" />
     <ClInclude Include="fmgen\types.h" />
     <ClInclude Include="InputBox.h" />
@@ -222,20 +222,35 @@
     <ClInclude Include="PMDPlayer_DSound.h" />
     <ClInclude Include="PMDPlayer_XAudio2.h" />
     <ClInclude Include="PMDScreen.h" />
-    <ClInclude Include="pmdwin\opnaw.h" />
-    <ClInclude Include="pmdwin\p86drv.h" />
-    <ClInclude Include="pmdwin\PCMMusDriver.h" />
-    <ClInclude Include="pmdwin\pmdwin.h" />
-    <ClInclude Include="pmdwin\ppsdrv.h" />
-    <ClInclude Include="pmdwin\ppz8l.h" />
-    <ClInclude Include="pmdwin\table.h" />
-    <ClInclude Include="pmdwin\util.h" />
+    <ClInclude Include="PMDWin\opnaw.h" />
+    <ClInclude Include="PMDWin\p86drv.h" />
+    <ClInclude Include="PMDWin\pcmmusdriver.h" />
+    <ClInclude Include="PMDWin\pmdwin.h" />
+    <ClInclude Include="PMDWin\pmdwincore.h" />
+    <ClInclude Include="PMDWin\pmdwinimport.h" />
+    <ClInclude Include="PMDWin\ppsdrv.h" />
+    <ClInclude Include="PMDWin\ppz8l.h" />
+    <ClInclude Include="PMDWin\table.h" />
+    <ClInclude Include="PMDWin\util.h" />
     <ClInclude Include="ResLoader.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="sfn_template_res.h" />
     <ClInclude Include="Update.h" />
     <ClInclude Include="viewmem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="fmgen\change.txt" />
+    <Text Include="fmgen\readme.txt" />
+    <Text Include="PMDWin\COMInfop.txt" />
+    <Text Include="PMDWin\Debug.txt" />
+    <Text Include="PMDWin\DLLDif.txt" />
+    <Text Include="PMDWin\DLLInfop.txt" />
+    <Text Include="PMDWin\PMDWin.txt" />
+    <Text Include="PMDWin\PMDWinS.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PMDWin\pmdwin.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

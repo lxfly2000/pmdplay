@@ -8,6 +8,8 @@
 #define PPZ8L_H
 
 #include	<windows.h>
+#include	<tchar.h>
+#include	"file.h"
 //#include	"types.h"
 
 
@@ -87,40 +89,71 @@ typedef struct pviheadertag
 #pragma pack( pop, enter_include1 )
 
 
-class PPZ8
+/// <summary>
+/// PPZ8 インターフェース
+/// </summary>
+class IPPZ8
+{
+public:
+	virtual bool __cdecl Init(uint rate, bool ip) = 0;				// 00H 初期化
+	virtual bool __cdecl Play(int ch, int bufnum, int num, WORD start, WORD stop) = 0;
+												// 01H PCM 発音
+	virtual bool __cdecl Stop(int ch) = 0;							// 02H PCM 停止
+	virtual int __cdecl Load(TCHAR *filename, int bufnum) = 0;	// 03H PVI/PZIﾌｧｲﾙの読み込み
+	virtual bool __cdecl SetVol(int ch, int vol) = 0;				// 07H ﾎﾞﾘｭｰﾑ設定
+	virtual bool __cdecl SetOntei(int ch, uint ontei) = 0;			// 0BH 音程周波数の設定
+	virtual bool __cdecl SetLoop(int ch, uint loop_start, uint loop_end) = 0;
+												// 0EH ﾙｰﾌﾟﾎﾟｲﾝﾀの設定
+	virtual void __cdecl AllStop(void) = 0;							// 12H (PPZ8)全停止
+	virtual bool __cdecl SetPan(int ch, int pan) = 0;				// 13H (PPZ8)PAN指定
+	virtual bool __cdecl SetRate(uint rate, bool ip) = 0;			// 14H (PPZ8)ﾚｰﾄ設定
+	virtual bool __cdecl SetSourceRate(int ch, int rate) = 0;		// 15H (PPZ8)元ﾃﾞｰﾀ周波数設定
+	virtual void __cdecl SetAllVolume(int vol) = 0;					// 16H (PPZ8)全体ﾎﾞﾘﾕｰﾑの設定（86B Mixer)
+	virtual void __cdecl SetVolume(int vol) = 0;
+	//PCMTMP_SET		;17H PCMﾃﾝﾎﾟﾗﾘ設定
+	virtual void __cdecl ADPCM_EM_SET(bool flag) = 0;				// 18H (PPZ8)ADPCMエミュレート
+	//REMOVE_FSET		;19H (PPZ8)常駐解除ﾌﾗｸﾞ設定
+	//FIFOBUFF_SET		;1AH (PPZ8)FIFOﾊﾞｯﾌｧの変更
+	//RATE_SET		;1BH (PPZ8)WSS詳細ﾚｰﾄ設定
+};
+
+
+class PPZ8 : public IPPZ8
 {
 public:
 	PPZ8();
 	~PPZ8();
 	
-	bool Init(uint rate, bool ip);				// 00H 初期化
-	bool Play(int ch, int bufnum, int num, WORD start, WORD stop);
-												// 01H PCM 発音
-	bool Stop(int ch);							// 02H PCM 停止
-	int Load(char *filename, int bufnum);		// 03H PVI/PZIﾌｧｲﾙの読み込み
-	bool SetVol(int ch, int vol);				// 07H ﾎﾞﾘｭｰﾑ設定
-	bool SetOntei(int ch, uint ontei);			// 0BH 音程周波数の設定
-	bool SetLoop(int ch, uint loop_start, uint loop_end);
-												// 0EH ﾙｰﾌﾟﾎﾟｲﾝﾀの設定
-	void AllStop(void);							// 12H (PPZ8)全停止
-	bool SetPan(int ch, int pan);				// 13H (PPZ8)PAN指定
-	bool SetRate(uint rate, bool ip);			// 14H (PPZ8)ﾚｰﾄ設定
-	bool SetSourceRate(int ch, int rate);		// 15H (PPZ8)元ﾃﾞｰﾀ周波数設定
-	void SetAllVolume(int vol);					// 16H (PPZ8)全体ﾎﾞﾘﾕｰﾑの設定（86B Mixer)
-	void SetVolume(int vol);
+	bool __cdecl Init(uint rate, bool ip);				// 00H 初期化
+	bool __cdecl Play(int ch, int bufnum, int num, WORD start, WORD stop);
+														// 01H PCM 発音
+	bool  __cdecl Stop(int ch);							// 02H PCM 停止
+	int  __cdecl Load(TCHAR *filename, int bufnum);		// 03H PVI/PZIﾌｧｲﾙの読み込み
+	bool  __cdecl SetVol(int ch, int vol);				// 07H ﾎﾞﾘｭｰﾑ設定
+	bool  __cdecl SetOntei(int ch, uint ontei);			// 0BH 音程周波数の設定
+	bool  __cdecl SetLoop(int ch, uint loop_start, uint loop_end);
+														// 0EH ﾙｰﾌﾟﾎﾟｲﾝﾀの設定
+	void  __cdecl AllStop(void);						// 12H (PPZ8)全停止
+	bool  __cdecl SetPan(int ch, int pan);				// 13H (PPZ8)PAN指定
+	bool  __cdecl SetRate(uint rate, bool ip);			// 14H (PPZ8)ﾚｰﾄ設定
+	bool  __cdecl SetSourceRate(int ch, int rate);		// 15H (PPZ8)元ﾃﾞｰﾀ周波数設定
+	void  __cdecl SetAllVolume(int vol);				// 16H (PPZ8)全体ﾎﾞﾘﾕｰﾑの設定（86B Mixer)
+	void  __cdecl SetVolume(int vol);
 	//PCMTMP_SET		;17H PCMﾃﾝﾎﾟﾗﾘ設定
-	void ADPCM_EM_SET(bool flag);				// 18H (PPZ8)ADPCMエミュレート
+	void  __cdecl ADPCM_EM_SET(bool flag);				// 18H (PPZ8)ADPCMエミュレート
 	//REMOVE_FSET		;19H (PPZ8)常駐解除ﾌﾗｸﾞ設定
 	//FIFOBUFF_SET		;1AH (PPZ8)FIFOﾊﾞｯﾌｧの変更
 	//RATE_SET		;1BH (PPZ8)WSS詳細ﾚｰﾄ設定
-
+	
 	void Mix(Sample* dest, int nsamples);
-
+	
 	PZIHEADER PCME_WORK[2];						// PCMの音色ヘッダー
 	bool	pviflag[2];							// PVI なら true
-	char	PVI_FILE[2][_MAX_PATH];				// ファイル名
-
+	TCHAR	PVI_FILE[2][_MAX_PATH];				// ファイル名
+	
 private:
+	FilePath	filepath;						// ファイルパス関連のクラスライブラリ
+	
 	void	WORK_INIT(void);					// ﾜｰｸ初期化
 	bool	ADPCM_EM_FLG;						// CH8 でADPCM エミュレートするか？
 	bool	interpolation;						// 補完するか？
@@ -136,6 +169,8 @@ private:
 	
 //	static Sample VolumeTable[16][256];			// 音量テーブル
 	Sample VolumeTable[16][256];				// 音量テーブル
+	
+	void	_Init(void);						// 初期化(内部処理)
 	void	MakeVolumeTable(int vol);			// 音量テーブルの作成
 };
 

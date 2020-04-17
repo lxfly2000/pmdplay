@@ -28,15 +28,15 @@ public:
 	//析构调用，成功返回0，尾部追加
 	virtual int Release();
 	//从文件加载，成功返回0
-	int LoadFromFile(const char* filepath);
+	int LoadFromFile(const wchar_t* filepath);
 	//从内存加载，成功返回0
 	int LoadFromMemory(unsigned char* pdata, int length);
 	//从文件加载节奏声音
-	bool LoadRhythmFromDirectory(char* dir);
+	bool LoadRhythmFromDirectory(wchar_t* dir);
 	//从内存加载节奏声音
 	bool LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
 	//转换PMD格式文件到WAV
-	bool Convert(char *srcfile, char *outfile, int loops, int fadetime, bool splittracks);
+	bool Convert(wchar_t*srcfile, wchar_t*outfile, int loops, int fadetime, bool splittracks);
 	//播放，没有加载时返回-1，否则为0，头部追加
 	virtual int Play();
 	//暂停，淡出和已处于暂停状态时返回-1，否则为0，尾部追加

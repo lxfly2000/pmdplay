@@ -6,7 +6,6 @@
 //=============================================================================
 
 #include	<stdio.h>
-#include	<string.h>
 #include	<math.h>
 #include	"ppsdrv.h"
 #include	"util.h"
@@ -16,31 +15,8 @@
 //-----------------------------------------------------------------------------
 PPSDRV::PPSDRV()
 {
-	rate = SOUND_44K;			// 再生周波数
-	dataarea1 = NULL;			// PPS buffer
-	interpolation = false;
-	single_flag = false;
-//	single_flag = true;		// ２重再生禁止(@暫定)
-	keyon_flag = false;
-	data_offset1 = NULL;
-	data_offset2 = NULL;
-	data_size1 = 0;
-	data_size2 = 0;
-	data_xor1 = 0;
-	data_xor2 = 0;
-	tick1 = 0;
-	tick2 = 0;
-	tick_xor1 = 0;
-	tick_xor2 = 0;
-	volume1 = 0;
-	volume2 = 0;
-	keyoff_vol = 0;
-	low_cpu_check_flag = false;
-	memset(&ppsheader, 0, sizeof(PPSHEADER));
-	memset(pps_file, 0, sizeof(pps_file));
-//	psg.SetClock(3993600 / 4, SOUND_44K);
-//	psg.SetReg(0x07, 4);						// Tone C のみ
-	SetVolume(-10);
+	dataarea1 = NULL;
+	_Init();
 }
 
 
@@ -57,14 +33,49 @@ PPSDRV::~PPSDRV()
 //-----------------------------------------------------------------------------
 bool PPSDRV::Init(uint r, bool ip)
 {
-	// 一旦開放する	
-	if(dataarea1 != NULL) {
+	_Init();
+	SetRate(r, ip);
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------
+//	初期化(内部処理)
+//-----------------------------------------------------------------------------
+void PPSDRV::_Init(void)
+{
+	memset(&ppsheader, 0, sizeof(PPSHEADER));
+	memset(pps_file, 0, sizeof(pps_file));
+	
+	interpolation = false;
+	rate = SOUND_44K;			// 再生周波数
+	
+	if (dataarea1 != NULL) {
 		free(dataarea1);		// メモリ開放
 		dataarea1 = NULL;
 	}
-
-	SetRate(r, ip);
-	return true;
+	
+	single_flag = false;
+	//	single_flag = true;		// ２重再生禁止(@暫定)
+	low_cpu_check_flag = false;
+	keyon_flag = false;
+	data_offset1 = NULL;
+	data_offset2 = NULL;
+	data_xor1 = 0;
+	data_xor2 = 0;
+	tick1 = 0;
+	tick2 = 0;
+	tick_xor1 = 0;
+	tick_xor2 = 0;
+	data_size1 = 0;
+	data_size2 = 0;
+	volume1 = 0;
+	volume2 = 0;
+	keyoff_vol = 0;
+	
+	//	psg.SetClock(3993600 / 4, SOUND_44K);
+	//	psg.SetReg(0x07, 4);						// Tone C のみ
+	SetVolume(-10);
 }
 
 
@@ -89,7 +100,7 @@ bool PPSDRV::Play(int num, int shift, int volshift)
 	int		al;
 	
 	if(ppsheader.pcmnum[num].address == 0) return false;
-
+	
 	al = 225 + ppsheader.pcmnum[num].toneofs;
 	al = al % 256;
 	
@@ -133,7 +144,7 @@ bool PPSDRV::Play(int num, int shift, int volshift)
 		tick_xor1 = tick1 & 0xffff;
 		tick1 >>= 16;
 	}
-
+	
 //	psg.SetReg(0x07, psg.GetReg(0x07) | 0x24);	// Tone/Noise C off
 	keyon_flag = true;						// 発音開始
 	return true;
@@ -152,9 +163,9 @@ bool PPSDRV::Check(void)
 //-----------------------------------------------------------------------------
 //	PPS 読み込み
 //-----------------------------------------------------------------------------
-int PPSDRV::Load(char *filename)
+int PPSDRV::Load(TCHAR *filename)
 {
-	FILE		*fp;
+	FileIO		file;
 	int			i, size;
 	uint		j, start_pps, end_pps;
 	PPSHEADER	ppsheader2;
@@ -162,9 +173,14 @@ int PPSDRV::Load(char *filename)
 	Sample	*pdst;
 	
 	Stop();
-
-	pps_file[0] = '\0';	
-	if((fp = fopen(filename, "rb")) == NULL) {
+	
+	filepath.Clear(pps_file, sizeof(pps_file)/sizeof(TCHAR));
+	
+	if(*filename == filepath.EmptyChar) {
+		return _ERR_OPEN_PPS_FILE;
+	}
+	
+	if(file.Open(filename, FileIO::readonly) == false) {
 		if(dataarea1 != NULL) {
 			free(dataarea1);		// 開放
 			dataarea1 = NULL;
@@ -173,69 +189,69 @@ int PPSDRV::Load(char *filename)
 		return _ERR_OPEN_PPS_FILE;						//	ファイルが開けない
 	}
 	
-	_try{
-		size = (int)GetFileSize_s(filename);		// ファイルサイズ
-		fread(&ppsheader2, 1, sizeof(ppsheader2), fp);
-		
-		if(memcmp(&ppsheader, &ppsheader2, sizeof(ppsheader)) == 0) {
-			strcpy(pps_file, filename);
-			return _WARNING_PPS_ALREADY_LOAD;		// 同じファイル
-		}
-		
-		if(dataarea1 != NULL) {
-			free(dataarea1);		// いったん開放
-			dataarea1 = NULL;
-		}
-		
-		memcpy(&ppsheader, &ppsheader2, sizeof(ppsheader));
-		
-		size -= sizeof(ppsheader);
-
-		if((pdst = dataarea1
-			= (Sample *)malloc(size * sizeof(Sample) * 2 / sizeof(uchar))) == NULL) {
-			return _ERR_OUT_OF_MEMORY;			// メモリが確保できない
-		}
-
-		if((psrc = psrc2 = (uchar *)malloc(size)) == NULL) {
-			return _ERR_OUT_OF_MEMORY;			// メモリが確保できない（テンポラリ）
-		}
-
-		//	仮バッファに読み込み
-		fread(psrc, size, 1, fp);
-
-		for(i = 0; i < size / (int)sizeof(uchar); i++) {
-			*pdst++ = (*psrc) / 16;
-			*pdst++ = (*psrc++) & 0x0f;
-		}
-
-
-		//	PPS 補正(プチノイズ対策）／160 サンプルで減衰させる
-		for(i = 0; i < MAX_PPS; i++) {
-			end_pps = ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2
-				+ ppsheader.pcmnum[i].leng * 2;
-			start_pps = end_pps - 160;
-			if(start_pps < ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2) {
-				start_pps = ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2;
-			}
-
-			for(j = start_pps; j < end_pps; j++) {
-				dataarea1[j] = dataarea1[j] - (j - start_pps) * 16 / (end_pps - start_pps);
-				if(dataarea1[j] < 0) dataarea1[j] = 0;
-			}
-		}
-
-		//	仮バッファ開放
-		free(psrc2);
-
-		//	ファイル名登録
-		strcpy(pps_file, filename);
+	size = (int)filepath.GetFileSize(filename);		// ファイルサイズ
+	file.Read(&ppsheader2, sizeof(ppsheader2));
 	
-	} _finally {
-		fclose(fp);
+	if(memcmp(&ppsheader, &ppsheader2, sizeof(ppsheader)) == 0) {
+		filepath.Strcpy(pps_file, filename);
+		file.Close();
+		return _WARNING_PPS_ALREADY_LOAD;		// 同じファイル
 	}
-
+	
+	if(dataarea1 != NULL) {
+		free(dataarea1);		// いったん開放
+		dataarea1 = NULL;
+	}
+	
+	memcpy(&ppsheader, &ppsheader2, sizeof(ppsheader));
+	
+	size -= sizeof(ppsheader);
+	
+	if((pdst = dataarea1
+		= (Sample *)malloc(size * sizeof(Sample) * 2 / sizeof(uchar))) == NULL) {
+		file.Close();
+		return _ERR_OUT_OF_MEMORY;			// メモリが確保できない
+	}
+	
+	if((psrc = psrc2 = (uchar *)malloc(size)) == NULL) {
+		file.Close();
+		return _ERR_OUT_OF_MEMORY;			// メモリが確保できない（テンポラリ）
+	}
+	
+	//	仮バッファに読み込み
+	file.Read(psrc, size);
+	
+	for(i = 0; i < size / (int)sizeof(uchar); i++) {
+		*pdst++ = (*psrc) / 16;
+		*pdst++ = (*psrc++) & 0x0f;
+	}
+	
+	
+	//	PPS 補正(プチノイズ対策）／160 サンプルで減衰させる
+	for(i = 0; i < MAX_PPS; i++) {
+		end_pps = ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2
+			+ ppsheader.pcmnum[i].leng * 2;
+		start_pps = end_pps - 160;
+		if(start_pps < ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2) {
+			start_pps = ppsheader.pcmnum[i].address - sizeof(ppsheader) * 2;
+		}
+		
+		for(j = start_pps; j < end_pps; j++) {
+			dataarea1[j] = dataarea1[j] - (j - start_pps) * 16 / (end_pps - start_pps);
+			if(dataarea1[j] < 0) dataarea1[j] = 0;
+		}
+	}
+	
+	//	仮バッファ開放
+	free(psrc2);
+	
+	//	ファイル名登録
+	filepath.Strcpy(pps_file, filename);
+	
+	file.Close();
+	
 	data_offset1 = data_offset2 = NULL;
-
+	
 	return _PPSDRV_OK;
 }
 
@@ -287,7 +303,7 @@ bool PPSDRV::SetRate(uint r, bool ip)			// レート設定
 void PPSDRV::SetVolume(int vol)					// 音量設定
 {
 //	psg.SetVolume(vol);
-
+	
 	double base = 0x4000 * 2 / 3.0 * pow(10.0, vol / 40.0);
 	for (int i=15; i>=1; i--)
 	{
@@ -305,7 +321,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 {
 	int		i, al1, al2, ah1, ah2;
 	Sample	data;
-
+	
 /*
 	static const int table[16*16] = {
 		 0, 0, 0, 5, 9,10,11,12,13,13,14,14,14,15,15,15,
@@ -330,7 +346,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 	if(keyon_flag == false && keyoff_vol == 0) {
 		return;
 	}
-
+	
 	for(i = 0; i < nsamples; i++) {
 		if(data_size1 > 1) {
   			al1 = *data_offset1     - volume1;
@@ -340,7 +356,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 		} else {
 			al1 = al2 = 0;
 		}
-
+		
 		if(data_size2 > 1) {
 			ah1 = *data_offset2     - volume2;
 			ah2 = *(data_offset2+1) - volume2;
@@ -349,9 +365,9 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 		} else {
 			ah1 = ah2 = 0;
 		}
-
+		
 //		al1 = table[(al1 << 4) + ah1];
-//		psg.SetReg(0x0a, al1);		
+//		psg.SetReg(0x0a, al1);
 		if(interpolation) {
 			data =
 				(EmitTable[al1] * (0x10000 - data_xor1) + EmitTable[al2] * data_xor1 +
@@ -359,12 +375,12 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 		} else {
 			data = EmitTable[al1] + EmitTable[ah1];
 		}
-
+		
 		keyoff_vol = (keyoff_vol * 255) / 256;
 		data += keyoff_vol;
 		*dest++ += data;
 		*dest++ += data;
-
+		
 //		psg.Mix(dest, 1);
 //		dest += 2;
 		
@@ -377,7 +393,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 			}
 			data_size2 -= tick2;
 			data_offset2 += tick2;
-
+			
 			if(low_cpu_check_flag) {
 				data_xor2 += tick_xor2;
 				if(data_xor2 >= 0x10000) {
@@ -388,7 +404,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 				data_size2 -= tick2;
 				data_offset2 += tick2;
 			}
-		} 
+		}
 		
 		data_xor1 += tick_xor1;
 		if(data_xor1 >= 0x10000) {
@@ -398,7 +414,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 		}
 		data_size1 -= tick1;
 		data_offset1 += tick1;
-
+		
 		if(low_cpu_check_flag) {
 			data_xor1 += tick_xor1;
 			if(data_xor1 >= 0x10000) {
@@ -409,7 +425,7 @@ void PPSDRV::Mix(Sample* dest, int nsamples)	// 合成
 			data_size1 -= tick1;
 			data_offset1 += tick1;
 		}
-
+		
 		if(data_size1 <= 1 && data_size2 <= 1) {		// 両方停止
 			if(keyon_flag) {
 				keyoff_vol += EmitTable[data_offset1[data_size1-1]];

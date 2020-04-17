@@ -8,6 +8,8 @@
 #define FM_GEN_H
 
 #include "types.h"
+#include "portability.h"
+
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
@@ -36,21 +38,21 @@ namespace FM
 {	
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
-	typedef int32 			ISample;
-
+	typedef int32			ISample;
+	
 	enum OpType { typeN=0, typeM=1 };
-
+	
 	void StoreSample(ISample& dest, int data);
-
+	
 	class Chip;
-
+	
 	//	Operator -------------------------------------------------------------
 	class Operator
 	{
 	public:
 		Operator();
 		void	SetChip(Chip* chip) { chip_ = chip; }
-
+		
 		static void	MakeTimeTable(uint ratio);
 		
 		ISample	Calc(ISample in);
@@ -64,7 +66,7 @@ namespace FM
 		void	Reset();
 		void	ResetFB();
 		int		IsOn();
-
+		
 		void	SetDT(uint dt);
 		void	SetDT2(uint dt2);
 		void	SetMULTI(uint multi);
@@ -85,10 +87,10 @@ namespace FM
 		
 //		static void SetAML(uint l);
 //		static void SetPML(uint l);
-
+		
 		int		Out() { return out_; }
-
-		int		dbgGetIn2() { return in2_; } 
+		
+		int		dbgGetIn2() { return in2_; }
 		void	dbgStopPG() { pg_diff_ = 0; pg_diff_lfo_ = 0; }
 		
 	private:
@@ -97,11 +99,11 @@ namespace FM
 		Chip*	chip_;
 		ISample	out_, out2_;
 		ISample in2_;
-
+		
 	//	Phase Generator ------------------------------------------------------
 		uint32	PGCalc();
 		uint32	PGCalcL();
-
+		
 		uint	dp_;		// ΔP
 		uint	detune_;		// Detune
 		uint	detune2_;	// DT2
@@ -109,7 +111,7 @@ namespace FM
 		uint32	pg_count_;	// Phase 現在値
 		uint32	pg_diff_;	// Phase 差分値
 		int32	pg_diff_lfo_;	// Phase 差分値 >> x
-
+		
 	//	Envelop Generator ---------------------------------------------------
 		enum	EGPhase { next, attack, decay, sustain, release, off };
 		
@@ -121,7 +123,7 @@ namespace FM
 		void	EGUpdate();
 		int		FBCalc(int fb);
 		ISample LogToLin(uint a);
-
+		
 		
 		OpType	type_;		// OP の種類 (M, N...)
 		uint	bn_;		// Block/Note
@@ -138,8 +140,8 @@ namespace FM
 		int		ssg_offset_;
 		int		ssg_vector_;
 		int		ssg_phase_;
-
-
+		
+		
 		uint	key_scale_rate_;		// key scale rate
 		EGPhase	eg_phase_;
 		uint*	ams_;
@@ -154,7 +156,7 @@ namespace FM
 		uint	rr_;			// Release Rate  (0-63)
 		uint	ks_;			// Keyscale      (0-3)
 		uint	ssg_type_;	// SSG-Type Envelop Control
-
+		
 		bool	keyon_;
 		bool	amon_;		// enable Amplitude Modulation
 		bool	param_changed_;	// パラメータが更新された
@@ -163,26 +165,26 @@ namespace FM
 	//	Tables ---------------------------------------------------------------
 		static Counter rate_table[16];
 		static uint32 multable[4][16];
-
+		
 		static const uint8 notetable[128];
 		static const int8 dttable[256];
 		static const int8 decaytable1[64][8];
 		static const int decaytable2[16];
 		static const int8 attacktable[64][8];
 		static const int ssgenvtable[8][2][3][2];
-
+		
 		static uint	sinetable[1024];
 		static int32 cltable[FM_CLENTS];
-
+		
 		static bool tablehasmade;
 		static void MakeTable();
-
-
-
+		
+		
+		
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
 		friend void __stdcall FM_NextPhase(Operator* op);
-
+		
 	public:
 		int		dbgopout_;
 		int		dbgpgout_;
@@ -212,7 +214,7 @@ namespace FM
 		void SetMS(uint ms);
 		void Mute(bool);
 		void Refresh();
-
+		
 		void dbgStopPG() { for (int i=0; i<4; i++) op[i].dbgStopPG(); }
 		
 	private:
@@ -224,17 +226,17 @@ namespace FM
 		int*	pms;
 		int		algo_;
 		Chip*	chip_;
-
+		
 		static void MakeTable();
-
+		
 		static bool tablehasmade;
 		static int 	kftable[64];
-
-
+		
+		
 	public:
 		Operator op[4];
 	};
-
+	
 	//	Chip resource
 	class Chip
 	{
@@ -244,16 +246,16 @@ namespace FM
 		void	SetAML(uint l);
 		void	SetPML(uint l);
 		void	SetPMV(int pmv) { pmv_ = pmv; }
-
+		
 		uint32	GetMulValue(uint dt2, uint mul) { return multable_[dt2][mul]; }
 		uint	GetAML() { return aml_; }
 		uint	GetPML() { return pml_; }
 		int		GetPMV() { return pmv_; }
 		uint	GetRatio() { return ratio_; }
-
+		
 	private:
 		void	MakeTable();
-
+		
 		uint	ratio_;
 		uint	aml_;
 		uint	pml_;

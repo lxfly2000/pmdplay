@@ -54,6 +54,12 @@
     <ClCompile Include="viewmem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ResLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pmdmini.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="fmgen\file.cpp">
       <Filter>fmgen</Filter>
     </ClCompile>
@@ -63,41 +69,35 @@
     <ClCompile Include="fmgen\fmtimer.cpp">
       <Filter>fmgen</Filter>
     </ClCompile>
-    <ClCompile Include="fmgen\opm.cpp">
-      <Filter>fmgen</Filter>
-    </ClCompile>
     <ClCompile Include="fmgen\opna.cpp">
       <Filter>fmgen</Filter>
     </ClCompile>
     <ClCompile Include="fmgen\psg.cpp">
       <Filter>fmgen</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\opnaw.cpp">
+    <ClCompile Include="PMDWin\opnaw.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\p86drv.cpp">
+    <ClCompile Include="PMDWin\p86drv.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\pmdwin.cpp">
+    <ClCompile Include="PMDWin\pmdwin.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\ppsdrv.cpp">
+    <ClCompile Include="PMDWin\pmdwincore.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\ppz8l.cpp">
+    <ClCompile Include="PMDWin\ppsdrv.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\table.cpp">
+    <ClCompile Include="PMDWin\ppz8l.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="pmdwin\util.cpp">
+    <ClCompile Include="PMDWin\table.cpp">
       <Filter>pmdwin</Filter>
     </ClCompile>
-    <ClCompile Include="ResLoader.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="pmdmini.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="PMDWin\util.cpp">
+      <Filter>pmdwin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +157,12 @@
     <ClInclude Include="viewmem.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ResLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="fmgen\diag.h">
       <Filter>fmgen</Filter>
     </ClInclude>
@@ -178,10 +184,10 @@
     <ClInclude Include="fmgen\misc.h">
       <Filter>fmgen</Filter>
     </ClInclude>
-    <ClInclude Include="fmgen\opm.h">
+    <ClInclude Include="fmgen\opna.h">
       <Filter>fmgen</Filter>
     </ClInclude>
-    <ClInclude Include="fmgen\opna.h">
+    <ClInclude Include="fmgen\portability.h">
       <Filter>fmgen</Filter>
     </ClInclude>
     <ClInclude Include="fmgen\psg.h">
@@ -190,35 +196,66 @@
     <ClInclude Include="fmgen\types.h">
       <Filter>fmgen</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\opnaw.h">
+    <ClInclude Include="PMDWin\opnaw.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\p86drv.h">
+    <ClInclude Include="PMDWin\p86drv.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\PCMMusDriver.h">
+    <ClInclude Include="PMDWin\pcmmusdriver.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\pmdwin.h">
+    <ClInclude Include="PMDWin\pmdwin.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\ppsdrv.h">
+    <ClInclude Include="PMDWin\pmdwincore.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\ppz8l.h">
+    <ClInclude Include="PMDWin\pmdwinimport.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\table.h">
+    <ClInclude Include="PMDWin\ppsdrv.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="pmdwin\util.h">
+    <ClInclude Include="PMDWin\ppz8l.h">
       <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="ResLoader.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="PMDWin\table.h">
+      <Filter>pmdwin</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="PMDWin\util.h">
+      <Filter>pmdwin</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="fmgen\change.txt">
+      <Filter>fmgen</Filter>
+    </Text>
+    <Text Include="fmgen\readme.txt">
+      <Filter>fmgen</Filter>
+    </Text>
+    <Text Include="PMDWin\COMInfop.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+    <Text Include="PMDWin\Debug.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+    <Text Include="PMDWin\DLLDif.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+    <Text Include="PMDWin\DLLInfop.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+    <Text Include="PMDWin\PMDWin.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+    <Text Include="PMDWin\PMDWinS.txt">
+      <Filter>pmdwin</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PMDWin\pmdwin.def">
+      <Filter>pmdwin</Filter>
+    </None>
   </ItemGroup>
 </Project>

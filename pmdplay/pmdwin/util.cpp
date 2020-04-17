@@ -3,26 +3,12 @@
 //				Programmed by C60
 //=============================================================================
 
-#include	<windows.h>
+#include	<stdlib.h>
+#include	<malloc.h>
+#include	<string.h>
+#include	<ctype.h>
 #include	<mbstring.h>
 #include	"util.h"
-
-
-//=============================================================================
-//	ファイル名で示されたファイルのサイズを取得する
-//=============================================================================
-_int64 GetFileSize_s(char *filename)
-{
-	HANDLE	handle;
-	WIN32_FIND_DATAA	FindFileData;
-
-	if((handle = FindFirstFileA(filename, &FindFileData)) == INVALID_HANDLE_VALUE) {
-		return -1;		// 取得不可
-	} else {
-		FindClose(handle);
-		return (_int64)(FindFileData.nFileSizeHigh << 32) + FindFileData.nFileSizeLow; 
- 	}
-}
 
 
 //=============================================================================
@@ -32,7 +18,7 @@ char *tab2spc(char *dest, const char *src, int tabcolumn)
 {
 	int		column = 0;
 	char	*dest2;
-
+	
 	dest2 = dest;
 	while(*src != '\0') {
 		if(*src == '\t') {							// TAB
@@ -67,16 +53,16 @@ char *delesc(char *dest, const char *src)
 	if((src2 = src3 = (uchar *)malloc(strlen(src) + 32)) == NULL) {
 		return NULL;
 	};
-
+	
 	strcpy((char *)src2, src);
-
+	
 	// 31バイト連続 '\0' にする(8 以上なら OK なはずだけど，念のため）
 	for(i = strlen((char *)src2); i < strlen((char *)src2) + 31; i++) {
 		src2[i] = '\0';
 	}
-
+	
 	dest2 = dest;
-
+	
 	while(*src2 != '\0') {
 		if(*src2 == 0x1b) {		// エスケープシーケンス
 			if(*(src2 + 1) == '[') {
@@ -97,10 +83,10 @@ char *delesc(char *dest, const char *src)
 				src2 += 2;
 			}
 		} else {
-			*dest++ = *src2++;		
+			*dest++ = *src2++;
 		}
 	}
-
+	
 	free(src3);
 	*dest = '\0';
 	return dest2;
@@ -211,7 +197,7 @@ char *zen2tohan(char *dest, const char *src)
 		"{",		/*	859b 	*/
 		"|",		/*	859c 	*/
 		"}",		/*	859d 	*/
-		"��",		/*	859e 	*/
+		"\x85\x9e",	/*	859e 	*/
 		"｡",		/*	859f 	*/
 		"｢",		/*	85a0 	*/
 		"｣",		/*	85a1 	*/
@@ -275,8 +261,8 @@ char *zen2tohan(char *dest, const char *src)
 		"ﾝ",		/*	85db 	*/
 		"ﾞ",		/*	85dc 	*/
 		"ﾟ",		/*	85dd 	*/
-		"�ﾞ",		/*	85de 	*/
-		"�ﾟ",		/*	85df 	*/
+		"\x85\xde",	/*	85de 	*/
+		"\x85\xdf",	/*	85df 	*/
 		"ﾜ",		/*	85e0 	*/
 		"ｶ",		/*	85e1 	*/
 		"ｹ",		/*	85e2 	*/
@@ -307,14 +293,14 @@ char *zen2tohan(char *dest, const char *src)
 		"ﾎﾞ",		/*	85fb 	*/
 		"ﾎﾟ"		/*	85fc 	*/
 	};
-
+	
 	if((src2 = src3 = (char *)malloc(strlen(src) + 2)) == NULL) {
 		return NULL;
 	};
-
+	
 	strcpy(src2, src);
 	src2[strlen(src2)+1] = '\0';		// 2バイト連続 '\0' にする
-
+	
 	dest2 = dest;
 	do {
 		if(_ismbblead(*src2)) {		// 漢字１バイト目
@@ -332,7 +318,7 @@ char *zen2tohan(char *dest, const char *src)
 			*dest++ = *src2++;
 		}
 	}while(*src2 != '\0');
-
+	
 	free(src3);
 	if(strlen(dest2) > 0) {
 		if(*(dest - 1) != '\0') {

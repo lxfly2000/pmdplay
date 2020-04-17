@@ -25,7 +25,7 @@
  #define FM_PGBITS		2
  #define FM_RATIOBITS	0
 #else
- #define FM_PGBITS		9		
+ #define FM_PGBITS		9
  #define FM_RATIOBITS	7			// 8-12 くらいまで？
 #endif
 
@@ -95,8 +95,8 @@ inline void Operator::SetDT2(uint dt2)
 }
 
 //	Multiple (0-15)
-inline void Operator::SetMULTI(uint mul)	
-{ 
+inline void Operator::SetMULTI(uint mul)
+{
 	multiple_ = mul, param_changed_ = true;
 	PARAMCHANGE(6);
 }
@@ -115,63 +115,63 @@ inline void Operator::SetTL(uint tl, bool csm)
 //	Attack Rate (0-63)
 inline void Operator::SetAR(uint ar)
 {
-	ar_ = ar; 
+	ar_ = ar;
 	param_changed_ = true;
 	PARAMCHANGE(8);
 }
 
 //	Decay Rate (0-63)
 inline void Operator::SetDR(uint dr)
-{ 
-	dr_ = dr; 
+{
+	dr_ = dr;
 	param_changed_ = true;
 	PARAMCHANGE(9);
 }
 
 //	Sustain Rate (0-63)
-inline void Operator::SetSR(uint sr)		
-{ 
+inline void Operator::SetSR(uint sr)
+{
 	sr_ = sr;
 	param_changed_ = true;
 	PARAMCHANGE(10);
 }
 
 //	Sustain Level (0-127)
-inline void Operator::SetSL(uint sl)		
-{ 
-	sl_ = sl; 
+inline void Operator::SetSL(uint sl)
+{
+	sl_ = sl;
 	param_changed_ = true;
 	PARAMCHANGE(11);
 }
 
 //	Release Rate (0-63)
-inline void Operator::SetRR(uint rr)		
-{ 
-	rr_ = rr; 
+inline void Operator::SetRR(uint rr)
+{
+	rr_ = rr;
 	param_changed_ = true;
 	PARAMCHANGE(12);
 }
 
 //	Keyscale (0-3)
-inline void Operator::SetKS(uint ks)		
-{ 
-	ks_ = ks; 
-	param_changed_ = true; 
+inline void Operator::SetKS(uint ks)
+{
+	ks_ = ks;
+	param_changed_ = true;
 	PARAMCHANGE(13);
 }
 
 //	SSG-type Envelop (0-15)
-inline void Operator::SetSSGEC(uint ssgec)	
-{ 
+inline void Operator::SetSSGEC(uint ssgec)
+{
 	if (ssgec & 8)
-		ssg_type_ = ssgec; 
+		ssg_type_ = ssgec;
 	else
 		ssg_type_ = 0;
 }
 
-inline void Operator::SetAMON(bool amon)		
-{ 
-	amon_ = amon;  
+inline void Operator::SetAMON(bool amon)
+{
+	amon_ = amon;
 	param_changed_ = true;
 	PARAMCHANGE(14);
 }

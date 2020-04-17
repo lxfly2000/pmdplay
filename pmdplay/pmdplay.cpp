@@ -54,13 +54,6 @@ LPCTSTR GetPMDType()
 }
 #define USTR UpdateString(szStr, ARRAYSIZE(szStr), pplayer->GetPlayerStatus() >= PMDPlayer::playing, filepath)
 
-char strANSIbuf[MAX_PATH] = "";
-char* A(const TCHAR* str)
-{
-	wcstombs(strANSIbuf, str, ARRAYSIZE(strANSIbuf));
-	return strANSIbuf;
-}
-
 class DPIInfo
 {
 public:
@@ -178,7 +171,7 @@ int PMDPlay::Init(TCHAR* param)
 		pplayer = new PMDPlayer_DSound;
 		pplayer->Init(CHANNELS, SAMPLE_RATE, BYTES_PER_VAR, 0);
 	}
-	char rhydir[] = ".";
+	TCHAR rhydir[] = _T(".");
 	//加载节奏声音
 	if (!pplayer->LoadRhythmFromDirectory(rhydir))
 	{
@@ -360,7 +353,7 @@ void PMDPlay::Run()
 
 void PMDPlay::Convert()
 {
-	char srcfile[MAX_PATH] = "", outfile[MAX_PATH] = "";
+	TCHAR srcfile[MAX_PATH] = _T(""), outfile[MAX_PATH] = _T("");
 	int loopcount = 1;
 	int fadetime = 5000;
 	bool split = false;
@@ -369,8 +362,8 @@ void PMDPlay::Convert()
 	case 7:if (lstrcmpi(__wargv[6], TEXT("-st")) == 0)split = true;
 	case 6:fadetime = atoiDx(__wargv[5]);
 	case 5:loopcount = atoiDx(__wargv[4]);
-	case 4:strcpy(outfile, A(__wargv[3]));
-	case 3:strcpy(srcfile, A(__wargv[2])); break;
+	case 4:lstrcpy(outfile, __wargv[3]);
+	case 3:lstrcpy(srcfile, __wargv[2]); break;
 	default:
 	{
 		TCHAR logmsg[120];
@@ -384,17 +377,17 @@ void PMDPlay::Convert()
 	}
 		return;
 	}
-	if (strcmp(outfile, "") == 0)
-		sprintf(outfile, "%s.wav", srcfile);
-	char *asrcfile = srcfile, *aoutfile = outfile;
+	if (lstrcmp(outfile, _T("")) == 0)
+		wsprintf(outfile, _T("%s.wav"), srcfile);
+	TCHAR*asrcfile = srcfile, *aoutfile = outfile;
 	if (asrcfile[0] == '\"')
 	{
-		asrcfile[strlen(asrcfile) - 1] = 0;
+		asrcfile[lstrlen(asrcfile) - 1] = 0;
 		asrcfile++;
 	}
 	if (aoutfile[0] == '\"')
 	{
-		aoutfile[strlen(aoutfile) - 1] = 0;
+		aoutfile[lstrlen(aoutfile) - 1] = 0;
 		aoutfile++;
 	}
 	if (!pplayer->Convert(asrcfile, aoutfile, loopcount, fadetime, split))
@@ -534,7 +527,7 @@ bool PMDPlay::OnLoadFile(TCHAR *path)
 
 bool PMDPlay::LoadFromString(TCHAR* str)
 {
-	if (pplayer->LoadFromFile(A(str)))return false;
+	if (pplayer->LoadFromFile(str))return false;
 	UpdateTextLastTime();
 	return true;
 }

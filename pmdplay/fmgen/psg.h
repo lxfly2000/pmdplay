@@ -75,7 +75,7 @@ protected:
 	static void StoreSample(Sample& dest, int32 data);
 	
 	uint8 reg[16];
-
+	
 	const uint* envelop;
 	uint olevel[3];
 	uint32 scount[3], speriod[3];
@@ -87,9 +87,9 @@ protected:
 	int volume;
 	int mask;
 
-	static uint enveloptable[16][64];
+	uint enveloptable[16][64];
 	static uint noisetable[noisetablesize];
-	static int EmitTable[32];
+	int EmitTable[32];
 };
 
 #endif // PSG_H

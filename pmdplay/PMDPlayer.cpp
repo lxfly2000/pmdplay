@@ -6,10 +6,10 @@
 
 
 
-int PMDPlayer::LoadFromFile(const char *filepath)
+int PMDPlayer::LoadFromFile(const wchar_t*filepath)
 {
 	if (!pmd_is_pmd(filepath))return -1;
-	getlength((char*)filepath, (int*)&length_in_ms, (int*)&loop_in_ms);
+	getlength((TCHAR*)filepath, (int*)&length_in_ms, (int*)&loop_in_ms);
 	//http://blog.csdn.net/tulip527/article/details/7976471
 	std::fstream f(filepath, std::ios::binary | std::ios::in);
 	std::string sf((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
@@ -18,10 +18,10 @@ int PMDPlayer::LoadFromFile(const char *filepath)
 
 int PMDPlayer::LoadFromMemory(unsigned char *pdata, int length)
 {
-	char curdir[MAX_PATH];
-	char* path[2] = { curdir,NULL };
+	TCHAR curdir[MAX_PATH];
+	TCHAR* path[2] = { curdir,NULL };
 	Unload();
-	GetCurrentDirectoryA(MAX_PATH, curdir);
+	GetCurrentDirectory(MAX_PATH, curdir);
 	setpcmdir(path);
 	lengthSourceData = length;
 	playerstatus = paused;
@@ -31,7 +31,7 @@ int PMDPlayer::LoadFromMemory(unsigned char *pdata, int length)
 	return r;
 }
 
-bool PMDPlayer::LoadRhythmFromDirectory(char* dir)
+bool PMDPlayer::LoadRhythmFromDirectory(wchar_t* dir)
 {
 	return loadrhythmsample(dir);
 }
@@ -41,7 +41,7 @@ bool PMDPlayer::LoadRhythmFromMemory(char* bd, char* sd, char* top, char* hh, ch
 	return loadrhythmsample_mem(bd, sd, top, hh, tom, rim);
 }
 
-bool PMDPlayer::Convert(char* srcfile, char* outfile, int loops, int fadetime, bool splittracks)
+bool PMDPlayer::Convert(wchar_t* srcfile, wchar_t* outfile, int loops, int fadetime, bool splittracks)
 {
 	struct WaveStructure
 	{
@@ -79,8 +79,8 @@ bool PMDPlayer::Convert(char* srcfile, char* outfile, int loops, int fadetime, b
 	if (LoadFromFile(srcfile))return false;
 	std::fstream f;
 	int splittracks_i = 0;
-	char mtname[MAX_PATH];
-	const char mtchannels[] = "ABCDEFGHIKR";
+	TCHAR mtname[MAX_PATH];
+	const TCHAR mtchannels[] = _T("ABCDEFGHIKR");
 	const size_t nch = 11;
 	bool r = false;
 	while (!r)
@@ -88,7 +88,7 @@ bool PMDPlayer::Convert(char* srcfile, char* outfile, int loops, int fadetime, b
 		if (splittracks)
 		{
 			wavfileheader.subchunk2Size = 0;
-			sprintf(mtname, "%s-%c.wav", outfile, mtchannels[splittracks_i]);
+			wsprintf(mtname, _T("%s-%c.wav"), outfile, mtchannels[splittracks_i]);
 			for (int j = 0; j < nch; j++)
 			{
 				if (j == 10)
