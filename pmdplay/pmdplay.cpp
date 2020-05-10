@@ -335,7 +335,7 @@ void PMDPlay::ChangeBeatsPerBar()
 
 int PMDPlay::End()
 {
-	retcode |= DxLib_End();
+	//retcode |= DxLib_End();//Win7系统会莫名崩溃，不知为什么
 	pplayer->Release();
 	delete pplayer;
 	return retcode;
