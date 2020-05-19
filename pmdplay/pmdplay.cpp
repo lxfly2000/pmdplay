@@ -236,6 +236,7 @@ int PMDPlay::Init(TCHAR* param)
 		SetWindowSize(hdpi.X(displayWinWidth), hdpi.Y(displayWinHeight));
 	}
 	SetFontThickness(3);
+	SetWindowSizeExtendRate(1.0, 1.0);
 	GetDrawScreenSize(&screenWidth, &screenHeight);
 	if (DxLib_Init())return retcode = -1;
 	SetDrawScreen(DX_SCREEN_BACK);
