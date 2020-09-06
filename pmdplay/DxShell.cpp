@@ -124,18 +124,57 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 	if (paddingHeight == -1)paddingHeight = (wh - strh) / 2;
 	cx = cx - strw / 2 - paddingWidth;
 	cy = cy - strh / 2 - paddingHeight;
-	DrawBox(cx, cy, cx + strw + 2 * paddingWidth, cy + strh + 2 * paddingHeight, bgcolor, TRUE);
-	if (borderwidth > 0.0f)
-		DrawBoxAA((float)cx, (float)cy, cx + strw + 2.0f * paddingWidth, cy + strh + 2.0f * paddingHeight, bordercolor, FALSE, borderwidth);
-	DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
-	ScreenFlip();
+	bool enableHScroll = false, enableVScroll = false;
+	if (cx < 0)
+	{
+		enableHScroll = true;
+		cx = 0;
+	}
+	if (cy < 0)
+	{
+		enableVScroll = true;
+		cy = 0;
+	}
+	int boxWidth = strw + 2 * paddingWidth, boxHeight = strh + 2 * paddingHeight;
 	int ret = -1;
-	DxKeyTrigger trKeyOk(keyOk), trKeyCancel(keyCancel);
+	DxKeyTrigger trKeyOk(keyOk), trKeyCancel(keyCancel),trKeyPgUp(KEY_INPUT_PGUP),trKeyPgDown(KEY_INPUT_PGDN),
+		trKeyHome(KEY_INPUT_HOME),trKeyEnd(KEY_INPUT_END);
 	do {
+		DrawBox(cx, cy, cx + boxWidth, cy + boxHeight, bgcolor, TRUE);
+		if (borderwidth > 0.0f)
+			DrawBoxAA((float)cx, (float)cy, (float)(cx + boxWidth), (float)(cy + boxHeight), bordercolor, FALSE, borderwidth);
+		DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
+		ScreenFlip();
 		if (trKeyOk.Released())
 			ret = TRUE;
 		if (trKeyCancel.Released())
 			ret = FALSE;
+		if (trKeyHome.Released())
+		{
+			if (enableVScroll && (CheckHitKey(KEY_INPUT_LCONTROL) || CheckHitKey(KEY_INPUT_RCONTROL) || !enableHScroll))
+				cy = 0;
+			else if (enableHScroll)
+				cx = 0;
+		}
+		if (trKeyEnd.Released())
+		{
+			if (enableVScroll && (CheckHitKey(KEY_INPUT_LCONTROL) || CheckHitKey(KEY_INPUT_RCONTROL) || !enableHScroll))
+				cy = wh - boxHeight;
+			else if (enableHScroll)
+				cx = ww - boxWidth;
+		}
+		if (enableVScroll && trKeyPgUp.Released())
+			cy = min(max(wh - boxHeight, cy + wh), 0);
+		if (enableVScroll && trKeyPgDown.Released())
+			cy = min(max(wh - boxHeight, cy - wh), 0);
+		if (enableHScroll && CheckHitKey(KEY_INPUT_LEFT))
+			cx = min(max(ww - boxWidth, cx + HdpiNum(1)), 0);
+		if (enableHScroll && CheckHitKey(KEY_INPUT_RIGHT))
+			cx = min(max(ww - boxWidth, cx - HdpiNum(1)), 0);
+		if (enableVScroll && CheckHitKey(KEY_INPUT_UP))
+			cy = min(max(wh - boxHeight, cy + HdpiNum(1)), 0);
+		if (enableVScroll && CheckHitKey(KEY_INPUT_DOWN))
+			cy = min(max(wh - boxHeight, cy - HdpiNum(1)), 0);
 	} while (ret == -1);
 	DeleteFontToHandle(hDxFont);
 	return ret;
