@@ -9,11 +9,11 @@
 
 ## 运行环境
 经测试可以运行的系统：
-* Windows 7
 * Windows 8.1
 * Windows 10
 
 以下系统理论上可以运行但未测试：
+* Windows 7（3.1.3及以前的版本已测试可以运行）
 * Windows Vista
 * Windows 8
 
