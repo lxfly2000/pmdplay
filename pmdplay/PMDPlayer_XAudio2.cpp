@@ -1,12 +1,21 @@
 #include "PMDPlayer_XAudio2.h"
 #include "pmdmini.h"
 
-#pragma comment(lib,"XAudio2.lib")
+//https://docs.microsoft.com/zh-cn/cpp/preprocessor/predefined-macros
+#ifdef _M_X64
+#pragma comment(lib,"XAudio2_8/Lib/winv6.3/um/x64/XAudio2.lib")
+#elif defined(_M_ARM)
+#pragma comment(lib,"XAudio2_8/Lib/winv6.3/um/arm/XAudio2.lib")
+#elif defined(_M_IX86)
+#pragma comment(lib,"XAudio2_8/Lib/winv6.3/um/x86/XAudio2.lib")
+#else
+#error "XAudio2 doesn't support this platform."
+#endif
 
 #define KEYNAME_BUFFER_LENGTH	"XAudio2BufferTime"
 #define VDEFAULT_BUFFER_LENGTH	20
 
-#include <xaudio2.h>
+#include "XAudio2_8/Include/um/xaudio2.h"
 
 class XASCallback :public IXAudio2VoiceCallback
 {

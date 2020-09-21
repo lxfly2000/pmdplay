@@ -1,4 +1,4 @@
 #define APP_VERSION_MAJOR				3
 #define APP_VERSION_MINOR				1
-#define APP_VERSION_REVISION			3
+#define APP_VERSION_REVISION			4
 #define APP_VERSION_BUILD				0
