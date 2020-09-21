@@ -13,7 +13,7 @@
 * Windows 10
 
 以下系统理论上可以运行但未测试：
-* Windows 7（3.1.3及以前的版本已测试可以运行）
+* Windows 7（[3.1.3](//github.com/lxfly2000/pmdplay/releases/tag/3.1.3)及以前的版本已测试可以运行）
 * Windows Vista
 * Windows 8
 
