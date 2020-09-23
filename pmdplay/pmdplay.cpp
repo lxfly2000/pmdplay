@@ -1,5 +1,6 @@
 ﻿#include <DxLib.h>
 #include <locale>
+#include <regex>
 #include "PMDPlayer_XAudio2.h"
 #include "PMDPlayer_DSound.h"
 #include "PMDScreen.h"
@@ -12,6 +13,8 @@
 #include "viewmem.h"
 #include "ResLoader.h"
 #include "resource1.h"
+
+#pragma comment(lib,"ComCtl32.lib")
 
 #define IDM_APP_HELP	0x101
 #define IDM_CONVERT		0x102
@@ -506,7 +509,30 @@ void PMDPlay::OnAbout()
 {
 	if (windowed)
 	{
-		MessageBox(hWindowDx, GetHelpInfo(), TEXT(APP_NAME), MB_ICONINFORMATION);
+		//MessageBox(hWindowDx, GetHelpInfo(), TEXT(APP_NAME), MB_ICONINFORMATION);
+		TASKDIALOGCONFIG tdc{};
+		tdc.cbSize = sizeof(tdc);
+		tdc.hwndParent = hWindowDx;
+		tdc.hInstance = GetModuleHandle(NULL);
+		tdc.dwFlags = TDF_ENABLE_HYPERLINKS;
+		tdc.dwCommonButtons = TDCBF_OK_BUTTON;
+		tdc.pszWindowTitle = TEXT(APP_NAME);
+		tdc.pszMainIcon = TD_INFORMATION_ICON;
+		std::basic_string<TCHAR>msgWithURL = GetHelpInfo();
+		msgWithURL = std::regex_replace(msgWithURL, std::basic_regex<TCHAR>(TEXT("(https?://[A-Za-z0-9_\\-\\./]+)")), TEXT("<a href=\"$1\">$1</a>"));
+		tdc.pszContent = msgWithURL.c_str();
+#undef LONG_PTR
+		tdc.pfCallback = [](HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam,LONG_PTR lpRefData)
+		{
+			switch (msg)
+			{
+			case TDN_HYPERLINK_CLICKED:
+				ShellExecute(hwnd, TEXT("open"), (LPCWSTR)lParam, NULL, NULL, SW_SHOWNORMAL);
+				break;
+			}
+			return S_OK;
+		};
+		TaskDialogIndirect(&tdc, NULL, NULL, NULL);
 	}
 	else
 	{
