@@ -266,7 +266,7 @@ namespace FM
 		bool	Init(uint c, uint r, bool  = false, const TCHAR* rhythmpath=0);
 		bool	LoadRhythmSample(const TCHAR*);
 		bool	LoadRhythmSampleMem(char* bd, char* sd, char* top, char* hh, char* tom, char* rim);
-
+		
 		bool	SetRate(uint c, uint r, bool = false);
 		void 	Mix(Sample* buffer, int nsamples);
 		

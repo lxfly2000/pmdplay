@@ -1,6 +1,6 @@
 ﻿==============================================================================
                      FMP for Windows 「WinFMP」 Ver.0.16
-                     PMD for Windows 「PMDWin」 Ver.0.38
+                     PMD for Windows 「PMDWin」 Ver.0.39
                         Copyright & Programmed by C60
                           WinFMP, PMDWin DLL 対応表
 ==============================================================================

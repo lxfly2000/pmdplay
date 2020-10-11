@@ -15,7 +15,7 @@
 //=============================================================================
 //	バージョン情報
 //=============================================================================
-#define	DLLVersion			 38		// 上１桁：major, 下２桁：minor version
+#define	DLLVersion			 39		// 上１桁：major, 下２桁：minor version
 #define	InterfaceVersion	117		// 上１桁：major, 下２桁：minor version
 
 

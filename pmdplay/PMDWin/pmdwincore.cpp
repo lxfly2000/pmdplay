@@ -5904,29 +5904,37 @@ void PMDWIN::md_inc(QQ *qq)
 		qq->mdc--;
 	}
 	
-	if(qq->step < 0) {
+	if (qq->step < 0) {
 		al = qq->mdepth - qq->step;
-		if(al >= 0) {
+
+		if (al < 128) {
 			qq->step = -al;
-		} else {
-			if(qq->mdepth < 0) {
+		}
+		else {
+			if (qq->mdepth < 0) {
 				qq->step = 0;
-			} else {
+			}
+			else {
 				qq->step = -127;
 			}
 		}
-	} else {
+	}
+	else {
 		al = qq->step + qq->mdepth;
-		if(al >= 0) {
+
+		if (al < 128) {
 			qq->step = al;
-		} else {
-			if(qq->mdepth < 0) {
+		}
+		else {
+			if (qq->mdepth < 0) {
 				qq->step = 0;
-			} else {
+			}
+			else {
 				qq->step = 127;
 			}
 		}
 	}
+
 }
 
 

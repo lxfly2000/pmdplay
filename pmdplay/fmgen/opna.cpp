@@ -660,7 +660,10 @@ void OPNABase::SetADPCMBReg(uint addr, uint data)
 	case 0x03:		// Start Address H
 		adpcmreg[addr - 0x02 + 0] = data;
 		startaddr = (adpcmreg[1]*256+adpcmreg[0]) << 6;
-		memaddr = startaddr;
+		if (control1 & 0x40) {
+			memaddr = startaddr;
+		}
+
 //		LOG1("  startaddr %.6x", startaddr);
 		break;
 	
@@ -1230,6 +1233,7 @@ bool OPNA::Init(uint c, uint r, bool ipflag, const TCHAR* path)
 	
 	if (!adpcmbuf)
 		adpcmbuf = new uint8[0x40000];
+
 	if (!adpcmbuf)
 		return false;
 	
@@ -1775,7 +1779,7 @@ void OPNB::SetReg(uint addr, uint data)
 	case 0x13:		// Start Address H
 		adpcmreg[addr - 0x12 + 0] = data;
 		startaddr = (adpcmreg[1]*256+adpcmreg[0]) << 9;
-		memaddr = startaddr;
+		//@ memaddr = startaddr;
 		break;
 	
 	case 0x14:		// Stop Address L

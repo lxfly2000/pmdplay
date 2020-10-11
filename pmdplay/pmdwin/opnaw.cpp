@@ -177,7 +177,7 @@ void OPNAW::SetReg(uint addr, uint data)
 		if(ssgwaitcount) {
 			CalcWaitPCM(ssgwaitcount);
 		}
-	} else if((addr % 100) <= 0x10) {	// ADPCM
+	} else if((addr % 0x100) <= 0x10) {	// ADPCM
 		if(adpcmwaitcount) {
 			CalcWaitPCM(adpcmwaitcount);
 		}

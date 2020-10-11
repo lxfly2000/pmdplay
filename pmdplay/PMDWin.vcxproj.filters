@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="PMDWin">
+      <UniqueIdentifier>{a077b08e-2777-4159-89e2-1b0dd9aa6f8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fmgen">
+      <UniqueIdentifier>{2e6176fd-ddec-4352-b4fa-eef009623c82}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fmgen\diag.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\file.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmgen.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmgeninl.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\fmtimer.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\headers.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\misc.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\opna.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\portability.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\psg.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="fmgen\types.h">
+      <Filter>fmgen</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\opnaw.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\p86drv.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\pcmmusdriver.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\pmdwin.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\pmdwincore.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\pmdwinimport.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\ppsdrv.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\ppz8l.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\table.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+    <ClInclude Include="PMDWin\util.h">
+      <Filter>PMDWin</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="fmgen\file.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\fmgen.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\fmtimer.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\opna.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="fmgen\psg.cpp">
+      <Filter>fmgen</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\opnaw.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\p86drv.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\pmdwin.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\pmdwincore.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\ppsdrv.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\ppz8l.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\table.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+    <ClCompile Include="PMDWin\util.cpp">
+      <Filter>PMDWin</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PMDWin\pmdwin.def">
+      <Filter>PMDWin</Filter>
+    </None>
+  </ItemGroup>
+</Project>
