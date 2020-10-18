@@ -120,6 +120,7 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 	//drawstring msg
 	int strw, strh, lc;
 	GetDrawStringSizeToHandle(&strw, &strh, &lc, msg, (int)strlenDx(msg), hDxFont);
+	int slh = strh / lc;
 	if (paddingWidth == -1)paddingWidth = (ww - strw) / 2;
 	if (paddingHeight == -1)paddingHeight = (wh - strh) / 2;
 	cx = cx - strw / 2 - paddingWidth;
@@ -144,6 +145,15 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 		if (borderwidth > 0.0f)
 			DrawBoxAA((float)cx, (float)cy, (float)(cx + boxWidth), (float)(cy + boxHeight), bordercolor, FALSE, borderwidth);
 		DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
+		//绘制滚动箭头
+		if (cx < 0)
+			DrawTriangle(0, wh / 2, slh / 2, wh / 2 - slh / 2, slh / 2, wh / 2 + slh / 2, strcolor, TRUE);
+		if (cy < 0)
+			DrawTriangle(ww / 2, 0, ww / 2 + slh / 2, slh / 2, ww / 2 - slh / 2, slh / 2, strcolor, TRUE);
+		if (cx + boxWidth > ww)
+			DrawTriangle(ww, wh / 2, ww - slh / 2, wh / 2 + slh / 2, ww - slh / 2, wh / 2 - slh / 2, strcolor, TRUE);
+		if (cy + boxHeight > wh)
+			DrawTriangle(ww / 2, wh, ww / 2 - slh / 2, wh - slh / 2, ww / 2 + slh / 2, wh - slh / 2, strcolor, TRUE);
 		ScreenFlip();
 		if (trKeyOk.Released())
 			ret = TRUE;
@@ -287,6 +297,10 @@ tagCursorMove:
 			((i == cur) && !(fd[listpagecur + i].dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)) ? bgcolor : strcolor, hDxFont);
 	}
 	DrawStringToHandle(listx, listy + singlelineh * list_show_items, ShortenPath(tempPath,TRUE,shortenedPath,hDxFont,strw), strcolor, hDxFont);
+	//绘制滚动条
+	if (list_show_items < ci)
+		DrawBox(listx + strw, listy + (singlelineh * list_show_items - singlelineh / 2) * listpagecur / ci, listx + strw + min(singlelineh, paddingWidth) / 2,
+			listy + singlelineh / 2 + (singlelineh * list_show_items - singlelineh / 2) * (listpagecur + list_show_items) / ci, strcolor, TRUE);
 	
 	ScreenFlip();
 	if (keyqueue.empty())
