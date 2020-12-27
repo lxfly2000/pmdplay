@@ -146,6 +146,9 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 			DrawBoxAA((float)cx, (float)cy, (float)(cx + boxWidth), (float)(cy + boxHeight), bordercolor, FALSE, borderwidth);
 		DrawStringToHandle(cx + paddingWidth, cy + paddingHeight, msg, strcolor, hDxFont);
 		//绘制滚动箭头
+		int blendMode, blendParam;
+		GetDrawBlendMode(&blendMode, &blendParam);
+		SetDrawBlendMode(DX_BLENDMODE_INVDESTCOLOR, 0);//第二个参数没有用到
 		if (cx < 0)
 			DrawTriangle(0, wh / 2, slh / 2, wh / 2 - slh / 2, slh / 2, wh / 2 + slh / 2, strcolor, TRUE);
 		if (cy < 0)
@@ -154,6 +157,7 @@ int DxMessageBox(const TCHAR *msg, int keyOk, int keyCancel, int strcolor, int b
 			DrawTriangle(ww, wh / 2, ww - slh / 2, wh / 2 + slh / 2, ww - slh / 2, wh / 2 - slh / 2, strcolor, TRUE);
 		if (cy + boxHeight > wh)
 			DrawTriangle(ww / 2, wh, ww / 2 - slh / 2, wh - slh / 2, ww / 2 + slh / 2, wh - slh / 2, strcolor, TRUE);
+		SetDrawBlendMode(blendMode, blendParam);
 		ScreenFlip();
 		if (trKeyOk.Released())
 			ret = TRUE;
