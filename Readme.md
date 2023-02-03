@@ -6,7 +6,7 @@
 ## 下载
 [GitHub](https://github.com/lxfly2000/pmdplay/releases)  
 [Old Versions](https://pan.baidu.com/s/1b0Tkce)
-
+<!--
 ## 运行环境
 经测试可以运行的系统：
 * Windows 8.1
@@ -16,7 +16,7 @@
 * Windows 7（[3.1.3](//github.com/lxfly2000/pmdplay/releases/tag/3.1.3)及以前的版本已测试可以运行）
 * Windows Vista
 * Windows 8
-
+-->
 ## 编译
 请用 Visual Studio 2017 编译，需要下载 [DxLib](http://dxlib.o.oo7.jp).
 
